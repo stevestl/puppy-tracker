@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Puppy Tracker">
+    <title>Service Puppy Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+```
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+        padding-bottom: 80px;
+    }
+
+    .container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .header {
+        background: white;
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .header h1 {
+        color: #667eea;
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+
+    .puppy-info {
+        color: #666;
+        font-size: 14px;
+    }
+
+    .card {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .section-title {
+        color: #667eea;
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        color: #333;
+        font-weight: 500;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 16px;
+        font-family: inherit;
+        transition: border-color 0.3s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    .checkbox-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 14px;
+    }
+
+    .checkbox-label:has(input:checked) {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
+    .checkbox-label input {
+        width: auto;
+        margin: 0;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 16px;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-primary:active {
+        transform: scale(0.98);
+    }
+
+    .btn-secondary {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        margin-top: 10px;
+    }
+
+    .btn-danger {
+        background: #ef4444;
+        color: white;
+        margin-top: 10px;
+    }
+
+    .location-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px;
+        background: #f0f0f0;
+        border-radius: 8px;
+        font-size: 14px;
+        margin-top: 8px;
+    }
+
+    .location-status.success {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .location-status.error {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .entry {
+        background: #f9fafb;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-left: 4px solid #667eea;
+    }
+
+    .entry-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 10px;
+    }
+
+    .entry-date {
+        font-weight: 600;
+        color: #333;
+        font-size: 14px;
+    }
+
+    .entry-location {
+        font-size: 12px;
+        color: #666;
+        margin-top: 4px;
+    }
+
+    .entry-content {
+        font-size: 14px;
+        color: #555;
+        line-height: 1.5;
+    }
+
+    .entry-content strong {
+        color: #333;
+        display: inline-block;
+        min-width: 100px;
+    }
+
+    .delete-btn {
+        background: #ef4444;
+        color: white;
+        border: none;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+    .tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .tab {
+        flex: 1;
+        padding: 12px;
+        background: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .tab.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #999;
+    }
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        font-size: 12px;
+        opacity: 0.9;
+    }
+
+    .hidden {
+        display: none;
+    }
+</style>
+```
+
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐕 Service Puppy Tracker</h1>
+            <div class="puppy-info" id="puppyInfo">Configure your puppy's name in Settings</div>
+        </div>
+
+```
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('log')">New Entry</button>
+        <button class="tab" onclick="switchTab('history')">History</button>
+        <button class="tab" onclick="switchTab('settings')">Settings</button>
+    </div>
+
+    <!-- Log Entry Tab -->
+    <div id="logTab" class="tab-content active">
+        <div class="card">
+            <div class="section-title">📍 Location</div>
+            <button class="btn btn-primary" onclick="captureLocation()">
+                <span>📍 Capture Current Location</span>
+            </button>
+            <div id="locationStatus" class="location-status hidden"></div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">📝 Interaction Details</div>
+            
+            <div class="form-group">
+                <label>Location Type</label>
+                <select id="locationType">
+                    <option value="">Select type...</option>
+                    <option value="Store">Store/Shopping</option>
+                    <option value="Restaurant">Restaurant/Café</option>
+                    <option value="Park">Park/Outdoor</option>
+                    <option value="Vet">Veterinary Office</option>
+                    <option value="Public Transit">Public Transportation</option>
+                    <option value="Office">Office/Workplace</option>
+                    <option value="Medical">Medical Facility</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Duration (minutes)</label>
+                <input type="number" id="duration" placeholder="e.g., 30">
+            </div>
+
+            <div class="form-group">
+                <label>Overall Behavior</label>
+                <select id="behavior">
+                    <option value="">Select rating...</option>
+                    <option value="Excellent">Excellent</option>
+                    <option value="Good">Good</option>
+                    <option value="Fair">Fair</option>
+                    <option value="Needs Improvement">Needs Improvement</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Distractions Present</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="distraction" value="Other dogs"> Other dogs
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="distraction" value="Children"> Children
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="distraction" value="Food"> Food
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="distraction" value="Loud noises"> Loud noises
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="distraction" value="Crowds"> Crowds
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="distraction" value="Other animals"> Other animals
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Commands Practiced</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="command" value="Sit"> Sit
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="command" value="Down"> Down
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="command" value="Stay"> Stay
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="command" value="Heel"> Heel
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="command" value="Leave it"> Leave it
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="command" value="Focus"> Focus
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea id="notes" placeholder="Any additional observations, incidents, or achievements..."></textarea>
+            </div>
+
+            <button class="btn btn-primary" onclick="saveEntry()">
+                💾 Save Entry
+            </button>
+        </div>
+    </div>
+
+    <!-- History Tab -->
+    <div id="historyTab" class="tab-content">
+        <div class="stats" id="stats"></div>
+        <div class="card">
+            <div class="section-title">📚 Training History</div>
+            <button class="btn btn-secondary" onclick="exportEntries()">
+                📤 Export All Entries (CSV)
+            </button>
+            <div id="entriesList"></div>
+        </div>
+    </div>
+
+    <!-- Settings Tab -->
+    <div id="settingsTab" class="tab-content">
+        <div class="card">
+            <div class="section-title">⚙️ Settings</div>
+            
+            <div class="form-group">
+                <label>Puppy Name</label>
+                <input type="text" id="puppyName" placeholder="Enter your puppy's name">
+            </div>
+
+            <div class="form-group">
+                <label>Handler Name</label>
+                <input type="text" id="handlerName" placeholder="Your name">
+            </div>
+
+            <div class="form-group">
+                <label>Training Organization</label>
+                <input type="text" id="organization" placeholder="Organization name">
+            </div>
+
+            <button class="btn btn-primary" onclick="saveSettings()">
+                💾 Save Settings
+            </button>
+
+            <button class="btn btn-danger" onclick="clearAllData()">
+                🗑️ Clear All Data
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentLocation = null;
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        loadSettings();
+        displayEntries();
+        updateStats();
+    });
+
+    function switchTab(tab) {
+        // Update tab buttons
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+
+        // Update tab content
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.getElementById(tab + 'Tab').classList.add('active');
+
+        if (tab === 'history') {
+            displayEntries();
+            updateStats();
+        }
+    }
+
+    function captureLocation() {
+        const statusEl = document.getElementById('locationStatus');
+        statusEl.classList.remove('hidden', 'success', 'error');
+        statusEl.innerHTML = '📍 Getting your location...';
+
+        if (!navigator.geolocation) {
+            statusEl.classList.add('error');
+            statusEl.innerHTML = '❌ Geolocation not supported';
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                currentLocation = {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                    accuracy: position.coords.accuracy,
+                    timestamp: new Date().toISOString()
+                };
+                statusEl.classList.add('success');
+                statusEl.innerHTML = `✅ Location captured (±${Math.round(currentLocation.accuracy)}m accuracy)`;
+            },
+            function(error) {
+                statusEl.classList.add('error');
+                let message = '❌ ';
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        message += 'Location permission denied. Enable in Settings > Safari > Location';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        message += 'Location unavailable';
+                        break;
+                    case error.TIMEOUT:
+                        message += 'Location request timed out';
+                        break;
+                    default:
+                        message += 'Error getting location';
+                }
+                statusEl.innerHTML = message;
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            }
+        );
+    }
+
+    function getCheckedValues(name) {
+        return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`))
+            .map(cb => cb.value);
+    }
+
+    function saveEntry() {
+        const locationType = document.getElementById('locationType').value;
+        const duration = document.getElementById('duration').value;
+        const behavior = document.getElementById('behavior').value;
+        const notes = document.getElementById('notes').value;
+        const distractions = getCheckedValues('distraction');
+        const commands = getCheckedValues('command');
+
+        if (!currentLocation) {
+            alert('Please capture your location first');
+            return;
+        }
+
+        if (!locationType || !behavior) {
+            alert('Please fill in Location Type and Overall Behavior');
+            return;
+        }
+
+        const entry = {
+            id: Date.now(),
+            timestamp: new Date().toISOString(),
+            location: currentLocation,
+            locationType,
+            duration: duration || null,
+            behavior,
+            distractions,
+            commands,
+            notes
+        };
+
+        // Get existing entries
+        const entries = JSON.parse(localStorage.getItem('trainingEntries') || '[]');
+        entries.unshift(entry);
+        localStorage.setItem('trainingEntries', JSON.stringify(entries));
+
+        // Reset form
+        document.getElementById('locationType').value = '';
+        document.getElementById('duration').value = '';
+        document.getElementById('behavior').value = '';
+        document.getElementById('notes').value = '';
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        document.querySelectorAll('.checkbox-label').forEach(label => {
+            label.style.background = '';
+            label.style.color = '';
+            label.style.borderColor = '';
+        });
+        
+        currentLocation = null;
+        document.getElementById('locationStatus').classList.add('hidden');
+
+        alert('✅ Entry saved successfully!');
+        switchTab('history');
+    }
+
+    function displayEntries() {
+        const entries = JSON.parse(localStorage.getItem('trainingEntries') || '[]');
+        const container = document.getElementById('entriesList');
+
+        if (entries.length === 0) {
+            container.innerHTML = '<div class="empty-state">No training entries yet. Start by adding your first entry!</div>';
+            return;
+        }
+
+        container.innerHTML = entries.map(entry => {
+            const date = new Date(entry.timestamp);
+            const locationStr = entry.location 
+                ? `${entry.location.latitude.toFixed(6)}, ${entry.location.longitude.toFixed(6)}`
+                : 'No location';
+
+            return `
+                <div class="entry">
+                    <div class="entry-header">
+                        <div>
+                            <div class="entry-date">${date.toLocaleDateString()} ${date.toLocaleTimeString()}</div>
+                            <div class="entry-location">📍 ${locationStr}</div>
+                        </div>
+                        <button class="delete-btn" onclick="deleteEntry(${entry.id})">Delete</button>
+                    </div>
+                    <div class="entry-content">
+                        <div><strong>Type:</strong> ${entry.locationType}</div>
+                        ${entry.duration ? `<div><strong>Duration:</strong> ${entry.duration} min</div>` : ''}
+                        <div><strong>Behavior:</strong> ${entry.behavior}</div>
+                        ${entry.distractions.length > 0 ? `<div><strong>Distractions:</strong> ${entry.distractions.join(', ')}</div>` : ''}
+                        ${entry.commands.length > 0 ? `<div><strong>Commands:</strong> ${entry.commands.join(', ')}</div>` : ''}
+                        ${entry.notes ? `<div><strong>Notes:</strong> ${entry.notes}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function deleteEntry(id) {
+        if (!confirm('Delete this entry?')) return;
+
+        let entries = JSON.parse(localStorage.getItem('trainingEntries') || '[]');
+        entries = entries.filter(e => e.id !== id);
+        localStorage.setItem('trainingEntries', JSON.stringify(entries));
+        displayEntries();
+        updateStats();
+    }
+
+    function updateStats() {
+        const entries = JSON.parse(localStorage.getItem('trainingEntries') || '[]');
+        const statsContainer = document.getElementById('stats');
+
+        const totalMinutes = entries.reduce((sum, e) => sum + (parseInt(e.duration) || 0), 0);
+        const excellentCount = entries.filter(e => e.behavior === 'Excellent').length;
+
+        statsContainer.innerHTML = `
+            <div class="stat-card">
+                <div class="stat-value">${entries.length}</div>
+                <div class="stat-label">Total Sessions</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${Math.round(totalMinutes / 60)}h</div>
+                <div class="stat-label">Training Time</div>
+            </div>
+        `;
+    }
+
+    function exportEntries() {
+        const entries = JSON.parse(localStorage.getItem('trainingEntries') || '[]');
+        const settings = JSON.parse(localStorage.getItem('puppySettings') || '{}');
+
+        if (entries.length === 0) {
+            alert('No entries to export');
+            return;
+        }
+
+        // Create CSV
+        const headers = ['Date', 'Time', 'Puppy Name', 'Handler', 'Location Type', 'Duration (min)', 
+                        'Behavior', 'Distractions', 'Commands Practiced', 'Latitude', 'Longitude', 
+                        'Location Accuracy (m)', 'Notes'];
+        
+        const rows = entries.map(entry => {
+            const date = new Date(entry.timestamp);
+            return [
+                date.toLocaleDateString(),
+                date.toLocaleTimeString(),
+                settings.puppyName || '',
+                settings.handlerName || '',
+                entry.locationType,
+                entry.duration || '',
+                entry.behavior,
+                entry.distractions.join('; '),
+                entry.commands.join('; '),
+                entry.location ? entry.location.latitude : '',
+                entry.location ? entry.location.longitude : '',
+                entry.location ? Math.round(entry.location.accuracy) : '',
+                entry.notes || ''
+            ].map(field => `"${String(field).replace(/"/g, '""')}"`).join(',');
+        });
+
+        const csv = [headers.join(','), ...rows].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `service-puppy-training-${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function saveSettings() {
+        const settings = {
+            puppyName: document.getElementById('puppyName').value,
+            handlerName: document.getElementById('handlerName').value,
+            organization: document.getElementById('organization').value
+        };
+
+        localStorage.setItem('puppySettings', JSON.stringify(settings));
+        updatePuppyInfo();
+        alert('✅ Settings saved!');
+    }
+
+    function loadSettings() {
+        const settings = JSON.parse(localStorage.getItem('puppySettings') || '{}');
+        document.getElementById('puppyName').value = settings.puppyName || '';
+        document.getElementById('handlerName').value = settings.handlerName || '';
+        document.getElementById('organization').value = settings.organization || '';
+        updatePuppyInfo();
+    }
+
+    function updatePuppyInfo() {
+        const settings = JSON.parse(localStorage.getItem('puppySettings') || '{}');
+        const info = document.getElementById('puppyInfo');
+        if (settings.puppyName) {
+            info.textContent = `Training ${settings.puppyName}${settings.organization ? ' • ' + settings.organization : ''}`;
+        } else {
+            info.textContent = 'Configure your puppy\'s name in Settings';
+        }
+    }
+
+    function clearAllData() {
+        if (!confirm('⚠️ This will delete ALL training entries and settings. Are you sure?')) return;
+        if (!confirm('This cannot be undone. Continue?')) return;
+
+        localStorage.removeItem('trainingEntries');
+        localStorage.removeItem('puppySettings');
+        location.reload();
+    }
+</script>
+```
+
+</body>
+</html>
