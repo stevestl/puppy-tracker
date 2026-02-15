@@ -1097,9 +1097,10 @@
         };
 
         const app = initializeApp(firebaseConfig);
+        const APP_CHECK_PLACEHOLDER = 'REPLACE_WITH_RECAPTCHA_V3_SITE_KEY';
         const appCheckSiteKey = '6LcgqmwsAAAAAJGB8riyJ9efiXhmPZMYPIy_V05q';
         let appCheck = null;
-        if (appCheckSiteKey && appCheckSiteKey !== '6LcgqmwsAAAAAJGB8riyJ9efiXhmPZMYPIy_V05q') {
+        if (appCheckSiteKey && appCheckSiteKey !== APP_CHECK_PLACEHOLDER) {
             appCheck = initializeAppCheck(app, {
                 provider: new ReCaptchaV3Provider(appCheckSiteKey),
                 isTokenAutoRefreshEnabled: true
