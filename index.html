@@ -1306,6 +1306,31 @@
             );
         }
 
+        function getDogOptionLabel(dog) {
+            const litterName = normalizeName(dog?.litterName) || 'Unknown litter';
+            const dogName = normalizeName(dog?.dogName);
+            return `${litterName}: ${dogName}`;
+        }
+
+        function resolveDogNameFromSelection(selection) {
+            const normalizedSelection = normalizeName(selection);
+            if (!normalizedSelection) return '';
+
+            const matchedDog = (window.availableDogs || []).find(
+                dog => getDogOptionLabel(dog) === normalizedSelection
+            );
+            if (matchedDog && matchedDog.dogName) {
+                return normalizeName(matchedDog.dogName);
+            }
+
+            if (normalizedSelection.includes(':')) {
+                const parts = normalizedSelection.split(':');
+                return normalizeName(parts.slice(1).join(':'));
+            }
+
+            return normalizedSelection;
+        }
+
         window.addLitterDogs = async function() {
             const motherName = normalizeName(document.getElementById('litterMotherName').value);
             const litterName = normalizeName(document.getElementById('litterName').value);
@@ -1340,9 +1365,10 @@
 
         window.assignDog = async function() {
             const trainerEmail = document.getElementById('trainerEmail').value.trim().toLowerCase();
-            const dogNameInput = document.getElementById('dogName').value.trim();
+            const selectedDogValue = document.getElementById('dogName').value.trim();
+            const dogNameInput = resolveDogNameFromSelection(selectedDogValue);
             
-            if (!trainerEmail || !dogNameInput) {
+            if (!trainerEmail || !selectedDogValue || !dogNameInput) {
                 alert('Please enter both trainer email and dog name');
                 return;
             }
@@ -1407,7 +1433,7 @@
             const datalist = document.getElementById('registeredDogOptions');
             if (datalist) {
                 datalist.innerHTML = dogs
-                    .map(dog => `<option value="${dog.dogName}"></option>`)
+                    .map(dog => `<option value="${getDogOptionLabel(dog)}"></option>`)
                     .join('');
             }
 
