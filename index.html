@@ -1476,10 +1476,12 @@
                 
                 filterContainer.innerHTML = userFilters + dogFilters;
             } else {
-                entries = allEntries.filter(e => 
-                    e.userId === window.currentUser.uid && 
-                    (!window.selectedDog || e.dogName === window.selectedDog)
-                );
+                const accessibleDogs = new Set(window.userDogs || []);
+                if (window.selectedDog) {
+                    entries = allEntries.filter(e => e.dogName === window.selectedDog);
+                } else {
+                    entries = allEntries.filter(e => accessibleDogs.has(e.dogName));
+                }
                 document.getElementById('userFilterContainer').classList.add('hidden');
             }
 
@@ -1581,12 +1583,6 @@
             loadEntries();
         };
 
-        function formatSummaryDate(timestamp) {
-            const date = new Date(timestamp);
-            if (Number.isNaN(date.getTime())) return '';
-            return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-        }
-
         function truncateSummaryText(text, maxLength = 120) {
             if (!text) return '';
             const normalized = String(text).replace(/\s+/g, ' ').trim();
@@ -1603,19 +1599,45 @@
                 return;
             }
 
-            const bullets = entries
+            const sortedEntries = entries
                 .slice()
-                .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
-                .map(entry => {
-                    const dateLabel = formatSummaryDate(entry.timestamp);
-                    const locationLabel = entry.locationName || entry.locationType || 'Unknown location';
-                    const behaviorLabel = entry.behavior ? `showed ${entry.behavior.toLowerCase()} behavior` : 'trained';
-                    const notesLabel = entry.notes ? ` ${truncateSummaryText(entry.notes)}` : '';
-                    const dogLabel = entry.dogName ? `${entry.dogName} ` : '';
-                    return `- ${dateLabel}: ${dogLabel}trained at ${locationLabel} and ${behaviorLabel}.${notesLabel}`;
-                });
+                .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
-            summaryEl.value = bullets.join('\n');
+            const uniqueDogs = Array.from(new Set(sortedEntries.map(e => e.dogName).filter(Boolean)));
+            const showDogGrouping = uniqueDogs.length > 1;
+
+            const toBulletLine = (entry) => {
+                const locationLabel = entry.locationName || entry.locationType || 'Unknown location';
+                const behaviorLabel = entry.behavior ? `performance was ${entry.behavior.toLowerCase()}` : 'training session was completed';
+                const commandsLabel = entry.commands && entry.commands.length > 0
+                    ? entry.commands.join(', ')
+                    : 'core skills';
+                const notesLabel = entry.notes ? ` ${truncateSummaryText(entry.notes)}` : '';
+                return `- Trained at ${locationLabel}; ${behaviorLabel}; worked on ${commandsLabel}.${notesLabel}`;
+            };
+
+            if (!showDogGrouping) {
+                summaryEl.value = sortedEntries.map(toBulletLine).join('\n');
+                return;
+            }
+
+            const groupedByDog = new Map();
+            sortedEntries.forEach(entry => {
+                const dogName = entry.dogName || 'Unknown dog';
+                if (!groupedByDog.has(dogName)) {
+                    groupedByDog.set(dogName, []);
+                }
+                groupedByDog.get(dogName).push(entry);
+            });
+
+            const lines = [];
+            groupedByDog.forEach((dogEntries, dogName) => {
+                lines.push(`${dogName}:`);
+                dogEntries.forEach(entry => lines.push(toBulletLine(entry)));
+                lines.push('');
+            });
+
+            summaryEl.value = lines.join('\n').trim();
         }
 
         window.copyHistorySummary = async function() {
@@ -1657,7 +1679,7 @@
                     : 'No location';
                 
                 const locationName = entry.locationName ? `<div class="entry-location">📍 ${entry.locationName}</div>` : '';
-                const userDisplay = window.isAdmin && entry.userEmail ? 
+                const userDisplay = ((window.isAdmin || entry.userId !== window.currentUser.uid) && entry.userEmail) ? 
                     `<div><strong>Trainer:</strong> ${entry.userEmail}</div>` : '';
                 const dogDisplay = `<div><strong>Dog:</strong> ${entry.dogName}</div>`;
 
