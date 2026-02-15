@@ -526,6 +526,41 @@
             font-family: inherit;
         }
 
+        .admin-range-controls {
+            display: flex;
+            gap: 10px;
+            margin: 12px 0;
+            flex-wrap: wrap;
+        }
+
+        .admin-detail-table-wrap {
+            overflow-x: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .admin-detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .admin-detail-table th,
+        .admin-detail-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+            vertical-align: top;
+            white-space: nowrap;
+        }
+
+        .admin-detail-table th {
+            background: #f9fafb;
+            font-weight: 700;
+            color: #374151;
+        }
+
         .info-box {
             background: #dbeafe;
             border-left: 4px solid #3b82f6;
@@ -954,9 +989,14 @@
             <div class="card">
                 <div class="section-title">📊 All Training Data</div>
                 <div id="adminStats"></div>
-                <button class="btn btn-secondary" onclick="exportAllData()">
-                    📤 Export All Data (CSV)
+                <div class="admin-range-controls">
+                    <button class="filter-btn" id="adminRange2WeeksBtn" onclick="setAdminDetailRange('2weeks')">Rolling 2 Weeks</button>
+                    <button class="filter-btn" id="adminRange12MonthsBtn" onclick="setAdminDetailRange('12months')">Rolling 12 Months</button>
+                </div>
+                <button class="btn btn-secondary" onclick="exportAdminDisplayedRecords()">
+                    📤 Export Displayed Records (CSV)
                 </button>
+                <div id="adminDetailTable"></div>
             </div>
         </div>
     </div>
@@ -993,6 +1033,8 @@
         window.historyStartDate = null;
         window.historyEndDate = null;
         window.availableDogs = [];
+        window.adminDetailRange = '2weeks';
+        window.adminEntriesCache = [];
 
         // Auth state observer with timeout
         let authTimeout = setTimeout(() => {
@@ -2020,6 +2062,7 @@
         window.loadAdminStats = async function() {
             const entriesRef = collection(window.db, 'entries');
             const querySnapshot = await getDocs(entriesRef);
+            const allEntries = [];
             
             const dogStats = new Map();
             const activeTrainerSet = new Set();
@@ -2040,6 +2083,7 @@
             
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
+                allEntries.push({ id: doc.id, ...data });
                 const entryDate = new Date(data.timestamp);
                 const trainerKey = data.userId || data.userEmail || '';
                 
@@ -2082,6 +2126,10 @@
                 }
             });
 
+            window.adminEntriesCache = allEntries
+                .slice()
+                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
             const statsContainer = document.getElementById('adminStats');
             statsContainer.innerHTML = `
                 <div style="font-weight: 700; color: #374151; margin-bottom: 8px;">Rolling 12 Months</div>
@@ -2123,6 +2171,104 @@
                     </div>
                 </div>
             `;
+
+            renderAdminDetailTableForCurrentRange();
+        };
+
+        function getAdminRangeStartDate(rangeKey) {
+            const now = new Date();
+            const startDate = new Date(now);
+
+            if (rangeKey === '12months') {
+                startDate.setMonth(startDate.getMonth() - 12);
+                startDate.setHours(0, 0, 0, 0);
+                return startDate;
+            }
+
+            startDate.setDate(startDate.getDate() - 13);
+            startDate.setHours(0, 0, 0, 0);
+            return startDate;
+        }
+
+        function getAdminEntriesForRange(rangeKey) {
+            const startDate = getAdminRangeStartDate(rangeKey);
+            return (window.adminEntriesCache || []).filter(entry => {
+                const entryDate = new Date(entry.timestamp);
+                return !Number.isNaN(entryDate.getTime()) && entryDate >= startDate;
+            });
+        }
+
+        function renderAdminDetailTableForCurrentRange() {
+            const rangeKey = window.adminDetailRange || '2weeks';
+            const entries = getAdminEntriesForRange(rangeKey);
+            const tableContainer = document.getElementById('adminDetailTable');
+
+            const btn2Weeks = document.getElementById('adminRange2WeeksBtn');
+            const btn12Months = document.getElementById('adminRange12MonthsBtn');
+            if (btn2Weeks) btn2Weeks.classList.toggle('active', rangeKey === '2weeks');
+            if (btn12Months) btn12Months.classList.toggle('active', rangeKey === '12months');
+
+            if (!tableContainer) return;
+
+            if (entries.length === 0) {
+                tableContainer.innerHTML = '<div class="empty-state">No records in this date range.</div>';
+                return;
+            }
+
+            tableContainer.innerHTML = `
+                <div class="admin-detail-table-wrap">
+                    <table class="admin-detail-table">
+                        <thead>
+                            <tr>
+                                <th>Date/Time</th>
+                                <th>Dog</th>
+                                <th>Trainer</th>
+                                <th>Location</th>
+                                <th>Type</th>
+                                <th>Duration</th>
+                                <th>Behavior</th>
+                                <th>Commands</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${entries.map(entry => {
+                                const date = new Date(entry.timestamp);
+                                return `
+                                    <tr>
+                                        <td>${Number.isNaN(date.getTime()) ? '' : date.toLocaleString()}</td>
+                                        <td>${entry.dogName || ''}</td>
+                                        <td>${entry.userEmail || ''}</td>
+                                        <td>${entry.locationName || ''}</td>
+                                        <td>${entry.locationType || ''}</td>
+                                        <td>${entry.duration ? `${entry.duration}h` : ''}</td>
+                                        <td>${entry.behavior || ''}</td>
+                                        <td>${Array.isArray(entry.commands) ? entry.commands.join(', ') : ''}</td>
+                                        <td>${entry.notes || ''}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        window.setAdminDetailRange = function(rangeKey) {
+            window.adminDetailRange = rangeKey === '12months' ? '12months' : '2weeks';
+            renderAdminDetailTableForCurrentRange();
+        };
+
+        window.exportAdminDisplayedRecords = async function() {
+            const rangeKey = window.adminDetailRange || '2weeks';
+            const entries = getAdminEntriesForRange(rangeKey);
+
+            if (entries.length === 0) {
+                alert('No entries to export');
+                return;
+            }
+
+            await exportToCSV(entries, `admin-${rangeKey}`);
         };
 
         window.exportEntries = async function() {
