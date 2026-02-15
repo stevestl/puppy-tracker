@@ -258,10 +258,12 @@
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         .tab {
             flex: 1;
+            min-width: 100px;
             padding: 12px;
             background: white;
             border: none;
@@ -269,6 +271,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
+            font-size: 14px;
         }
 
         .tab.active {
@@ -349,6 +352,21 @@
             margin-top: 10px;
         }
 
+        .role-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: #667eea;
+            color: white;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .role-badge.admin {
+            background: #f59e0b;
+        }
+
         .logout-btn {
             background: #ef4444;
             color: white;
@@ -362,6 +380,99 @@
         .loading {
             text-align: center;
             padding: 40px;
+            color: white;
+        }
+
+        .assignment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .assignment-info {
+            flex: 1;
+        }
+
+        .assignment-email {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .assignment-dog {
+            font-size: 13px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .assignment-item button {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .user-filter {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .info-box {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #1e40af;
+        }
+
+        .dog-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .dog-chip {
+            padding: 8px 16px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .dog-chip.active {
+            background: #667eea;
             color: white;
         }
     </style>
@@ -391,6 +502,9 @@
             </div>
 
             <div id="signupForm" class="hidden">
+                <div class="info-box">
+                    Your email must be authorized by an admin to create an account.
+                </div>
                 <div class="form-group">
                     <label>Email</label>
                     <input type="email" id="signupEmail" placeholder="your@email.com">
@@ -410,122 +524,137 @@
     <div id="appScreen" class="container hidden">
         <div class="header">
             <h1>🐕 Service Puppy Tracker</h1>
-            <div class="puppy-info" id="puppyInfo">Configure your puppy's name in Settings</div>
+            <div class="puppy-info" id="puppyInfo">Select a dog below</div>
             <div class="sync-status" id="syncStatus">
                 <span>●</span> <span id="syncText">Synced</span>
             </div>
             <div class="user-info">
-                <span id="userEmail"></span>
+                <span>
+                    <span id="userEmail"></span>
+                    <span class="role-badge" id="roleBadge">User</span>
+                </span>
                 <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
+        </div>
+
+        <div id="dogSelectorCard" class="card">
+            <div class="section-title">🐾 Select Dog</div>
+            <div class="dog-selector" id="dogSelector"></div>
         </div>
 
         <div class="tabs">
             <button class="tab active" onclick="switchTab('log')">New Entry</button>
             <button class="tab" onclick="switchTab('history')">History</button>
             <button class="tab" onclick="switchTab('settings')">Settings</button>
+            <button class="tab hidden" id="adminTab" onclick="switchTab('admin')">Admin</button>
         </div>
 
         <!-- Log Entry Tab -->
         <div id="logTab" class="tab-content active">
-            <div class="card">
-                <div class="section-title">📍 Location</div>
-                <button class="btn btn-primary" onclick="captureLocation()">
-                    <span>📍 Capture Current Location</span>
-                </button>
-                <div id="locationStatus" class="location-status hidden"></div>
+            <div id="noDogSelected" class="card">
+                <div class="empty-state">Please select a dog above to log training entries</div>
             </div>
 
-            <div class="card">
-                <div class="section-title">📝 Interaction Details</div>
-                
-                <div class="form-group">
-                    <label>Location Type</label>
-                    <select id="locationType">
-                        <option value="">Select type...</option>
-                        <option value="Store">Store/Shopping</option>
-                        <option value="Restaurant">Restaurant/Café</option>
-                        <option value="Park">Park/Outdoor</option>
-                        <option value="Vet">Veterinary Office</option>
-                        <option value="Public Transit">Public Transportation</option>
-                        <option value="Office">Office/Workplace</option>
-                        <option value="Medical">Medical Facility</option>
-                        <option value="Other">Other</option>
-                    </select>
+            <div id="logFormContainer" class="hidden">
+                <div class="card">
+                    <div class="section-title">📍 Location</div>
+                    <button class="btn btn-primary" onclick="captureLocation()">
+                        <span>📍 Capture Current Location</span>
+                    </button>
+                    <div id="locationStatus" class="location-status hidden"></div>
                 </div>
 
-                <div class="form-group">
-                    <label>Duration (minutes)</label>
-                    <input type="number" id="duration" placeholder="e.g., 30">
-                </div>
-
-                <div class="form-group">
-                    <label>Overall Behavior</label>
-                    <select id="behavior">
-                        <option value="">Select rating...</option>
-                        <option value="Excellent">Excellent</option>
-                        <option value="Good">Good</option>
-                        <option value="Fair">Fair</option>
-                        <option value="Needs Improvement">Needs Improvement</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Distractions Present</label>
-                    <div class="checkbox-group">
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="distraction" value="Other dogs"> Other dogs
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="distraction" value="Children"> Children
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="distraction" value="Food"> Food
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="distraction" value="Loud noises"> Loud noises
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="distraction" value="Crowds"> Crowds
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="distraction" value="Other animals"> Other animals
-                        </label>
+                <div class="card">
+                    <div class="section-title">📝 Interaction Details</div>
+                    
+                    <div class="form-group">
+                        <label>Location Type</label>
+                        <select id="locationType">
+                            <option value="">Select type...</option>
+                            <option value="Store">Store/Shopping</option>
+                            <option value="Restaurant">Restaurant/Café</option>
+                            <option value="Park">Park/Outdoor</option>
+                            <option value="Vet">Veterinary Office</option>
+                            <option value="Public Transit">Public Transportation</option>
+                            <option value="Office">Office/Workplace</option>
+                            <option value="Medical">Medical Facility</option>
+                            <option value="Other">Other</option>
+                        </select>
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label>Commands Practiced</label>
-                    <div class="checkbox-group">
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="command" value="Sit"> Sit
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="command" value="Down"> Down
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="command" value="Stay"> Stay
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="command" value="Heel"> Heel
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="command" value="Leave it"> Leave it
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="command" value="Focus"> Focus
-                        </label>
+                    <div class="form-group">
+                        <label>Duration (minutes)</label>
+                        <input type="number" id="duration" placeholder="e.g., 30">
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label>Notes</label>
-                    <textarea id="notes" placeholder="Any additional observations, incidents, or achievements..."></textarea>
-                </div>
+                    <div class="form-group">
+                        <label>Overall Behavior</label>
+                        <select id="behavior">
+                            <option value="">Select rating...</option>
+                            <option value="Excellent">Excellent</option>
+                            <option value="Good">Good</option>
+                            <option value="Fair">Fair</option>
+                            <option value="Needs Improvement">Needs Improvement</option>
+                        </select>
+                    </div>
 
-                <button class="btn btn-primary" onclick="saveEntry()">
-                    💾 Save Entry
-                </button>
+                    <div class="form-group">
+                        <label>Distractions Present</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="distraction" value="Other dogs"> Other dogs
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="distraction" value="Children"> Children
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="distraction" value="Food"> Food
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="distraction" value="Loud noises"> Loud noises
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="distraction" value="Crowds"> Crowds
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="distraction" value="Other animals"> Other animals
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Commands Practiced</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="command" value="Sit"> Sit
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="command" value="Down"> Down
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="command" value="Stay"> Stay
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="command" value="Heel"> Heel
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="command" value="Leave it"> Leave it
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="command" value="Focus"> Focus
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea id="notes" placeholder="Any additional observations, incidents, or achievements..."></textarea>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="saveEntry()">
+                        💾 Save Entry
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -534,8 +663,9 @@
             <div class="stats" id="stats"></div>
             <div class="card">
                 <div class="section-title">📚 Training History</div>
+                <div id="userFilterContainer" class="user-filter hidden"></div>
                 <button class="btn btn-secondary" onclick="exportEntries()">
-                    📤 Export All Entries (CSV)
+                    📤 Export Entries (CSV)
                 </button>
                 <div id="entriesList"></div>
             </div>
@@ -544,13 +674,8 @@
         <!-- Settings Tab -->
         <div id="settingsTab" class="tab-content">
             <div class="card">
-                <div class="section-title">⚙️ Settings</div>
+                <div class="section-title">⚙️ Profile Settings</div>
                 
-                <div class="form-group">
-                    <label>Puppy Name</label>
-                    <input type="text" id="puppyName" placeholder="Enter your puppy's name">
-                </div>
-
                 <div class="form-group">
                     <label>Handler Name</label>
                     <input type="text" id="handlerName" placeholder="Your name">
@@ -565,14 +690,66 @@
                     💾 Save Settings
                 </button>
             </div>
+
+            <div class="card">
+                <div class="section-title">🔐 Change Password</div>
+                
+                <div class="form-group">
+                    <label>Current Password</label>
+                    <input type="password" id="currentPassword" placeholder="Current password">
+                </div>
+
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" id="newPassword" placeholder="New password (min 6 characters)">
+                </div>
+
+                <button class="btn btn-primary" onclick="changePassword()">
+                    🔑 Change Password
+                </button>
+            </div>
+        </div>
+
+        <!-- Admin Tab -->
+        <div id="adminTab" class="tab-content">
+            <div class="card">
+                <div class="section-title">🐕 Assign Dog to Trainer</div>
+                
+                <div class="form-group">
+                    <label>Trainer Email</label>
+                    <input type="email" id="trainerEmail" placeholder="trainer@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label>Dog Name</label>
+                    <input type="text" id="dogName" placeholder="Dog's name">
+                </div>
+
+                <button class="btn btn-primary" onclick="assignDog()">
+                    ➕ Assign Dog to Trainer
+                </button>
+
+                <div style="margin-top: 20px;">
+                    <strong>Current Assignments:</strong>
+                    <div id="assignmentsList" style="margin-top: 10px;"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="section-title">📊 All Training Data</div>
+                <div id="adminStats"></div>
+                <button class="btn btn-secondary" onclick="exportAllData()">
+                    📤 Export All Data (CSV)
+                </button>
+            </div>
         </div>
     </div>
 
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, setDoc, getDoc, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyC_ijgRiXBmMVdVen9x6FpPE1p6gX_TrIA",
@@ -592,26 +769,65 @@
         window.db = db;
         window.currentLocation = null;
         window.currentUser = null;
+        window.isAdmin = false;
+        window.selectedDog = null;
+        window.userDogs = [];
+        window.selectedUserFilter = 'all';
+        window.selectedDogFilter = 'all';
 
         // Auth state observer
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             document.getElementById('loadingScreen').classList.add('hidden');
             
             if (user) {
                 window.currentUser = user;
+                
+                // Check if user is admin or create initial admin
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                
+                if (!userDoc.exists()) {
+                    // First user becomes admin
+                    const usersSnapshot = await getDocs(collection(db, 'users'));
+                    const isFirstUser = usersSnapshot.empty;
+                    
+                    await setDoc(doc(db, 'users', user.uid), {
+                        email: user.email,
+                        role: isFirstUser ? 'admin' : 'user',
+                        createdAt: new Date().toISOString()
+                    });
+                    
+                    window.isAdmin = isFirstUser;
+                } else {
+                    window.isAdmin = userDoc.data().role === 'admin';
+                }
+                
                 document.getElementById('authScreen').classList.add('hidden');
                 document.getElementById('appScreen').classList.remove('hidden');
                 document.getElementById('userEmail').textContent = user.email;
-                loadUserData();
+                
+                // Update role badge
+                const roleBadge = document.getElementById('roleBadge');
+                if (window.isAdmin) {
+                    roleBadge.textContent = 'Admin';
+                    roleBadge.classList.add('admin');
+                    document.getElementById('adminTab').classList.remove('hidden');
+                } else {
+                    roleBadge.textContent = 'User';
+                    roleBadge.classList.remove('admin');
+                    document.getElementById('adminTab').classList.add('hidden');
+                }
+                
+                await loadUserData();
             } else {
                 window.currentUser = null;
+                window.isAdmin = false;
                 document.getElementById('authScreen').classList.remove('hidden');
                 document.getElementById('appScreen').classList.add('hidden');
             }
         });
 
         window.signup = async function() {
-            const email = document.getElementById('signupEmail').value;
+            const email = document.getElementById('signupEmail').value.trim().toLowerCase();
             const password = document.getElementById('signupPassword').value;
 
             if (!email || !password) {
@@ -625,7 +841,28 @@
             }
 
             try {
-                await createUserWithEmailAndPassword(auth, email, password);
+                // Check if email has any dog assignments
+                const assignmentsQuery = query(
+                    collection(db, 'dog_assignments'),
+                    where('trainerEmail', '==', email)
+                );
+                const assignmentsSnapshot = await getDocs(assignmentsQuery);
+                
+                if (assignmentsSnapshot.empty) {
+                    alert('This email is not authorized. Please contact your administrator.');
+                    return;
+                }
+
+                // Create user
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                
+                // Set user role
+                await setDoc(doc(db, 'users', userCredential.user.uid), {
+                    email: email,
+                    role: 'user',
+                    createdAt: new Date().toISOString()
+                });
+
                 alert('✅ Account created! You are now logged in.');
             } catch (error) {
                 alert('Error: ' + error.message);
@@ -654,6 +891,41 @@
             }
         };
 
+        window.changePassword = async function() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+
+            if (!currentPassword || !newPassword) {
+                alert('Please fill in both fields');
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                alert('New password must be at least 6 characters');
+                return;
+            }
+
+            try {
+                const credential = EmailAuthProvider.credential(
+                    window.currentUser.email,
+                    currentPassword
+                );
+                await reauthenticateWithCredential(window.currentUser, credential);
+                await updatePassword(window.currentUser, newPassword);
+                
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                
+                alert('✅ Password changed successfully!');
+            } catch (error) {
+                if (error.code === 'auth/wrong-password') {
+                    alert('Current password is incorrect');
+                } else {
+                    alert('Error: ' + error.message);
+                }
+            }
+        };
+
         window.showSignup = function() {
             document.getElementById('loginForm').classList.add('hidden');
             document.getElementById('signupForm').classList.remove('hidden');
@@ -664,13 +936,152 @@
             document.getElementById('loginForm').classList.remove('hidden');
         };
 
+        window.assignDog = async function() {
+            const trainerEmail = document.getElementById('trainerEmail').value.trim().toLowerCase();
+            const dogName = document.getElementById('dogName').value.trim();
+            
+            if (!trainerEmail || !dogName) {
+                alert('Please enter both trainer email and dog name');
+                return;
+            }
+
+            if (!trainerEmail.includes('@')) {
+                alert('Please enter a valid email address');
+                return;
+            }
+
+            try {
+                await addDoc(collection(db, 'dog_assignments'), {
+                    trainerEmail: trainerEmail,
+                    dogName: dogName,
+                    assignedBy: window.currentUser.uid,
+                    assignedAt: new Date().toISOString()
+                });
+
+                document.getElementById('trainerEmail').value = '';
+                document.getElementById('dogName').value = '';
+                alert('✅ Dog assigned to trainer!');
+                await loadAssignments();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        };
+
+        window.removeAssignment = async function(assignmentId) {
+            if (!confirm('Remove this assignment?')) return;
+
+            try {
+                await deleteDoc(doc(db, 'dog_assignments', assignmentId));
+                await loadAssignments();
+                alert('✅ Assignment removed');
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        };
+
+        window.loadAssignments = async function() {
+            const querySnapshot = await getDocs(collection(db, 'dog_assignments'));
+            const assignments = [];
+            querySnapshot.forEach((doc) => {
+                assignments.push({ id: doc.id, ...doc.data() });
+            });
+
+            const container = document.getElementById('assignmentsList');
+            if (assignments.length === 0) {
+                container.innerHTML = '<div class="empty-state">No assignments yet</div>';
+                return;
+            }
+
+            // Group by trainer
+            const grouped = {};
+            assignments.forEach(a => {
+                if (!grouped[a.trainerEmail]) {
+                    grouped[a.trainerEmail] = [];
+                }
+                grouped[a.trainerEmail].push(a);
+            });
+
+            container.innerHTML = Object.entries(grouped).map(([email, dogs]) => `
+                <div class="assignment-item">
+                    <div class="assignment-info">
+                        <div class="assignment-email">${email}</div>
+                        <div class="assignment-dog">Dogs: ${dogs.map(d => d.dogName).join(', ')}</div>
+                    </div>
+                    <div>
+                        ${dogs.map(d => `
+                            <button onclick="removeAssignment('${d.id}')" style="margin-left: 5px;">
+                                Remove ${d.dogName}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        window.loadUserDogs = async function() {
+            const assignmentsQuery = query(
+                collection(db, 'dog_assignments'),
+                where('trainerEmail', '==', window.currentUser.email)
+            );
+            const assignmentsSnapshot = await getDocs(assignmentsQuery);
+            
+            window.userDogs = [];
+            assignmentsSnapshot.forEach((doc) => {
+                window.userDogs.push(doc.data().dogName);
+            });
+
+            const dogSelector = document.getElementById('dogSelector');
+            if (window.userDogs.length === 0) {
+                dogSelector.innerHTML = '<div class="empty-state">No dogs assigned. Contact your administrator.</div>';
+                return;
+            }
+
+            dogSelector.innerHTML = window.userDogs.map(dog => `
+                <button class="dog-chip ${window.selectedDog === dog ? 'active' : ''}" 
+                        onclick="selectDog('${dog}')">
+                    ${dog}
+                </button>
+            `).join('');
+        };
+
+        window.selectDog = function(dogName) {
+            window.selectedDog = dogName;
+            
+            // Update UI
+            document.querySelectorAll('.dog-chip').forEach(chip => {
+                chip.classList.toggle('active', chip.textContent.trim() === dogName);
+            });
+            
+            document.getElementById('puppyInfo').textContent = `Training ${dogName}`;
+            document.getElementById('noDogSelected').classList.add('hidden');
+            document.getElementById('logFormContainer').classList.remove('hidden');
+            
+            // Reload entries for this dog
+            if (document.getElementById('historyTab').classList.contains('active')) {
+                loadEntries();
+            }
+        };
+
         window.loadUserData = async function() {
             await loadSettings();
-            await loadEntries();
-            updateStats();
+            await loadUserDogs();
+            
+            if (window.isAdmin) {
+                await loadAssignments();
+                await loadAdminStats();
+            }
+            
+            if (window.selectedDog) {
+                await loadEntries();
+            }
         };
 
         window.saveEntry = async function() {
+            if (!window.selectedDog) {
+                alert('Please select a dog first');
+                return;
+            }
+
             const locationType = document.getElementById('locationType').value;
             const duration = document.getElementById('duration').value;
             const behavior = document.getElementById('behavior').value;
@@ -699,7 +1110,9 @@
                 distractions,
                 commands,
                 notes,
-                userId: window.currentUser.uid
+                userId: window.currentUser.uid,
+                userEmail: window.currentUser.email,
+                dogName: window.selectedDog
             };
 
             try {
@@ -729,23 +1142,80 @@
             const q = query(entriesRef, orderBy('timestamp', 'desc'));
             const querySnapshot = await getDocs(q);
             
-            const entries = [];
+            const allEntries = [];
+            const userMap = new Map();
+            const dogSet = new Set();
+            
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
-                if (data.userId === window.currentUser.uid) {
-                    entries.push({ id: doc.id, ...data });
+                allEntries.push({ id: doc.id, ...data });
+                if (!userMap.has(data.userId)) {
+                    userMap.set(data.userId, data.userEmail || 'Unknown');
                 }
+                dogSet.add(data.dogName);
             });
+
+            // Filter entries
+            let entries;
+            if (window.isAdmin) {
+                entries = allEntries;
+                if (window.selectedUserFilter !== 'all') {
+                    entries = entries.filter(e => e.userId === window.selectedUserFilter);
+                }
+                if (window.selectedDogFilter !== 'all') {
+                    entries = entries.filter(e => e.dogName === window.selectedDogFilter);
+                }
+                
+                // Show filters
+                const filterContainer = document.getElementById('userFilterContainer');
+                filterContainer.classList.remove('hidden');
+                
+                const userFilters = `
+                    <button class="filter-btn ${window.selectedUserFilter === 'all' ? 'active' : ''}" 
+                            onclick="filterByUser('all')">All Users</button>
+                    ${Array.from(userMap.entries()).map(([uid, email]) => `
+                        <button class="filter-btn ${window.selectedUserFilter === uid ? 'active' : ''}" 
+                                onclick="filterByUser('${uid}')">${email}</button>
+                    `).join('')}
+                `;
+                
+                const dogFilters = `
+                    <button class="filter-btn ${window.selectedDogFilter === 'all' ? 'active' : ''}" 
+                            onclick="filterByDog('all')">All Dogs</button>
+                    ${Array.from(dogSet).map(dog => `
+                        <button class="filter-btn ${window.selectedDogFilter === dog ? 'active' : ''}" 
+                                onclick="filterByDog('${dog}')">${dog}</button>
+                    `).join('')}
+                `;
+                
+                filterContainer.innerHTML = userFilters + dogFilters;
+            } else {
+                entries = allEntries.filter(e => 
+                    e.userId === window.currentUser.uid && 
+                    (!window.selectedDog || e.dogName === window.selectedDog)
+                );
+                document.getElementById('userFilterContainer').classList.add('hidden');
+            }
 
             displayEntries(entries);
             updateStats(entries);
+        };
+
+        window.filterByUser = function(userId) {
+            window.selectedUserFilter = userId;
+            loadEntries();
+        };
+
+        window.filterByDog = function(dogName) {
+            window.selectedDogFilter = dogName;
+            loadEntries();
         };
 
         window.displayEntries = function(entries) {
             const container = document.getElementById('entriesList');
 
             if (entries.length === 0) {
-                container.innerHTML = '<div class="empty-state">No training entries yet. Start by adding your first entry!</div>';
+                container.innerHTML = '<div class="empty-state">No training entries yet.</div>';
                 return;
             }
 
@@ -754,6 +1224,10 @@
                 const locationStr = entry.location 
                     ? `${entry.location.latitude.toFixed(6)}, ${entry.location.longitude.toFixed(6)}`
                     : 'No location';
+                
+                const userDisplay = window.isAdmin && entry.userEmail ? 
+                    `<div><strong>Trainer:</strong> ${entry.userEmail}</div>` : '';
+                const dogDisplay = `<div><strong>Dog:</strong> ${entry.dogName}</div>`;
 
                 return `
                     <div class="entry">
@@ -762,9 +1236,12 @@
                                 <div class="entry-date">${date.toLocaleDateString()} ${date.toLocaleTimeString()}</div>
                                 <div class="entry-location">📍 ${locationStr}</div>
                             </div>
-                            <button class="delete-btn" onclick="deleteEntry('${entry.id}')">Delete</button>
+                            ${entry.userId === window.currentUser.uid || window.isAdmin ? 
+                                `<button class="delete-btn" onclick="deleteEntry('${entry.id}')">Delete</button>` : ''}
                         </div>
                         <div class="entry-content">
+                            ${dogDisplay}
+                            ${userDisplay}
                             <div><strong>Type:</strong> ${entry.locationType}</div>
                             ${entry.duration ? `<div><strong>Duration:</strong> ${entry.duration} min</div>` : ''}
                             <div><strong>Behavior:</strong> ${entry.behavior}</div>
@@ -793,7 +1270,6 @@
 
         window.saveSettings = async function() {
             const settings = {
-                puppyName: document.getElementById('puppyName').value,
                 handlerName: document.getElementById('handlerName').value,
                 organization: document.getElementById('organization').value
             };
@@ -801,7 +1277,6 @@
             setSyncStatus('syncing');
             try {
                 await setDoc(doc(window.db, 'settings', window.currentUser.uid), settings);
-                updatePuppyInfo();
                 setSyncStatus('synced');
                 alert('✅ Settings saved and synced!');
             } catch (error) {
@@ -817,26 +1292,56 @@
                 
                 if (docSnap.exists()) {
                     const settings = docSnap.data();
-                    document.getElementById('puppyName').value = settings.puppyName || '';
                     document.getElementById('handlerName').value = settings.handlerName || '';
                     document.getElementById('organization').value = settings.organization || '';
-                    updatePuppyInfo();
                 }
             } catch (error) {
                 console.error('Error loading settings:', error);
             }
         };
 
-        window.updatePuppyInfo = function() {
-            const puppyName = document.getElementById('puppyName').value;
-            const organization = document.getElementById('organization').value;
-            const info = document.getElementById('puppyInfo');
+        window.loadAdminStats = async function() {
+            const entriesRef = collection(window.db, 'entries');
+            const querySnapshot = await getDocs(entriesRef);
             
-            if (puppyName) {
-                info.textContent = `Training ${puppyName}${organization ? ' • ' + organization : ''}`;
-            } else {
-                info.textContent = 'Configure your puppy\'s name in Settings';
-            }
+            const dogStats = new Map();
+            let totalEntries = 0;
+            let totalMinutes = 0;
+            
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                totalEntries++;
+                totalMinutes += parseInt(data.duration) || 0;
+                
+                if (!dogStats.has(data.dogName)) {
+                    dogStats.set(data.dogName, {
+                        count: 0,
+                        minutes: 0
+                    });
+                }
+                
+                const stats = dogStats.get(data.dogName);
+                stats.count++;
+                stats.minutes += parseInt(data.duration) || 0;
+            });
+
+            const statsContainer = document.getElementById('adminStats');
+            statsContainer.innerHTML = `
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-value">${totalEntries}</div>
+                        <div class="stat-label">Total Sessions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${Math.round(totalMinutes / 60)}h</div>
+                        <div class="stat-label">Total Training Time</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${dogStats.size}</div>
+                        <div class="stat-label">Active Dogs</div>
+                    </div>
+                </div>
+            `;
         };
 
         window.exportEntries = async function() {
@@ -847,7 +1352,7 @@
             const entries = [];
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
-                if (data.userId === window.currentUser.uid) {
+                if (window.isAdmin || (data.userId === window.currentUser.uid && data.dogName === window.selectedDog)) {
                     entries.push(data);
                 }
             });
@@ -857,21 +1362,48 @@
                 return;
             }
 
-            const settingsRef = doc(window.db, 'settings', window.currentUser.uid);
-            const settingsSnap = await getDoc(settingsRef);
-            const settings = settingsSnap.exists() ? settingsSnap.data() : {};
+            await exportToCSV(entries, window.selectedDog || 'all');
+        };
 
-            const headers = ['Date', 'Time', 'Puppy Name', 'Handler', 'Location Type', 'Duration (min)', 
-                            'Behavior', 'Distractions', 'Commands Practiced', 'Latitude', 'Longitude', 
-                            'Location Accuracy (m)', 'Notes'];
+        window.exportAllData = async function() {
+            const entriesRef = collection(window.db, 'entries');
+            const querySnapshot = await getDocs(entriesRef);
+            
+            const entries = [];
+            querySnapshot.forEach((doc) => {
+                entries.push(doc.data());
+            });
+
+            if (entries.length === 0) {
+                alert('No entries to export');
+                return;
+            }
+
+            await exportToCSV(entries, 'all-dogs');
+        };
+
+        async function exportToCSV(entries, prefix) {
+            const settingsMap = new Map();
+            const settingsSnapshot = await getDocs(collection(window.db, 'settings'));
+            settingsSnapshot.forEach((doc) => {
+                settingsMap.set(doc.id, doc.data());
+            });
+
+            const headers = ['Date', 'Time', 'Dog Name', 'Trainer Email', 'Handler Name', 'Organization',
+                            'Location Type', 'Duration (min)', 'Behavior', 'Distractions', 
+                            'Commands Practiced', 'Latitude', 'Longitude', 'Location Accuracy (m)', 'Notes'];
             
             const rows = entries.map(entry => {
                 const date = new Date(entry.timestamp);
+                const userSettings = settingsMap.get(entry.userId) || {};
+                
                 return [
                     date.toLocaleDateString(),
                     date.toLocaleTimeString(),
-                    settings.puppyName || '',
-                    settings.handlerName || '',
+                    entry.dogName || '',
+                    entry.userEmail || '',
+                    userSettings.handlerName || '',
+                    userSettings.organization || '',
                     entry.locationType,
                     entry.duration || '',
                     entry.behavior,
@@ -889,10 +1421,10 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `service-puppy-training-${new Date().toISOString().split('T')[0]}.csv`;
+            a.download = `service-dog-training-${prefix}-${new Date().toISOString().split('T')[0]}.csv`;
             a.click();
             URL.revokeObjectURL(url);
-        };
+        }
 
         window.updateStats = function(entries) {
             if (!entries) return;
@@ -940,6 +1472,9 @@
 
             if (tab === 'history') {
                 window.loadEntries();
+            } else if (tab === 'admin' && window.isAdmin) {
+                window.loadAssignments();
+                window.loadAdminStats();
             }
         }
 
