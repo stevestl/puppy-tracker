@@ -637,7 +637,8 @@
                     <div class="form-group">
                         <label>Duration: <span id="durationDisplay">0</span> hours</label>
                         <input type="range" id="duration" min="0" max="5" step="0.5" value="0" 
-                               oninput="document.getElementById('durationDisplay').textContent = this.value"
+                               onchange="updateDurationDisplay(this.value)"
+                               oninput="updateDurationDisplay(this.value)"
                                style="width: 100%;">
                     </div>
 
@@ -1832,24 +1833,29 @@
                     `${(place.distance / 1000).toFixed(1)}km`;
                 
                 return `
-                    <div class="place-option" onclick="selectPlaceOSM(${index}, event)">
+                    <div class="place-option" data-index="${index}">
                         <div class="place-name">${place.name}</div>
                         ${place.address ? `<div class="place-address">${place.address}</div>` : ''}
                         <div class="place-types">${place.type} • ${distanceStr}</div>
                     </div>
                 `;
             }).join('');
+            
+            // Add click listeners after HTML is inserted
+            document.querySelectorAll('.place-option').forEach(el => {
+                el.addEventListener('click', function() {
+                    selectPlaceOSM(parseInt(this.getAttribute('data-index')), this);
+                });
+            });
         }
         
-        function selectPlaceOSM(index, event) {
+        function selectPlaceOSM(index, element) {
             // Remove previous selection
             document.querySelectorAll('.place-option').forEach(el => el.classList.remove('selected'));
             
             // Select this place
-            if (event && event.target) {
-                event.target.closest('.place-option').classList.add('selected');
-            } else {
-                document.querySelectorAll('.place-option')[index].classList.add('selected');
+            if (element) {
+                element.classList.add('selected');
             }
             
             const place = window.nearbyPlacesData[index];
@@ -1862,6 +1868,10 @@
         function getCheckedValues(name) {
             return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`))
                 .map(cb => cb.value);
+        }
+
+        function updateDurationDisplay(value) {
+            document.getElementById('durationDisplay').textContent = value;
         }
     </script>
 </body>
