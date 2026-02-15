@@ -635,8 +635,10 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Duration (minutes)</label>
-                        <input type="number" id="duration" placeholder="e.g., 30">
+                        <label>Duration: <span id="durationDisplay">0</span> hours</label>
+                        <input type="range" id="duration" min="0" max="5" step="0.5" value="0" 
+                               oninput="document.getElementById('durationDisplay').textContent = this.value"
+                               style="width: 100%;">
                     </div>
 
                     <div class="form-group">
@@ -680,20 +682,32 @@
                             <label class="checkbox-label">
                                 <input type="checkbox" name="command" value="Sit"> Sit
                             </label>
-                            <label class="checkbox-label">
+                            <!-- <label class="checkbox-label">
                                 <input type="checkbox" name="command" value="Down"> Down
-                            </label>
+                            </label> -->
                             <label class="checkbox-label">
                                 <input type="checkbox" name="command" value="Stay"> Stay
                             </label>
-                            <label class="checkbox-label">
+                            <!-- <label class="checkbox-label">
                                 <input type="checkbox" name="command" value="Heel"> Heel
-                            </label>
+                            </label> -->
                             <label class="checkbox-label">
                                 <input type="checkbox" name="command" value="Leave it"> Leave it
                             </label>
-                            <label class="checkbox-label">
+                            <!-- <label class="checkbox-label">
                                 <input type="checkbox" name="command" value="Focus"> Focus
+                            </label> -->
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="command" value="Let's Go"> Let's Go
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="command" value="Kennel"> Kennel
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="command" value="Potty"> Potty
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="command" value="Name Recognition"> Name Recognition
                             </label>
                         </div>
                     </div>
@@ -1220,7 +1234,7 @@
 
             const locationName = document.getElementById('locationName').value;
             const locationType = document.getElementById('locationType').value;
-            const duration = document.getElementById('duration').value;
+            const duration = parseFloat(document.getElementById('duration').value) || 0;
             const behavior = document.getElementById('behavior').value;
             const notes = document.getElementById('notes').value;
             const distractions = getCheckedValues('distraction');
@@ -1259,7 +1273,8 @@
                 // Reset form
                 document.getElementById('locationName').value = '';
                 document.getElementById('locationType').value = '';
-                document.getElementById('duration').value = '';
+                document.getElementById('duration').value = '0';
+                document.getElementById('durationDisplay').textContent = '0';
                 document.getElementById('behavior').value = '';
                 document.getElementById('notes').value = '';
                 document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
@@ -1386,7 +1401,7 @@
                             ${dogDisplay}
                             ${userDisplay}
                             <div><strong>Type:</strong> ${entry.locationType}</div>
-                            ${entry.duration ? `<div><strong>Duration:</strong> ${entry.duration} min</div>` : ''}
+                            ${entry.duration ? `<div><strong>Duration:</strong> ${entry.duration} hours</div>` : ''}
                             <div><strong>Behavior:</strong> ${entry.behavior}</div>
                             ${entry.distractions.length > 0 ? `<div><strong>Distractions:</strong> ${entry.distractions.join(', ')}</div>` : ''}
                             ${entry.commands.length > 0 ? `<div><strong>Commands:</strong> ${entry.commands.join(', ')}</div>` : ''}
@@ -1474,23 +1489,23 @@
             
             const dogStats = new Map();
             let totalEntries = 0;
-            let totalMinutes = 0;
+            let totalHours = 0;
             
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
                 totalEntries++;
-                totalMinutes += parseInt(data.duration) || 0;
+                totalHours += parseFloat(data.duration) || 0;
                 
                 if (!dogStats.has(data.dogName)) {
                     dogStats.set(data.dogName, {
                         count: 0,
-                        minutes: 0
+                        hours: 0
                     });
                 }
                 
                 const stats = dogStats.get(data.dogName);
                 stats.count++;
-                stats.minutes += parseInt(data.duration) || 0;
+                stats.hours += parseFloat(data.duration) || 0;
             });
 
             const statsContainer = document.getElementById('adminStats');
@@ -1501,7 +1516,7 @@
                         <div class="stat-label">Total Sessions</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value">${Math.round(totalMinutes / 60)}h</div>
+                        <div class="stat-value">${Math.round(totalHours)}h</div>
                         <div class="stat-label">Total Training Time</div>
                     </div>
                     <div class="stat-card">
@@ -1558,7 +1573,7 @@
             });
 
             const headers = ['Date', 'Time', 'Dog Name', 'Trainer Email', 'Handler Name', 'Organization',
-                            'Location Name', 'Location Type', 'Duration (min)', 'Behavior', 'Distractions', 
+                            'Location Name', 'Location Type', 'Duration (hours)', 'Behavior', 'Distractions', 
                             'Commands Practiced', 'Latitude', 'Longitude', 'Location Accuracy (m)', 'Notes'];
             
             const rows = entries.map(entry => {
@@ -1599,7 +1614,7 @@
             if (!entries) return;
             
             const statsContainer = document.getElementById('stats');
-            const totalMinutes = entries.reduce((sum, e) => sum + (parseInt(e.duration) || 0), 0);
+            const totalHours = entries.reduce((sum, e) => sum + (parseFloat(e.duration) || 0), 0);
 
             statsContainer.innerHTML = `
                 <div class="stat-card">
@@ -1607,7 +1622,7 @@
                     <div class="stat-label">Total Sessions</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value">${Math.round(totalMinutes / 60)}h</div>
+                    <div class="stat-value">${Math.round(totalHours)}h</div>
                     <div class="stat-label">Training Time</div>
                 </div>
             `;
@@ -1817,7 +1832,7 @@
                     `${(place.distance / 1000).toFixed(1)}km`;
                 
                 return `
-                    <div class="place-option" onclick="selectPlaceOSM(${index})">
+                    <div class="place-option" onclick="selectPlaceOSM(${index}, event)">
                         <div class="place-name">${place.name}</div>
                         ${place.address ? `<div class="place-address">${place.address}</div>` : ''}
                         <div class="place-types">${place.type} • ${distanceStr}</div>
@@ -1826,12 +1841,16 @@
             }).join('');
         }
         
-        function selectPlaceOSM(index) {
+        function selectPlaceOSM(index, event) {
             // Remove previous selection
             document.querySelectorAll('.place-option').forEach(el => el.classList.remove('selected'));
             
             // Select this place
-            event.target.closest('.place-option').classList.add('selected');
+            if (event && event.target) {
+                event.target.closest('.place-option').classList.add('selected');
+            } else {
+                document.querySelectorAll('.place-option')[index].classList.add('selected');
+            }
             
             const place = window.nearbyPlacesData[index];
             window.selectedPlace = place;
