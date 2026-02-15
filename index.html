@@ -419,6 +419,80 @@
             cursor: pointer;
         }
 
+        .admin-collapsible {
+            margin-top: 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background: #fff;
+        }
+
+        .admin-collapsible summary {
+            padding: 10px 12px;
+            font-weight: 700;
+            color: #374151;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .admin-collapsible summary::marker {
+            color: #667eea;
+        }
+
+        .admin-scroll-list {
+            max-height: 280px;
+            overflow-y: auto;
+            border-top: 1px solid #e5e7eb;
+            padding: 8px;
+        }
+
+        .admin-group-row {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 8px;
+            background: #f9fafb;
+        }
+
+        .admin-group-title {
+            font-weight: 700;
+            color: #1f2937;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .admin-pill-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .admin-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 999px;
+            padding: 4px 8px;
+            font-size: 12px;
+            color: #374151;
+        }
+
+        .admin-pill button {
+            border: 0;
+            background: #ef4444;
+            color: white;
+            border-radius: 999px;
+            padding: 2px 6px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .admin-meta {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
         .user-filter {
             display: flex;
             gap: 10px;
@@ -952,10 +1026,10 @@
                     ➕ Add Litter Dogs
                 </button>
 
-                <div style="margin-top: 20px;">
-                    <strong>Registered Dogs:</strong>
-                    <div id="registeredDogsList" style="margin-top: 10px;"></div>
-                </div>
+                <details class="admin-collapsible" open>
+                    <summary>Registered Dogs (<span id="registeredDogsCount">0</span>)</summary>
+                    <div id="registeredDogsList" class="admin-scroll-list"></div>
+                </details>
             </div>
 
             <div class="card">
@@ -980,10 +1054,10 @@
                     ➕ Assign Dog to Trainer
                 </button>
 
-                <div style="margin-top: 20px;">
-                    <strong>Current Assignments:</strong>
-                    <div id="assignmentsList" style="margin-top: 10px;"></div>
-                </div>
+                <details class="admin-collapsible" open>
+                    <summary>Current Assignments (<span id="trainerAssignmentsCount">0</span> trainers)</summary>
+                    <div id="assignmentsList" class="admin-scroll-list"></div>
+                </details>
             </div>
 
             <div class="card">
@@ -1348,6 +1422,15 @@
             );
         }
 
+        function escapeHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
         function getDogOptionLabel(dog) {
             const litterName = normalizeName(dog?.litterName) || 'Unknown litter';
             const dogName = normalizeName(dog?.dogName);
@@ -1481,6 +1564,10 @@
 
             const listContainer = document.getElementById('registeredDogsList');
             if (!listContainer) return;
+            const countEl = document.getElementById('registeredDogsCount');
+            if (countEl) {
+                countEl.textContent = String(dogs.length);
+            }
 
             if (dogs.length === 0) {
                 listContainer.innerHTML = '<div class="empty-state">No registered dogs yet</div>';
@@ -1499,11 +1586,14 @@
             listContainer.innerHTML = Object.entries(grouped).map(([groupKey, dogNames]) => {
                 const [litterName, motherName] = groupKey.split('|');
                 return `
-                    <div class="assignment-item">
-                        <div class="assignment-info">
-                            <div class="assignment-email">${litterName}</div>
-                            <div class="assignment-dog">Mother: ${motherName}</div>
-                            <div class="assignment-dog">Dogs: ${dogNames.join(', ')}</div>
+                    <div class="admin-group-row">
+                        <div class="admin-group-title">${escapeHtml(litterName)}</div>
+                        <div class="admin-meta">Mother: ${escapeHtml(motherName)}</div>
+                        <div class="admin-pill-list" style="margin-top: 6px;">
+                            ${dogNames
+                                .sort((a, b) => a.localeCompare(b))
+                                .map(dogName => `<span class="admin-pill">${escapeHtml(dogName)}</span>`)
+                                .join('')}
                         </div>
                     </div>
                 `;
@@ -1530,8 +1620,12 @@
             });
 
             const container = document.getElementById('assignmentsList');
+            const countEl = document.getElementById('trainerAssignmentsCount');
             if (assignments.length === 0) {
                 container.innerHTML = '<div class="empty-state">No assignments yet</div>';
+                if (countEl) {
+                    countEl.textContent = '0';
+                }
                 return;
             }
 
@@ -1544,21 +1638,27 @@
                 grouped[a.trainerEmail].push(a);
             });
 
-            container.innerHTML = Object.entries(grouped).map(([email, dogs]) => `
-                <div class="assignment-item">
-                    <div class="assignment-info">
-                        <div class="assignment-email">${email}</div>
-                        <div class="assignment-dog">Dogs: ${dogs.map(d => d.dogName).join(', ')}</div>
+            const trainerEmails = Object.keys(grouped).sort((a, b) => a.localeCompare(b));
+            if (countEl) {
+                countEl.textContent = String(trainerEmails.length);
+            }
+
+            container.innerHTML = trainerEmails.map((email) => {
+                const dogs = grouped[email].slice().sort((a, b) => a.dogName.localeCompare(b.dogName));
+                return `
+                    <div class="admin-group-row">
+                        <div class="admin-group-title">${escapeHtml(email)}</div>
+                        <div class="admin-pill-list">
+                            ${dogs.map(d => `
+                                <span class="admin-pill">
+                                    ${escapeHtml(d.dogName)}
+                                    <button onclick="removeAssignment('${d.id}')">Remove</button>
+                                </span>
+                            `).join('')}
+                        </div>
                     </div>
-                    <div>
-                        ${dogs.map(d => `
-                            <button onclick="removeAssignment('${d.id}')" style="margin-left: 5px;">
-                                Remove ${d.dogName}
-                            </button>
-                        `).join('')}
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         };
 
         window.loadUserDogs = async function() {
@@ -2435,6 +2535,7 @@
                 window.loadEntries();
             } else if (tab === 'admin' && window.isAdmin) {
                 console.log('Loading admin data');
+                window.loadRegisteredDogs();
                 window.loadAssignments();
                 window.loadAdminStats();
             }
