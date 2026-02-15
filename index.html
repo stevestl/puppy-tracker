@@ -585,10 +585,10 @@
         </div>
 
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('log')">New Entry</button>
-            <button class="tab" onclick="switchTab('history')">History</button>
-            <button class="tab" onclick="switchTab('settings')">Settings</button>
-            <button class="tab hidden" id="adminTabButton" onclick="switchTab('admin')">Admin</button>
+            <button class="tab active" onclick="switchTab('log', event)">New Entry</button>
+            <button class="tab" onclick="switchTab('history', event)">History</button>
+            <button class="tab" onclick="switchTab('settings', event)">Settings</button>
+            <button class="tab hidden" id="adminTabButton" onclick="switchTab('admin', event)">Admin</button>
         </div>
 
         <!-- Log Entry Tab -->
@@ -1648,35 +1648,42 @@
     </script>
 
     <script>
-        function switchTab(tab) {
+        function switchTab(tab, eventObj) {
             console.log('=== switchTab called ===');
             console.log('Switching to tab:', tab);
-            console.log('Event target:', event.target);
             
             // Remove active from all tabs
             document.querySelectorAll('.tab').forEach(t => {
-                console.log('Removing active from tab button:', t);
                 t.classList.remove('active');
             });
-            event.target.classList.add('active');
-            console.log('Added active to:', event.target);
+            
+            // Add active to the correct tab button
+            if (eventObj && eventObj.target) {
+                eventObj.target.classList.add('active');
+            } else {
+                // Find the correct tab button by matching onclick attribute or just activate based on tab name
+                const tabButtons = {
+                    'log': 0,
+                    'history': 1,
+                    'settings': 2,
+                    'admin': 3
+                };
+                const tabs = document.querySelectorAll('.tab');
+                if (tabs[tabButtons[tab]]) {
+                    tabs[tabButtons[tab]].classList.add('active');
+                }
+            }
 
             // Remove active from all tab contents
             document.querySelectorAll('.tab-content').forEach(t => {
-                console.log('Tab content found:', t.id, 'Display:', window.getComputedStyle(t).display);
                 t.classList.remove('active');
             });
             
             const tabContentId = tab + 'Tab';
-            console.log('Looking for tab content with id:', tabContentId);
             const tabContent = document.getElementById(tabContentId);
-            console.log('Tab content element:', tabContent);
             
             if (tabContent) {
-                console.log('Tab content BEFORE adding active:', window.getComputedStyle(tabContent).display);
                 tabContent.classList.add('active');
-                console.log('Tab content AFTER adding active:', window.getComputedStyle(tabContent).display);
-                console.log('Tab content classes:', tabContent.className);
             } else {
                 console.error('Tab content not found for id:', tabContentId);
             }
