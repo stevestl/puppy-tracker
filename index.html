@@ -872,19 +872,21 @@
                         });
                         
                         window.isAdmin = isFirstUser;
+                        
+                        // Re-fetch to get the name we just set
+                        const refreshedDoc = await getDoc(doc(db, 'users', user.uid));
+                        const userName = refreshedDoc.exists() && refreshedDoc.data().name ? refreshedDoc.data().name : user.email;
+                        document.getElementById('userEmail').textContent = userName;
                     } else {
                         window.isAdmin = userDocSnap.data().role === 'admin';
+                        const userName = userDocSnap.data().name || user.email;
+                        document.getElementById('userEmail').textContent = userName;
                     }
                     
                     console.log('Is admin:', window.isAdmin);
                     
                     document.getElementById('authScreen').classList.add('hidden');
                     document.getElementById('appScreen').classList.remove('hidden');
-                    
-                    // Get and display user name
-                    const userDoc2 = await getDoc(doc(db, 'users', user.uid));
-                    const userName = userDoc2.exists() && userDoc2.data().name ? userDoc2.data().name : user.email;
-                    document.getElementById('userEmail').textContent = userName;
                     
                     // Update role badge
                     const roleBadge = document.getElementById('roleBadge');
