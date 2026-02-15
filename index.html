@@ -841,16 +841,22 @@
             }
 
             try {
-                // Check if email has any dog assignments
-                const assignmentsQuery = query(
-                    collection(db, 'dog_assignments'),
-                    where('trainerEmail', '==', email)
-                );
-                const assignmentsSnapshot = await getDocs(assignmentsQuery);
+                // Check if this is the first user
+                const usersSnapshot = await getDocs(collection(db, 'users'));
+                const isFirstUser = usersSnapshot.empty;
                 
-                if (assignmentsSnapshot.empty) {
-                    alert('This email is not authorized. Please contact your administrator.');
-                    return;
+                if (!isFirstUser) {
+                    // Check if email has any dog assignments
+                    const assignmentsQuery = query(
+                        collection(db, 'dog_assignments'),
+                        where('trainerEmail', '==', email)
+                    );
+                    const assignmentsSnapshot = await getDocs(assignmentsQuery);
+                    
+                    if (assignmentsSnapshot.empty) {
+                        alert('This email is not authorized. Please contact your administrator.');
+                        return;
+                    }
                 }
 
                 // Create user
@@ -859,11 +865,15 @@
                 // Set user role
                 await setDoc(doc(db, 'users', userCredential.user.uid), {
                     email: email,
-                    role: 'user',
+                    role: isFirstUser ? 'admin' : 'user',
                     createdAt: new Date().toISOString()
                 });
 
-                alert('✅ Account created! You are now logged in.');
+                if (isFirstUser) {
+                    alert('✅ Account created! You are now the administrator.');
+                } else {
+                    alert('✅ Account created! You are now logged in.');
+                }
             } catch (error) {
                 alert('Error: ' + error.message);
             }
