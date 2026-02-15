@@ -892,10 +892,42 @@
         <!-- Admin Tab -->
         <div id="adminTab" class="tab-content">
             <div class="card">
+                <div class="section-title">🐾 Litter Management</div>
+                
+                <div class="info-box">
+                    Add all dogs in a litter at once. Only dogs in this list can be assigned to trainers.
+                </div>
+                
+                <div class="form-group">
+                    <label>Mother's Name</label>
+                    <input type="text" id="litterMotherName" placeholder="e.g., Daisy">
+                </div>
+
+                <div class="form-group">
+                    <label>Litter Name</label>
+                    <input type="text" id="litterName" placeholder="e.g., Golf litter">
+                </div>
+
+                <div class="form-group">
+                    <label>Dogs in Litter</label>
+                    <textarea id="litterDogNames" placeholder="Enter dog names separated by commas or new lines"></textarea>
+                </div>
+
+                <button class="btn btn-primary" onclick="addLitterDogs()">
+                    ➕ Add Litter Dogs
+                </button>
+
+                <div style="margin-top: 20px;">
+                    <strong>Registered Dogs:</strong>
+                    <div id="registeredDogsList" style="margin-top: 10px;"></div>
+                </div>
+            </div>
+
+            <div class="card">
                 <div class="section-title">🐕 Assign Dog to Trainer</div>
                 
                 <div class="info-box">
-                    Assign dogs to trainer emails (including yourself). Trainers must have at least one dog assigned before they can sign up.
+                    Assign registered dogs to trainer emails (including yourself). Trainers must have at least one dog assigned before they can sign up.
                 </div>
                 
                 <div class="form-group">
@@ -905,7 +937,8 @@
 
                 <div class="form-group">
                     <label>Dog Name</label>
-                    <input type="text" id="dogName" placeholder="Dog's name">
+                    <input type="text" id="dogName" list="registeredDogOptions" placeholder="Registered dog's name">
+                    <datalist id="registeredDogOptions"></datalist>
                 </div>
 
                 <button class="btn btn-primary" onclick="assignDog()">
@@ -959,6 +992,7 @@
         window.selectedDogFilter = 'all';
         window.historyStartDate = null;
         window.historyEndDate = null;
+        window.availableDogs = [];
 
         // Auth state observer with timeout
         let authTimeout = setTimeout(() => {
@@ -979,8 +1013,9 @@
                     // Check if user is admin
                     const userDocSnap = await getDoc(doc(db, 'users', user.uid));
                     
+                    const normalizedEmail = (user.email || '').trim().toLowerCase();
+
                     if (!userDocSnap.exists()) {
-                        const normalizedEmail = (user.email || '').trim().toLowerCase();
                         const assignmentsQuery = query(
                             collection(db, 'dog_assignments'),
                             where('trainerEmail', '==', normalizedEmail)
@@ -1010,6 +1045,21 @@
                         window.isAdmin = userDocSnap.data().role === 'admin';
                         const userName = userDocSnap.data().name || user.email;
                         document.getElementById('userEmail').textContent = userName;
+                    }
+
+                    if (!window.isAdmin) {
+                        const assignmentsQuery = query(
+                            collection(db, 'dog_assignments'),
+                            where('trainerEmail', '==', normalizedEmail)
+                        );
+                        const assignmentsSnapshot = await getDocs(assignmentsQuery);
+
+                        if (assignmentsSnapshot.empty) {
+                            console.warn('Non-admin has no dog assignment; signing out.');
+                            await signOut(auth);
+                            alert('This account is not authorized. Please contact your administrator.');
+                            return;
+                        }
                     }
                     
                     console.log('Is admin:', window.isAdmin);
@@ -1201,11 +1251,62 @@
             document.getElementById('loginForm').classList.remove('hidden');
         };
 
+        function normalizeName(name) {
+            return String(name || '').replace(/\s+/g, ' ').trim();
+        }
+
+        function getDogDocId(dogName) {
+            return encodeURIComponent(normalizeName(dogName).toLowerCase());
+        }
+
+        function parseDogNames(input) {
+            return Array.from(
+                new Set(
+                    String(input || '')
+                        .split(/[\n,;]+/)
+                        .map(name => normalizeName(name))
+                        .filter(Boolean)
+                )
+            );
+        }
+
+        window.addLitterDogs = async function() {
+            const motherName = normalizeName(document.getElementById('litterMotherName').value);
+            const litterName = normalizeName(document.getElementById('litterName').value);
+            const dogNames = parseDogNames(document.getElementById('litterDogNames').value);
+
+            if (!motherName || !litterName || dogNames.length === 0) {
+                alert('Please enter mother name, litter name, and at least one dog name.');
+                return;
+            }
+
+            try {
+                const upserts = dogNames.map(dogName => {
+                    const dogRef = doc(db, 'dogs', getDogDocId(dogName));
+                    return setDoc(dogRef, {
+                        dogName: dogName,
+                        motherName: motherName,
+                        litterName: litterName,
+                        addedBy: window.currentUser.uid,
+                        updatedAt: new Date().toISOString()
+                    }, { merge: true });
+                });
+
+                await Promise.all(upserts);
+
+                document.getElementById('litterDogNames').value = '';
+                alert(`✅ Added/updated ${dogNames.length} dog(s) in ${litterName}.`);
+                await loadRegisteredDogs();
+            } catch (error) {
+                alert('Error adding litter dogs: ' + error.message);
+            }
+        };
+
         window.assignDog = async function() {
             const trainerEmail = document.getElementById('trainerEmail').value.trim().toLowerCase();
-            const dogName = document.getElementById('dogName').value.trim();
+            const dogNameInput = document.getElementById('dogName').value.trim();
             
-            if (!trainerEmail || !dogName) {
+            if (!trainerEmail || !dogNameInput) {
                 alert('Please enter both trainer email and dog name');
                 return;
             }
@@ -1216,9 +1317,19 @@
             }
 
             try {
+                const dogDocRef = doc(db, 'dogs', getDogDocId(dogNameInput));
+                const dogDocSnap = await getDoc(dogDocRef);
+
+                if (!dogDocSnap.exists()) {
+                    alert('Dog not found. Add the dog in Litter Management before assigning.');
+                    return;
+                }
+
+                const registeredDogName = dogDocSnap.data().dogName || dogNameInput;
+
                 await addDoc(collection(db, 'dog_assignments'), {
                     trainerEmail: trainerEmail,
-                    dogName: dogName,
+                    dogName: registeredDogName,
                     assignedBy: window.currentUser.uid,
                     assignedAt: new Date().toISOString()
                 });
@@ -1229,12 +1340,70 @@
                 await loadAssignments();
                 
                 // If admin assigned a dog to themselves, refresh their dog list
-                if (trainerEmail === window.currentUser.email) {
+                if (trainerEmail === (window.currentUser.email || '').trim().toLowerCase()) {
                     await loadUserDogs();
                 }
             } catch (error) {
                 alert('Error: ' + error.message);
             }
+        };
+
+        window.loadRegisteredDogs = async function() {
+            const dogsSnapshot = await getDocs(collection(db, 'dogs'));
+            const dogs = [];
+
+            dogsSnapshot.forEach((dogDoc) => {
+                const dog = dogDoc.data();
+                dogs.push({
+                    dogName: dog.dogName || '',
+                    motherName: dog.motherName || '',
+                    litterName: dog.litterName || ''
+                });
+            });
+
+            dogs.sort((a, b) => {
+                const litterCompare = a.litterName.localeCompare(b.litterName);
+                if (litterCompare !== 0) return litterCompare;
+                return a.dogName.localeCompare(b.dogName);
+            });
+            window.availableDogs = dogs;
+
+            const datalist = document.getElementById('registeredDogOptions');
+            if (datalist) {
+                datalist.innerHTML = dogs
+                    .map(dog => `<option value="${dog.dogName}"></option>`)
+                    .join('');
+            }
+
+            const listContainer = document.getElementById('registeredDogsList');
+            if (!listContainer) return;
+
+            if (dogs.length === 0) {
+                listContainer.innerHTML = '<div class="empty-state">No registered dogs yet</div>';
+                return;
+            }
+
+            const grouped = {};
+            dogs.forEach(dog => {
+                const groupKey = `${dog.litterName || 'Unknown litter'}|${dog.motherName || 'Unknown mother'}`;
+                if (!grouped[groupKey]) {
+                    grouped[groupKey] = [];
+                }
+                grouped[groupKey].push(dog.dogName);
+            });
+
+            listContainer.innerHTML = Object.entries(grouped).map(([groupKey, dogNames]) => {
+                const [litterName, motherName] = groupKey.split('|');
+                return `
+                    <div class="assignment-item">
+                        <div class="assignment-info">
+                            <div class="assignment-email">${litterName}</div>
+                            <div class="assignment-dog">Mother: ${motherName}</div>
+                            <div class="assignment-dog">Dogs: ${dogNames.join(', ')}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         };
 
         window.removeAssignment = async function(assignmentId) {
@@ -1289,9 +1458,10 @@
         };
 
         window.loadUserDogs = async function() {
+            const normalizedEmail = (window.currentUser?.email || '').trim().toLowerCase();
             const assignmentsQuery = query(
                 collection(db, 'dog_assignments'),
-                where('trainerEmail', '==', window.currentUser.email)
+                where('trainerEmail', '==', normalizedEmail)
             );
             const assignmentsSnapshot = await getDocs(assignmentsQuery);
             
@@ -1345,6 +1515,7 @@
             await loadUserDogs();
             
             if (window.isAdmin) {
+                await loadRegisteredDogs();
                 await loadAssignments();
                 await loadAdminStats();
             }
@@ -1487,7 +1658,11 @@
 
             entries = entries.filter(isEntryInHistoryDateRange);
 
-            renderHistorySummary(entries);
+            const summaryEntries = window.isAdmin
+                ? entries.filter(e => (window.userDogs || []).includes(e.dogName))
+                : entries;
+
+            renderHistorySummary(summaryEntries);
             displayEntries(entries);
             updateStats(entries);
         };
