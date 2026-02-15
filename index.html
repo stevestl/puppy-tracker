@@ -891,41 +891,55 @@
             }
 
             try {
-                // Check if this is the first user
-                const usersSnapshot = await getDocs(collection(db, 'users'));
-                const isFirstUser = usersSnapshot.empty;
-                
-                if (!isFirstUser) {
-                    // Check if email has any dog assignments
-                    const assignmentsQuery = query(
-                        collection(db, 'dog_assignments'),
-                        where('trainerEmail', '==', email)
-                    );
-                    const assignmentsSnapshot = await getDocs(assignmentsQuery);
-                    
-                    if (assignmentsSnapshot.empty) {
-                        alert('This email is not authorized. Please contact your administrator.');
-                        return;
-                    }
-                }
-
-                // Create user
+                // Create the Firebase Auth user first
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                console.log('Auth user created');
                 
-                // Set user role
+                // Now check if there are any other users (we can read because we're authenticated)
+                let isAdmin = false;
+                try {
+                    const usersSnapshot = await getDocs(collection(db, 'users'));
+                    console.log('Users count:', usersSnapshot.size);
+                    
+                    if (usersSnapshot.size === 0) {
+                        // First user - make admin
+                        isAdmin = true;
+                    } else {
+                        // Not first user - check for dog assignments
+                        const assignmentsQuery = query(
+                            collection(db, 'dog_assignments'),
+                            where('trainerEmail', '==', email)
+                        );
+                        const assignmentsSnapshot = await getDocs(assignmentsQuery);
+                        
+                        if (assignmentsSnapshot.empty) {
+                            // No authorization - delete the account
+                            await userCredential.user.delete();
+                            alert('This email is not authorized. Please contact your administrator.');
+                            return;
+                        }
+                    }
+                } catch (checkError) {
+                    console.error('Error checking users:', checkError);
+                    // If we can't check, assume regular user
+                    isAdmin = false;
+                }
+                
+                // Create user document
                 await setDoc(doc(db, 'users', userCredential.user.uid), {
                     email: email,
-                    role: isFirstUser ? 'admin' : 'user',
+                    role: isAdmin ? 'admin' : 'user',
                     createdAt: new Date().toISOString()
                 });
 
-                if (isFirstUser) {
-                    alert('✅ Account created! You are now the administrator.');
-                } else {
-                    alert('✅ Account created! You are now logged in.');
-                }
+                alert(isAdmin ? '✅ Admin account created!' : '✅ Account created!');
             } catch (error) {
-                alert('Error: ' + error.message);
+                console.error('Signup error:', error);
+                if (error.code === 'auth/email-already-in-use') {
+                    alert('This email is already registered. Please use the Login form.');
+                } else {
+                    alert('Error: ' + error.message);
+                }
             }
         };
 
