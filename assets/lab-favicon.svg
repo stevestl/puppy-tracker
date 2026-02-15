@@ -1,0 +1,9 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Labrador favicon">
+  <rect width="64" height="64" rx="12" fill="#163a63"/>
+  <path d="M14 28c0-9 7-16 16-16h4c9 0 16 7 16 16v9c0 9-7 16-16 16h-4c-9 0-16-7-16-16v-9z" fill="#e6c58d"/>
+  <circle cx="25" cy="31" r="3" fill="#2f2419"/>
+  <circle cx="39" cy="31" r="3" fill="#2f2419"/>
+  <ellipse cx="32" cy="39" rx="5.5" ry="4.5" fill="#2f2419"/>
+  <path d="M28 45c1.2 2.2 2.5 3 4 3s2.8-.8 4-3" stroke="#2f2419" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <rect x="20" y="49" width="24" height="3.8" rx="1.9" fill="#f2b633"/>
+</svg>
