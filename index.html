@@ -589,7 +589,7 @@
             <button class="tab active" onclick="switchTab('log')">New Entry</button>
             <button class="tab" onclick="switchTab('history')">History</button>
             <button class="tab" onclick="switchTab('settings')">Settings</button>
-            <button class="tab hidden" id="adminTab" onclick="switchTab('admin')">Admin</button>
+            <button class="tab hidden" id="adminTabButton" onclick="switchTab('admin')">Admin</button>
         </div>
 
         <!-- Log Entry Tab -->
@@ -894,7 +894,7 @@
                         console.log('Setting up admin UI');
                         roleBadge.textContent = 'Admin';
                         roleBadge.classList.add('admin');
-                        const adminTabBtn = document.getElementById('adminTab');
+                        const adminTabBtn = document.getElementById('adminTabButton');
                         console.log('Admin tab button element:', adminTabBtn);
                         if (adminTabBtn) {
                             adminTabBtn.classList.remove('hidden');
@@ -903,7 +903,10 @@
                     } else {
                         roleBadge.textContent = 'User';
                         roleBadge.classList.remove('admin');
-                        document.getElementById('adminTab').classList.add('hidden');
+                        const adminTabBtn = document.getElementById('adminTabButton');
+                        if (adminTabBtn) {
+                            adminTabBtn.classList.add('hidden');
+                        }
                     }
                     
                     await loadUserData();
