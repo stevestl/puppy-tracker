@@ -7,6 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Puppy Tracker">
     <title>Service Puppy Tracker</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC_ijgRiXBmMVdVen9x6FpPE1p6gX_TrIA&libraries=places"></script>
     <style>
         * {
             margin: 0;
@@ -476,6 +477,43 @@
             background: #667eea;
             color: white;
         }
+
+        .place-option {
+            padding: 12px;
+            background: #f9fafb;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .place-option:hover {
+            border-color: #667eea;
+            background: white;
+        }
+
+        .place-option.selected {
+            border-color: #667eea;
+            background: #eff6ff;
+        }
+
+        .place-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .place-address {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .place-types {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+        }
     </style>
 </head>
 <body>
@@ -563,11 +601,22 @@
                         <span>📍 Capture Current Location</span>
                     </button>
                     <div id="locationStatus" class="location-status hidden"></div>
+                    <div id="nearbyPlaces" class="hidden" style="margin-top: 15px;">
+                        <label style="display: block; color: #333; font-weight: 500; margin-bottom: 8px; font-size: 14px;">
+                            Select Location (or type manually below)
+                        </label>
+                        <div id="placesList"></div>
+                    </div>
                 </div>
 
                 <div class="card">
                     <div class="section-title">📝 Interaction Details</div>
                     
+                    <div class="form-group">
+                        <label>Location Name</label>
+                        <input type="text" id="locationName" placeholder="e.g., Starbucks on Main St">
+                        <small style="color: #666; font-size: 12px;">Optional - or select from suggestions above</small>
+                    </div>
                     <div class="form-group">
                         <label>Location Type</label>
                         <select id="locationType">
@@ -1093,6 +1142,7 @@
                 return;
             }
 
+            const locationName = document.getElementById('locationName').value;
             const locationType = document.getElementById('locationType').value;
             const duration = document.getElementById('duration').value;
             const behavior = document.getElementById('behavior').value;
@@ -1115,6 +1165,7 @@
             const entry = {
                 timestamp: new Date().toISOString(),
                 location: window.currentLocation,
+                locationName: locationName || '',
                 locationType,
                 duration: duration || null,
                 behavior,
@@ -1130,13 +1181,16 @@
                 await addDoc(collection(window.db, 'entries'), entry);
                 
                 // Reset form
+                document.getElementById('locationName').value = '';
                 document.getElementById('locationType').value = '';
                 document.getElementById('duration').value = '';
                 document.getElementById('behavior').value = '';
                 document.getElementById('notes').value = '';
                 document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+                document.getElementById('nearbyPlaces').classList.add('hidden');
                 
                 window.currentLocation = null;
+                window.selectedPlace = null;
                 document.getElementById('locationStatus').classList.add('hidden');
 
                 setSyncStatus('synced');
@@ -1236,6 +1290,7 @@
                     ? `${entry.location.latitude.toFixed(6)}, ${entry.location.longitude.toFixed(6)}`
                     : 'No location';
                 
+                const locationName = entry.locationName ? `<div class="entry-location">📍 ${entry.locationName}</div>` : '';
                 const userDisplay = window.isAdmin && entry.userEmail ? 
                     `<div><strong>Trainer:</strong> ${entry.userEmail}</div>` : '';
                 const dogDisplay = `<div><strong>Dog:</strong> ${entry.dogName}</div>`;
@@ -1245,7 +1300,8 @@
                         <div class="entry-header">
                             <div>
                                 <div class="entry-date">${date.toLocaleDateString()} ${date.toLocaleTimeString()}</div>
-                                <div class="entry-location">📍 ${locationStr}</div>
+                                ${locationName}
+                                <div class="entry-location" style="font-size: 11px; color: #999;">${locationStr}</div>
                             </div>
                             ${entry.userId === window.currentUser.uid || window.isAdmin ? 
                                 `<button class="delete-btn" onclick="deleteEntry('${entry.id}')">Delete</button>` : ''}
@@ -1401,7 +1457,7 @@
             });
 
             const headers = ['Date', 'Time', 'Dog Name', 'Trainer Email', 'Handler Name', 'Organization',
-                            'Location Type', 'Duration (min)', 'Behavior', 'Distractions', 
+                            'Location Name', 'Location Type', 'Duration (min)', 'Behavior', 'Distractions', 
                             'Commands Practiced', 'Latitude', 'Longitude', 'Location Accuracy (m)', 'Notes'];
             
             const rows = entries.map(entry => {
@@ -1415,6 +1471,7 @@
                     entry.userEmail || '',
                     userSettings.handlerName || '',
                     userSettings.organization || '',
+                    entry.locationName || '',
                     entry.locationType,
                     entry.duration || '',
                     entry.behavior,
@@ -1501,7 +1558,7 @@
             }
 
             navigator.geolocation.getCurrentPosition(
-                function(position) {
+                async function(position) {
                     window.currentLocation = {
                         latitude: position.coords.latitude,
                         longitude: position.coords.longitude,
@@ -1510,6 +1567,9 @@
                     };
                     statusEl.classList.add('success');
                     statusEl.innerHTML = `✅ Location captured (±${Math.round(window.currentLocation.accuracy)}m accuracy)`;
+                    
+                    // Fetch nearby places
+                    await fetchNearbyPlaces(position.coords.latitude, position.coords.longitude);
                 },
                 function(error) {
                     statusEl.classList.add('error');
@@ -1535,6 +1595,69 @@
                     maximumAge: 0
                 }
             );
+        }
+
+        async function fetchNearbyPlaces(lat, lng) {
+            const nearbyPlacesDiv = document.getElementById('nearbyPlaces');
+            const placesListDiv = document.getElementById('placesList');
+            
+            nearbyPlacesDiv.classList.remove('hidden');
+            placesListDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: #666;">Loading nearby places...</div>';
+            
+            try {
+                // Use Google Places API Nearby Search
+                const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=100&key=YOUR_API_KEY`;
+                
+                // For now, we'll use a simpler approach with Places library
+                const service = new google.maps.places.PlacesService(document.createElement('div'));
+                
+                const request = {
+                    location: new google.maps.LatLng(lat, lng),
+                    radius: 100,
+                    rankBy: google.maps.places.RankBy.DISTANCE
+                };
+                
+                service.nearbySearch(request, function(results, status) {
+                    if (status === google.maps.places.PlacesServiceStatus.OK && results.length > 0) {
+                        displayNearbyPlaces(results.slice(0, 5));
+                    } else {
+                        placesListDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: #666;">No nearby places found. Enter location manually below.</div>';
+                    }
+                });
+            } catch (error) {
+                console.error('Error fetching places:', error);
+                placesListDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: #666;">Could not load nearby places. Enter location manually below.</div>';
+            }
+        }
+
+        function displayNearbyPlaces(places) {
+            const placesListDiv = document.getElementById('placesList');
+            window.nearbyPlacesData = places;
+            
+            placesListDiv.innerHTML = places.map((place, index) => {
+                const types = place.types ? place.types.slice(0, 3).join(', ') : '';
+                return `
+                    <div class="place-option" onclick="selectPlace(${index})">
+                        <div class="place-name">${place.name}</div>
+                        <div class="place-address">${place.vicinity || ''}</div>
+                        ${types ? `<div class="place-types">${types}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectPlace(index) {
+            // Remove previous selection
+            document.querySelectorAll('.place-option').forEach(el => el.classList.remove('selected'));
+            
+            // Select this place
+            event.target.closest('.place-option').classList.add('selected');
+            
+            const place = window.nearbyPlacesData[index];
+            window.selectedPlace = place;
+            
+            // Auto-fill location name
+            document.getElementById('locationName').value = place.name;
         }
 
         function getCheckedValues(name) {
