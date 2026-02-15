@@ -607,7 +607,7 @@
                     <div id="locationStatus" class="location-status hidden"></div>
                     <div id="nearbyPlaces" class="hidden" style="margin-top: 15px;">
                         <label style="display: block; color: #333; font-weight: 500; margin-bottom: 8px; font-size: 14px;">
-                            Select Location (or type manually below)
+                            Nearby Places (or type manually below)
                         </label>
                         <div id="placesList"></div>
                     </div>
@@ -618,8 +618,7 @@
                     
                     <div class="form-group">
                         <label>Location Name</label>
-                        <input type="text" id="locationName" placeholder="e.g., Starbucks on Main St">
-                        <small style="color: #666; font-size: 12px;">Optional - or select from suggestions above</small>
+                        <input type="text" id="locationName" placeholder="e.g., Starbucks on Main St, Petco, Central Park">
                     </div>
                     <div class="form-group">
                         <label>Location Type</label>
@@ -1735,29 +1734,48 @@
             nearbyPlacesDiv.classList.remove('hidden');
             placesListDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: #666;">Loading nearby places...</div>';
             
+            // Check if Google Maps loaded
+            if (typeof google === 'undefined' || !google.maps || !google.maps.places) {
+                console.error('Google Maps Places library not loaded');
+                placesListDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: #666;">Maps library not loaded. Enter location manually below.</div>';
+                return;
+            }
+            
+            console.log('Google Maps loaded, searching near:', lat, lng);
+            
             try {
-                // Use Google Places API Nearby Search
-                const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=100&key=YOUR_API_KEY`;
-                
-                // For now, we'll use a simpler approach with Places library
                 const service = new google.maps.places.PlacesService(document.createElement('div'));
                 
                 const request = {
                     location: new google.maps.LatLng(lat, lng),
-                    radius: 100,
-                    rankBy: google.maps.places.RankBy.DISTANCE
+                    radius: 150, // Search within 150 meters
+                    type: ['establishment'] // Any type of establishment
                 };
                 
                 service.nearbySearch(request, function(results, status) {
-                    if (status === google.maps.places.PlacesServiceStatus.OK && results.length > 0) {
-                        displayNearbyPlaces(results.slice(0, 5));
+                    console.log('Places API status:', status);
+                    console.log('Places results:', results);
+                    
+                    if (status === google.maps.places.PlacesServiceStatus.OK) {
+                        if (results && results.length > 0) {
+                            console.log('Found', results.length, 'places');
+                            displayNearbyPlaces(results.slice(0, 5));
+                        } else {
+                            placesListDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: #666;">No places found nearby. Enter location manually below.</div>';
+                        }
+                    } else if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
+                        placesListDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: #666;">No places found nearby. Enter location manually below.</div>';
+                    } else if (status === google.maps.places.PlacesServiceStatus.REQUEST_DENIED) {
+                        console.error('Places API request denied - check API key and enabled APIs');
+                        placesListDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: #ef4444;">Places API not enabled. Enter location manually below.</div>';
                     } else {
-                        placesListDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: #666;">No nearby places found. Enter location manually below.</div>';
+                        console.error('Places API error:', status);
+                        placesListDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: #666;">Could not load places. Enter location manually below.</div>';
                     }
                 });
             } catch (error) {
                 console.error('Error fetching places:', error);
-                placesListDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: #666;">Could not load nearby places. Enter location manually below.</div>';
+                placesListDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: #666;">Error loading places. Enter location manually below.</div>';
             }
         }
 
