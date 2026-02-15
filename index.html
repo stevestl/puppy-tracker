@@ -443,6 +443,89 @@
             color: white;
         }
 
+        .history-date-filter {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            align-items: end;
+        }
+
+        .history-date-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .history-date-field label {
+            font-size: 12px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .history-date-field input {
+            padding: 8px 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .history-date-field input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .history-reset-btn {
+            width: auto;
+            margin-top: 0;
+            padding: 10px 14px;
+            font-size: 13px;
+        }
+
+        .history-summary {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 15px;
+        }
+
+        .history-summary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            gap: 10px;
+        }
+
+        .history-summary-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #374151;
+        }
+
+        .history-summary-copy-btn {
+            width: auto;
+            margin-top: 0;
+            padding: 8px 10px;
+            font-size: 12px;
+        }
+
+        .history-summary-text {
+            width: 100%;
+            min-height: 140px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 13px;
+            line-height: 1.4;
+            color: #374151;
+            background: white;
+            resize: vertical;
+            font-family: inherit;
+        }
+
         .info-box {
             background: #dbeafe;
             border-left: 4px solid #3b82f6;
@@ -731,6 +814,28 @@
             <div class="stats" id="stats"></div>
             <div class="card">
                 <div class="section-title">📚 Training History</div>
+                <div class="history-date-filter">
+                    <div class="history-date-field">
+                        <label for="historyStartDate">Start Date</label>
+                        <input type="date" id="historyStartDate" onchange="applyHistoryDateFilter()">
+                    </div>
+                    <div class="history-date-field">
+                        <label for="historyEndDate">End Date</label>
+                        <input type="date" id="historyEndDate" onchange="applyHistoryDateFilter()">
+                    </div>
+                    <button class="btn btn-secondary history-reset-btn" onclick="resetHistoryDateFilter()">
+                        Last 2 Weeks
+                    </button>
+                </div>
+                <div class="history-summary">
+                    <div class="history-summary-header">
+                        <div class="history-summary-title">Biweekly Report Summary (copy/paste)</div>
+                        <button class="btn btn-secondary history-summary-copy-btn" onclick="copyHistorySummary()">
+                            Copy Summary
+                        </button>
+                    </div>
+                    <textarea id="historySummaryText" class="history-summary-text" readonly></textarea>
+                </div>
                 <div id="userFilterContainer" class="user-filter hidden"></div>
                 <button class="btn btn-secondary" onclick="exportEntries()">
                     📤 Export Entries (CSV)
@@ -852,6 +957,8 @@
         window.userDogs = [];
         window.selectedUserFilter = 'all';
         window.selectedDogFilter = 'all';
+        window.historyStartDate = null;
+        window.historyEndDate = null;
 
         // Auth state observer with timeout
         let authTimeout = setTimeout(() => {
@@ -1315,6 +1422,8 @@
         };
 
         window.loadEntries = async function() {
+            ensureHistoryDateFilterInitialized();
+
             const entriesRef = collection(window.db, 'entries');
             const q = query(entriesRef, orderBy('timestamp', 'desc'));
             const querySnapshot = await getDocs(q);
@@ -1374,8 +1483,153 @@
                 document.getElementById('userFilterContainer').classList.add('hidden');
             }
 
+            entries = entries.filter(isEntryInHistoryDateRange);
+
+            renderHistorySummary(entries);
             displayEntries(entries);
             updateStats(entries);
+        };
+
+        function formatDateForInput(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function parseInputDate(value) {
+            if (!value) return null;
+            const [year, month, day] = value.split('-').map(Number);
+            if (!year || !month || !day) return null;
+            return new Date(year, month - 1, day);
+        }
+
+        function getDefaultHistoryDateRange() {
+            const endDate = new Date();
+            endDate.setHours(0, 0, 0, 0);
+
+            const startDate = new Date(endDate);
+            startDate.setDate(startDate.getDate() - 13);
+
+            return {
+                start: formatDateForInput(startDate),
+                end: formatDateForInput(endDate)
+            };
+        }
+
+        function ensureHistoryDateFilterInitialized() {
+            if (!window.historyStartDate || !window.historyEndDate) {
+                const defaultRange = getDefaultHistoryDateRange();
+                window.historyStartDate = defaultRange.start;
+                window.historyEndDate = defaultRange.end;
+            }
+
+            const startInput = document.getElementById('historyStartDate');
+            const endInput = document.getElementById('historyEndDate');
+
+            if (startInput && endInput) {
+                if (!startInput.value) startInput.value = window.historyStartDate;
+                if (!endInput.value) endInput.value = window.historyEndDate;
+            }
+        }
+
+        function isEntryInHistoryDateRange(entry) {
+            if (!window.historyStartDate || !window.historyEndDate) return true;
+
+            const entryDate = new Date(entry.timestamp);
+            if (Number.isNaN(entryDate.getTime())) return false;
+
+            const startDate = parseInputDate(window.historyStartDate);
+            const endDate = parseInputDate(window.historyEndDate);
+            if (!startDate || !endDate) return true;
+
+            const endExclusive = new Date(endDate);
+            endExclusive.setDate(endExclusive.getDate() + 1);
+
+            return entryDate >= startDate && entryDate < endExclusive;
+        }
+
+        window.applyHistoryDateFilter = function() {
+            const startInput = document.getElementById('historyStartDate');
+            const endInput = document.getElementById('historyEndDate');
+
+            const startValue = startInput.value;
+            const endValue = endInput.value;
+
+            if (!startValue || !endValue) return;
+            if (startValue > endValue) {
+                alert('Start date must be on or before end date.');
+                return;
+            }
+
+            window.historyStartDate = startValue;
+            window.historyEndDate = endValue;
+            loadEntries();
+        };
+
+        window.resetHistoryDateFilter = function() {
+            const defaultRange = getDefaultHistoryDateRange();
+            window.historyStartDate = defaultRange.start;
+            window.historyEndDate = defaultRange.end;
+
+            const startInput = document.getElementById('historyStartDate');
+            const endInput = document.getElementById('historyEndDate');
+
+            startInput.value = window.historyStartDate;
+            endInput.value = window.historyEndDate;
+
+            loadEntries();
+        };
+
+        function formatSummaryDate(timestamp) {
+            const date = new Date(timestamp);
+            if (Number.isNaN(date.getTime())) return '';
+            return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        }
+
+        function truncateSummaryText(text, maxLength = 120) {
+            if (!text) return '';
+            const normalized = String(text).replace(/\s+/g, ' ').trim();
+            if (normalized.length <= maxLength) return normalized;
+            return normalized.slice(0, maxLength - 1).trim() + '…';
+        }
+
+        function renderHistorySummary(entries) {
+            const summaryEl = document.getElementById('historySummaryText');
+            if (!summaryEl) return;
+
+            if (!entries || entries.length === 0) {
+                summaryEl.value = '- No outings logged in this date range.';
+                return;
+            }
+
+            const bullets = entries
+                .slice()
+                .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+                .map(entry => {
+                    const dateLabel = formatSummaryDate(entry.timestamp);
+                    const locationLabel = entry.locationName || entry.locationType || 'Unknown location';
+                    const behaviorLabel = entry.behavior ? `showed ${entry.behavior.toLowerCase()} behavior` : 'trained';
+                    const notesLabel = entry.notes ? ` ${truncateSummaryText(entry.notes)}` : '';
+                    const dogLabel = entry.dogName ? `${entry.dogName} ` : '';
+                    return `- ${dateLabel}: ${dogLabel}trained at ${locationLabel} and ${behaviorLabel}.${notesLabel}`;
+                });
+
+            summaryEl.value = bullets.join('\n');
+        }
+
+        window.copyHistorySummary = async function() {
+            const summaryEl = document.getElementById('historySummaryText');
+            if (!summaryEl || !summaryEl.value) return;
+
+            try {
+                await navigator.clipboard.writeText(summaryEl.value);
+                alert('Summary copied to clipboard');
+            } catch (error) {
+                summaryEl.select();
+                document.execCommand('copy');
+                alert('Summary copied to clipboard');
+            }
         };
 
         window.filterByUser = function(userId) {
