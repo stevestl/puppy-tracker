@@ -1735,8 +1735,8 @@
             placesListDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: #666;">Loading nearby places...</div>';
             
             // Check if Google Maps loaded
-            if (typeof google === 'undefined' || !google.maps || !google.maps.places) {
-                console.error('Google Maps Places library not loaded');
+            if (typeof google === 'undefined' || !google.maps) {
+                console.error('Google Maps library not loaded');
                 placesListDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: #666;">Maps library not loaded. Enter location manually below.</div>';
                 return;
             }
@@ -1744,58 +1744,76 @@
             console.log('Google Maps loaded, searching near:', lat, lng);
             
             try {
-                const service = new google.maps.places.PlacesService(document.createElement('div'));
+                // Use Nearby Search (Text) API via fetch
+                const apiKey = 'AIzaSyC_ijgRiXBmMVdVen9x6FpPE1p6gX_TrIA';
+                const radius = 150; // meters
                 
-                const request = {
-                    location: new google.maps.LatLng(lat, lng),
-                    radius: 150, // Search within 150 meters
-                    type: ['establishment'] // Any type of establishment
-                };
+                // Using the new Places API (New) with Text Search
+                const url = `https://places.googleapis.com/v1/places:searchNearby`;
                 
-                service.nearbySearch(request, function(results, status) {
-                    console.log('Places API status:', status);
-                    console.log('Places results:', results);
-                    
-                    if (status === google.maps.places.PlacesServiceStatus.OK) {
-                        if (results && results.length > 0) {
-                            console.log('Found', results.length, 'places');
-                            displayNearbyPlaces(results.slice(0, 5));
-                        } else {
-                            placesListDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: #666;">No places found nearby. Enter location manually below.</div>';
-                        }
-                    } else if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
-                        placesListDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: #666;">No places found nearby. Enter location manually below.</div>';
-                    } else if (status === google.maps.places.PlacesServiceStatus.REQUEST_DENIED) {
-                        console.error('Places API request denied - check API key and enabled APIs');
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Goog-Api-Key': apiKey,
+                        'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.types,places.location'
+                    },
+                    body: JSON.stringify({
+                        locationRestriction: {
+                            circle: {
+                                center: {
+                                    latitude: lat,
+                                    longitude: lng
+                                },
+                                radius: radius
+                            }
+                        },
+                        maxResultCount: 5
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('Places API response:', data);
+                
+                if (data.places && data.places.length > 0) {
+                    console.log('Found', data.places.length, 'places');
+                    displayNearbyPlacesNew(data.places);
+                } else if (response.ok) {
+                    placesListDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: #666;">No places found nearby. Enter location manually below.</div>';
+                } else {
+                    console.error('Places API error:', data);
+                    if (data.error && data.error.message.includes('API key')) {
                         placesListDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: #ef4444;">Places API not enabled. Enter location manually below.</div>';
                     } else {
-                        console.error('Places API error:', status);
                         placesListDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: #666;">Could not load places. Enter location manually below.</div>';
                     }
-                });
+                }
             } catch (error) {
                 console.error('Error fetching places:', error);
                 placesListDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: #666;">Error loading places. Enter location manually below.</div>';
             }
         }
-
-        function displayNearbyPlaces(places) {
+        
+        function displayNearbyPlacesNew(places) {
             const placesListDiv = document.getElementById('placesList');
             window.nearbyPlacesData = places;
             
             placesListDiv.innerHTML = places.map((place, index) => {
+                const name = place.displayName?.text || 'Unknown';
+                const address = place.formattedAddress || '';
                 const types = place.types ? place.types.slice(0, 3).join(', ') : '';
+                
                 return `
-                    <div class="place-option" onclick="selectPlace(${index})">
-                        <div class="place-name">${place.name}</div>
-                        <div class="place-address">${place.vicinity || ''}</div>
+                    <div class="place-option" onclick="selectPlaceNew(${index})">
+                        <div class="place-name">${name}</div>
+                        <div class="place-address">${address}</div>
                         ${types ? `<div class="place-types">${types}</div>` : ''}
                     </div>
                 `;
             }).join('');
         }
-
-        function selectPlace(index) {
+        
+        function selectPlaceNew(index) {
             // Remove previous selection
             document.querySelectorAll('.place-option').forEach(el => el.classList.remove('selected'));
             
@@ -1806,7 +1824,8 @@
             window.selectedPlace = place;
             
             // Auto-fill location name
-            document.getElementById('locationName').value = place.name;
+            const name = place.displayName?.text || place.name || 'Unknown Location';
+            document.getElementById('locationName').value = name;
         }
 
         function getCheckedValues(name) {
