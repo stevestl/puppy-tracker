@@ -1010,7 +1010,17 @@
             } catch (error) {
                 console.error('Signup error:', error);
                 if (error.code === 'auth/email-already-in-use') {
-                    alert('This email is already registered. Please use the Login form.');
+                    try {
+                        // Recover gracefully when Auth account exists but Firestore user profile was deleted.
+                        await signInWithEmailAndPassword(auth, email, password);
+                        alert('This email is already registered. Signed in to restore your profile.');
+                    } catch (loginError) {
+                        if (loginError.code === 'auth/wrong-password' || loginError.code === 'auth/invalid-credential') {
+                            alert('This email is already registered. Please use the correct password in Login.');
+                        } else {
+                            alert('This email is already registered. Please use the Login form.');
+                        }
+                    }
                 } else {
                     alert('Error: ' + error.message);
                 }
