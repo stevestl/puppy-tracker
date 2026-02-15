@@ -1999,37 +1999,43 @@
             const activeTrainerSet = new Set();
             let totalEntries = 0;
             let totalHours = 0;
+            const now = new Date();
+            const twelveMonthsAgo = new Date(now);
+            twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+            twelveMonthsAgo.setHours(0, 0, 0, 0);
 
             const twoWeekDogStats = new Map();
             const twoWeekActiveTrainerSet = new Set();
             let twoWeekEntries = 0;
             let twoWeekHours = 0;
-            const now = new Date();
             const twoWeeksAgo = new Date(now);
             twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 13);
             twoWeeksAgo.setHours(0, 0, 0, 0);
             
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
-                totalEntries++;
-                totalHours += parseFloat(data.duration) || 0;
-                const trainerKey = data.userId || data.userEmail || '';
-                if (trainerKey) {
-                    activeTrainerSet.add(trainerKey);
-                }
-                
-                if (!dogStats.has(data.dogName)) {
-                    dogStats.set(data.dogName, {
-                        count: 0,
-                        hours: 0
-                    });
-                }
-                
-                const stats = dogStats.get(data.dogName);
-                stats.count++;
-                stats.hours += parseFloat(data.duration) || 0;
-
                 const entryDate = new Date(data.timestamp);
+                const trainerKey = data.userId || data.userEmail || '';
+                
+                if (!Number.isNaN(entryDate.getTime()) && entryDate >= twelveMonthsAgo) {
+                    totalEntries++;
+                    totalHours += parseFloat(data.duration) || 0;
+                    if (trainerKey) {
+                        activeTrainerSet.add(trainerKey);
+                    }
+
+                    if (!dogStats.has(data.dogName)) {
+                        dogStats.set(data.dogName, {
+                            count: 0,
+                            hours: 0
+                        });
+                    }
+
+                    const stats = dogStats.get(data.dogName);
+                    stats.count++;
+                    stats.hours += parseFloat(data.duration) || 0;
+                }
+
                 if (!Number.isNaN(entryDate.getTime()) && entryDate >= twoWeeksAgo) {
                     twoWeekEntries++;
                     twoWeekHours += parseFloat(data.duration) || 0;
@@ -2052,7 +2058,7 @@
 
             const statsContainer = document.getElementById('adminStats');
             statsContainer.innerHTML = `
-                <div style="font-weight: 700; color: #374151; margin-bottom: 8px;">All Time</div>
+                <div style="font-weight: 700; color: #374151; margin-bottom: 8px;">Rolling 12 Months</div>
                 <div class="stats">
                     <div class="stat-card">
                         <div class="stat-value">${totalEntries}</div>
