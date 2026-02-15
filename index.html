@@ -617,7 +617,7 @@
                     
                     <div class="form-group">
                         <label>Location Name</label>
-                        <input type="text" id="locationName" placeholder="e.g., Starbucks on Main St, Petco, Central Park">
+                        <input type="text" id="locationName" placeholder="e.g., St Louis Art Museum, Forest Park">
                     </div>
                     <div class="form-group">
                         <label>Location Type</label>
@@ -630,6 +630,7 @@
                             <option value="Public Transit">Public Transportation</option>
                             <option value="Office">Office/Workplace</option>
                             <option value="Medical">Medical Facility</option>
+                            <option value="Worship">House of Worship</option>
                             <option value="Other">Other</option>
                         </select>
                     </div>
@@ -868,23 +869,19 @@
                     console.log('User logged in:', user.email);
                     window.currentUser = user;
                     
-                    // Check if user is admin or create initial admin
+                    // Check if user is admin
                     const userDocSnap = await getDoc(doc(db, 'users', user.uid));
                     
                     if (!userDocSnap.exists()) {
-                        console.log('User document does not exist, creating...');
-                        // First user becomes admin
-                        const usersSnapshot = await getDocs(collection(db, 'users'));
-                        const isFirstUser = usersSnapshot.empty;
-                        
+                        console.log('User document does not exist, creating regular user profile...');
                         await setDoc(doc(db, 'users', user.uid), {
                             name: user.email.split('@')[0], // Default name from email
                             email: user.email,
-                            role: isFirstUser ? 'admin' : 'user',
+                            role: 'user',
                             createdAt: new Date().toISOString()
                         });
                         
-                        window.isAdmin = isFirstUser;
+                        window.isAdmin = false;
                         
                         // Re-fetch to get the name we just set
                         const refreshedDoc = await getDoc(doc(db, 'users', user.uid));
@@ -958,45 +955,36 @@
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 console.log('Auth user created');
                 
-                // Now check if there are any other users (we can read because we're authenticated)
-                let isAdmin = false;
+                // Verify this email has at least one admin-assigned dog before allowing signup.
                 try {
-                    const usersSnapshot = await getDocs(collection(db, 'users'));
-                    console.log('Users count:', usersSnapshot.size);
+                    const assignmentsQuery = query(
+                        collection(db, 'dog_assignments'),
+                        where('trainerEmail', '==', email)
+                    );
+                    const assignmentsSnapshot = await getDocs(assignmentsQuery);
                     
-                    if (usersSnapshot.size === 0) {
-                        // First user - make admin
-                        isAdmin = true;
-                    } else {
-                        // Not first user - check for dog assignments
-                        const assignmentsQuery = query(
-                            collection(db, 'dog_assignments'),
-                            where('trainerEmail', '==', email)
-                        );
-                        const assignmentsSnapshot = await getDocs(assignmentsQuery);
-                        
-                        if (assignmentsSnapshot.empty) {
-                            // No authorization - delete the account
-                            await userCredential.user.delete();
-                            alert('This email is not authorized. Please contact your administrator.');
-                            return;
-                        }
+                    if (assignmentsSnapshot.empty) {
+                        // No authorization - delete the account
+                        await userCredential.user.delete();
+                        alert('This email is not authorized. Please contact your administrator.');
+                        return;
                     }
                 } catch (checkError) {
-                    console.error('Error checking users:', checkError);
-                    // If we can't check, assume regular user
-                    isAdmin = false;
+                    console.error('Error checking dog assignments:', checkError);
+                    await userCredential.user.delete();
+                    alert('Unable to verify authorization. Please contact your administrator.');
+                    return;
                 }
                 
                 // Create user document
                 await setDoc(doc(db, 'users', userCredential.user.uid), {
                     name: name,
                     email: email,
-                    role: isAdmin ? 'admin' : 'user',
+                    role: 'user',
                     createdAt: new Date().toISOString()
                 });
 
-                alert(isAdmin ? '✅ Admin account created!' : '✅ Account created!');
+                alert('✅ Account created!');
             } catch (error) {
                 console.error('Signup error:', error);
                 if (error.code === 'auth/email-already-in-use') {
