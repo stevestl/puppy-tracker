@@ -1105,8 +1105,9 @@
                 const message = error?.message || '';
                 const code = error?.code || '';
                 const isPermissionError = code === 'permission-denied' || message.includes('Missing or insufficient permissions');
+                const hasAuthenticatedUser = !!auth.currentUser;
 
-                if (isPermissionError) {
+                if (isPermissionError && !hasAuthenticatedUser) {
                     try {
                         await signOut(auth);
                     } catch (signOutError) {
@@ -1114,16 +1115,24 @@
                     }
                 }
 
-                window.currentUser = null;
-                window.isAdmin = false;
                 document.getElementById('loadingScreen').classList.add('hidden');
-                document.getElementById('authScreen').classList.remove('hidden');
-                document.getElementById('appScreen').classList.add('hidden');
 
                 const adminTabBtn = document.getElementById('adminTabButton');
-                if (adminTabBtn) {
+                if (adminTabBtn && !hasAuthenticatedUser) {
                     adminTabBtn.classList.add('hidden');
                 }
+
+                if (hasAuthenticatedUser) {
+                    document.getElementById('authScreen').classList.add('hidden');
+                    document.getElementById('appScreen').classList.remove('hidden');
+                    alert('Some data could not be loaded due to permissions, but you are still signed in.');
+                    return;
+                }
+
+                window.currentUser = null;
+                window.isAdmin = false;
+                document.getElementById('authScreen').classList.remove('hidden');
+                document.getElementById('appScreen').classList.add('hidden');
 
                 if (!isPermissionError) {
                     alert('Error loading app: ' + error.message);
