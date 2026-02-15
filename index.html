@@ -1093,14 +1093,41 @@
                     console.log('No user logged in');
                     window.currentUser = null;
                     window.isAdmin = false;
+                    const adminTabBtn = document.getElementById('adminTabButton');
+                    if (adminTabBtn) {
+                        adminTabBtn.classList.add('hidden');
+                    }
                     document.getElementById('authScreen').classList.remove('hidden');
                     document.getElementById('appScreen').classList.add('hidden');
                 }
             } catch (error) {
                 console.error('Auth state change error:', error);
+                const message = error?.message || '';
+                const code = error?.code || '';
+                const isPermissionError = code === 'permission-denied' || message.includes('Missing or insufficient permissions');
+
+                if (isPermissionError) {
+                    try {
+                        await signOut(auth);
+                    } catch (signOutError) {
+                        console.warn('Sign out after permission error failed:', signOutError);
+                    }
+                }
+
+                window.currentUser = null;
+                window.isAdmin = false;
                 document.getElementById('loadingScreen').classList.add('hidden');
                 document.getElementById('authScreen').classList.remove('hidden');
-                alert('Error loading app: ' + error.message);
+                document.getElementById('appScreen').classList.add('hidden');
+
+                const adminTabBtn = document.getElementById('adminTabButton');
+                if (adminTabBtn) {
+                    adminTabBtn.classList.add('hidden');
+                }
+
+                if (!isPermissionError) {
+                    alert('Error loading app: ' + error.message);
+                }
             }
         });
 
