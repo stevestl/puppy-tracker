@@ -873,20 +873,32 @@
                     const userDocSnap = await getDoc(doc(db, 'users', user.uid));
                     
                     if (!userDocSnap.exists()) {
-                        console.log('User document does not exist, creating regular user profile...');
+                        const normalizedEmail = (user.email || '').trim().toLowerCase();
+                        const assignmentsQuery = query(
+                            collection(db, 'dog_assignments'),
+                            where('trainerEmail', '==', normalizedEmail)
+                        );
+                        const assignmentsSnapshot = await getDocs(assignmentsQuery);
+
+                        if (assignmentsSnapshot.empty) {
+                            console.warn('No dog assignment found for authenticated account; signing out.');
+                            await signOut(auth);
+                            alert('This account is not authorized. Please contact your administrator.');
+                            return;
+                        }
+
+                        console.log('Authorized assignment found. Creating user profile...');
                         await setDoc(doc(db, 'users', user.uid), {
-                            name: user.email.split('@')[0], // Default name from email
-                            email: user.email,
+                            name: normalizedEmail.split('@')[0], // Default name from email
+                            email: normalizedEmail,
                             role: 'user',
                             createdAt: new Date().toISOString()
                         });
-                        
-                        window.isAdmin = false;
-                        
-                        // Re-fetch to get the name we just set
+
                         const refreshedDoc = await getDoc(doc(db, 'users', user.uid));
-                        const userName = refreshedDoc.exists() && refreshedDoc.data().name ? refreshedDoc.data().name : user.email;
-                        document.getElementById('userEmail').textContent = userName;
+                        window.isAdmin = false;
+                        const createdName = refreshedDoc.exists() && refreshedDoc.data().name ? refreshedDoc.data().name : normalizedEmail;
+                        document.getElementById('userEmail').textContent = createdName;
                     } else {
                         window.isAdmin = userDocSnap.data().role === 'admin';
                         const userName = userDocSnap.data().name || user.email;
@@ -965,18 +977,28 @@
                     
                     if (assignmentsSnapshot.empty) {
                         // No authorization - delete the account
-                        await userCredential.user.delete();
+                        try {
+                            await userCredential.user.delete();
+                        } catch (deleteError) {
+                            console.warn('Failed to delete unauthorized auth account:', deleteError);
+                            await signOut(auth);
+                        }
                         alert('This email is not authorized. Please contact your administrator.');
                         return;
                     }
                 } catch (checkError) {
                     console.error('Error checking dog assignments:', checkError);
-                    await userCredential.user.delete();
+                    try {
+                        await userCredential.user.delete();
+                    } catch (deleteError) {
+                        console.warn('Failed to delete auth account after authorization check error:', deleteError);
+                        await signOut(auth);
+                    }
                     alert('Unable to verify authorization. Please contact your administrator.');
                     return;
                 }
                 
-                // Create user document
+                // Create user document only after authorization check passes
                 await setDoc(doc(db, 'users', userCredential.user.uid), {
                     name: name,
                     email: email,
