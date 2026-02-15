@@ -765,6 +765,10 @@
             <div class="card">
                 <div class="section-title">🐕 Assign Dog to Trainer</div>
                 
+                <div class="info-box">
+                    Assign dogs to trainer emails (including yourself). Trainers must have at least one dog assigned before they can sign up.
+                </div>
+                
                 <div class="form-group">
                     <label>Trainer Email</label>
                     <input type="email" id="trainerEmail" placeholder="trainer@email.com">
@@ -1036,6 +1040,11 @@
                 document.getElementById('dogName').value = '';
                 alert('✅ Dog assigned to trainer!');
                 await loadAssignments();
+                
+                // If admin assigned a dog to themselves, refresh their dog list
+                if (trainerEmail === window.currentUser.email) {
+                    await loadUserDogs();
+                }
             } catch (error) {
                 alert('Error: ' + error.message);
             }
@@ -1105,11 +1114,19 @@
             });
 
             const dogSelector = document.getElementById('dogSelector');
+            const dogSelectorCard = document.getElementById('dogSelectorCard');
+            
             if (window.userDogs.length === 0) {
-                dogSelector.innerHTML = '<div class="empty-state">No dogs assigned. Contact your administrator.</div>';
+                if (window.isAdmin) {
+                    dogSelectorCard.classList.add('hidden');
+                    dogSelector.innerHTML = '<div class="empty-state">You have no dogs assigned. Assign yourself a dog in the Admin tab if you\'re also a trainer.</div>';
+                } else {
+                    dogSelector.innerHTML = '<div class="empty-state">No dogs assigned. Contact your administrator.</div>';
+                }
                 return;
             }
 
+            dogSelectorCard.classList.remove('hidden');
             dogSelector.innerHTML = window.userDogs.map(dog => `
                 <button class="dog-chip ${window.selectedDog === dog ? 'active' : ''}" 
                         onclick="selectDog('${dog}')">
