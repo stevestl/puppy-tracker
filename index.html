@@ -1632,15 +1632,36 @@
 
     <script>
         function switchTab(tab) {
+            console.log('=== switchTab called ===');
             console.log('Switching to tab:', tab);
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            console.log('Event target:', event.target);
+            
+            // Remove active from all tabs
+            document.querySelectorAll('.tab').forEach(t => {
+                console.log('Removing active from tab button:', t);
+                t.classList.remove('active');
+            });
             event.target.classList.add('active');
+            console.log('Added active to:', event.target);
 
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            const tabContent = document.getElementById(tab + 'Tab');
+            // Remove active from all tab contents
+            document.querySelectorAll('.tab-content').forEach(t => {
+                console.log('Tab content found:', t.id, 'Display:', window.getComputedStyle(t).display);
+                t.classList.remove('active');
+            });
+            
+            const tabContentId = tab + 'Tab';
+            console.log('Looking for tab content with id:', tabContentId);
+            const tabContent = document.getElementById(tabContentId);
             console.log('Tab content element:', tabContent);
+            
             if (tabContent) {
+                console.log('Tab content BEFORE adding active:', window.getComputedStyle(tabContent).display);
                 tabContent.classList.add('active');
+                console.log('Tab content AFTER adding active:', window.getComputedStyle(tabContent).display);
+                console.log('Tab content classes:', tabContent.className);
+            } else {
+                console.error('Tab content not found for id:', tabContentId);
             }
 
             if (tab === 'history') {
@@ -1650,6 +1671,7 @@
                 window.loadAssignments();
                 window.loadAdminStats();
             }
+            console.log('=== switchTab complete ===');
         }
 
         function captureLocation() {
