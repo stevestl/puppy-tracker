@@ -1,0 +1,8 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Paw print icon">
+  <circle cx="41" cy="34" r="15" fill="#0e5a9f"/>
+  <circle cx="66" cy="25" r="13" fill="#0e5a9f"/>
+  <circle cx="89" cy="35" r="14" fill="#0e5a9f"/>
+  <circle cx="104" cy="57" r="12" fill="#0e5a9f"/>
+  <path d="M28 75c0-17 15-31 34-31h6c19 0 34 14 34 31 0 19-17 34-37 34S28 94 28 75z" fill="#163a63"/>
+  <path d="M45 81c6-6 12-9 20-9 8 0 15 3 20 9" stroke="#f2b633" stroke-width="6" stroke-linecap="round" fill="none"/>
+</svg>

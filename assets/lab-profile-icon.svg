@@ -1,0 +1,17 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Labrador profile icon">
+  <defs>
+    <linearGradient id="coat" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f0d7a9"/>
+      <stop offset="100%" stop-color="#cfa36a"/>
+    </linearGradient>
+  </defs>
+
+  <path d="M18 76h72c11 0 20 8 20 19v2H66v8H52v-8H38v8H24v-8H14c-3 0-6-3-6-6v-2c0-7 5-13 10-13z" fill="url(#coat)"/>
+  <path d="M66 62h17c10 0 18-8 18-18s-8-18-18-18h-7c-9 0-16 7-16 16v18z" fill="url(#coat)"/>
+  <path d="M59 48l-11-9c-4-3-5-9-2-13s9-5 13-2l10 8z" fill="#ba8f57"/>
+  <ellipse cx="88" cy="43" rx="3.8" ry="4.8" fill="#2f2419"/>
+  <ellipse cx="97" cy="53" rx="6" ry="5" fill="#2f2419"/>
+  <path d="M94 59c2 2 2 5 0 7" stroke="#2f2419" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <path d="M19 74c-4 0-8-3-8-8v-2c0-4 4-8 8-8h10v18z" fill="#c6995e"/>
+  <rect x="40" y="94" width="60" height="5" rx="2.5" fill="#f2b633"/>
+</svg>
