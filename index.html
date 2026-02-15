@@ -545,6 +545,10 @@
                     Your email must be authorized by an admin to create an account.
                 </div>
                 <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="signupName" placeholder="Your full name">
+                </div>
+                <div class="form-group">
                     <label>Email</label>
                     <input type="email" id="signupEmail" placeholder="your@email.com">
                 </div>
@@ -727,8 +731,14 @@
                 <div class="section-title">⚙️ Profile Settings</div>
                 
                 <div class="form-group">
-                    <label>Handler Name</label>
+                    <label>Your Name</label>
+                    <input type="text" id="userName" placeholder="Your full name">
+                </div>
+                
+                <div class="form-group">
+                    <label>Handler Name (for reports)</label>
                     <input type="text" id="handlerName" placeholder="Your name">
+                    <small style="color: #666; font-size: 12px;">This appears in exported reports</small>
                 </div>
 
                 <div class="form-group">
@@ -857,7 +867,11 @@
                 
                 document.getElementById('authScreen').classList.add('hidden');
                 document.getElementById('appScreen').classList.remove('hidden');
-                document.getElementById('userEmail').textContent = user.email;
+                
+                // Get and display user name
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                const userName = userDoc.exists() && userDoc.data().name ? userDoc.data().name : user.email;
+                document.getElementById('userEmail').textContent = userName;
                 
                 // Update role badge
                 const roleBadge = document.getElementById('roleBadge');
@@ -881,11 +895,12 @@
         });
 
         window.signup = async function() {
+            const name = document.getElementById('signupName').value.trim();
             const email = document.getElementById('signupEmail').value.trim().toLowerCase();
             const password = document.getElementById('signupPassword').value;
 
-            if (!email || !password) {
-                alert('Please enter email and password');
+            if (!name || !email || !password) {
+                alert('Please fill in all fields');
                 return;
             }
 
@@ -931,6 +946,7 @@
                 
                 // Create user document
                 await setDoc(doc(db, 'users', userCredential.user.uid), {
+                    name: name,
                     email: email,
                     role: isAdmin ? 'admin' : 'user',
                     createdAt: new Date().toISOString()
@@ -1367,14 +1383,31 @@
         };
 
         window.saveSettings = async function() {
-            const settings = {
-                handlerName: document.getElementById('handlerName').value,
-                organization: document.getElementById('organization').value
-            };
+            const userName = document.getElementById('userName').value;
+            const handlerName = document.getElementById('handlerName').value;
+            const organization = document.getElementById('organization').value;
 
             setSyncStatus('syncing');
             try {
-                await setDoc(doc(window.db, 'settings', window.currentUser.uid), settings);
+                // Update user name in users collection
+                if (userName) {
+                    await setDoc(doc(window.db, 'users', window.currentUser.uid), {
+                        name: userName,
+                        email: window.currentUser.email,
+                        role: window.isAdmin ? 'admin' : 'user',
+                        updatedAt: new Date().toISOString()
+                    }, { merge: true });
+                    
+                    // Update display
+                    document.getElementById('userEmail').textContent = userName;
+                }
+                
+                // Update handler settings
+                await setDoc(doc(window.db, 'settings', window.currentUser.uid), {
+                    handlerName: handlerName,
+                    organization: organization
+                });
+                
                 setSyncStatus('synced');
                 alert('✅ Settings saved and synced!');
             } catch (error) {
@@ -1385,11 +1418,19 @@
 
         window.loadSettings = async function() {
             try {
-                const docRef = doc(window.db, 'settings', window.currentUser.uid);
-                const docSnap = await getDoc(docRef);
+                // Load user name from users collection
+                const userDocRef = doc(window.db, 'users', window.currentUser.uid);
+                const userDocSnap = await getDoc(userDocRef);
+                if (userDocSnap.exists() && userDocSnap.data().name) {
+                    document.getElementById('userName').value = userDocSnap.data().name || '';
+                }
                 
-                if (docSnap.exists()) {
-                    const settings = docSnap.data();
+                // Load handler settings
+                const settingsRef = doc(window.db, 'settings', window.currentUser.uid);
+                const settingsSnap = await getDoc(settingsRef);
+                
+                if (settingsSnap.exists()) {
+                    const settings = settingsSnap.data();
                     document.getElementById('handlerName').value = settings.handlerName || '';
                     document.getElementById('organization').value = settings.organization || '';
                 }
@@ -1563,15 +1604,21 @@
 
     <script>
         function switchTab(tab) {
+            console.log('Switching to tab:', tab);
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             event.target.classList.add('active');
 
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.getElementById(tab + 'Tab').classList.add('active');
+            const tabContent = document.getElementById(tab + 'Tab');
+            console.log('Tab content element:', tabContent);
+            if (tabContent) {
+                tabContent.classList.add('active');
+            }
 
             if (tab === 'history') {
                 window.loadEntries();
             } else if (tab === 'admin' && window.isAdmin) {
+                console.log('Loading admin data');
                 window.loadAssignments();
                 window.loadAdminStats();
             }
