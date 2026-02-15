@@ -839,58 +839,84 @@
         window.selectedUserFilter = 'all';
         window.selectedDogFilter = 'all';
 
-        // Auth state observer
-        onAuthStateChanged(auth, async (user) => {
+        // Auth state observer with timeout
+        let authTimeout = setTimeout(() => {
+            console.error('Auth timeout - forcing to login screen');
             document.getElementById('loadingScreen').classList.add('hidden');
-            
-            if (user) {
-                window.currentUser = user;
+            document.getElementById('authScreen').classList.remove('hidden');
+        }, 5000);
+
+        onAuthStateChanged(auth, async (user) => {
+            try {
+                clearTimeout(authTimeout);
+                document.getElementById('loadingScreen').classList.add('hidden');
                 
-                // Check if user is admin or create initial admin
-                const userDoc = await getDoc(doc(db, 'users', user.uid));
-                
-                if (!userDoc.exists()) {
-                    // First user becomes admin
-                    const usersSnapshot = await getDocs(collection(db, 'users'));
-                    const isFirstUser = usersSnapshot.empty;
+                if (user) {
+                    console.log('User logged in:', user.email);
+                    window.currentUser = user;
                     
-                    await setDoc(doc(db, 'users', user.uid), {
-                        email: user.email,
-                        role: isFirstUser ? 'admin' : 'user',
-                        createdAt: new Date().toISOString()
-                    });
+                    // Check if user is admin or create initial admin
+                    const userDocSnap = await getDoc(doc(db, 'users', user.uid));
                     
-                    window.isAdmin = isFirstUser;
+                    if (!userDocSnap.exists()) {
+                        console.log('User document does not exist, creating...');
+                        // First user becomes admin
+                        const usersSnapshot = await getDocs(collection(db, 'users'));
+                        const isFirstUser = usersSnapshot.empty;
+                        
+                        await setDoc(doc(db, 'users', user.uid), {
+                            name: user.email.split('@')[0], // Default name from email
+                            email: user.email,
+                            role: isFirstUser ? 'admin' : 'user',
+                            createdAt: new Date().toISOString()
+                        });
+                        
+                        window.isAdmin = isFirstUser;
+                    } else {
+                        window.isAdmin = userDocSnap.data().role === 'admin';
+                    }
+                    
+                    console.log('Is admin:', window.isAdmin);
+                    
+                    document.getElementById('authScreen').classList.add('hidden');
+                    document.getElementById('appScreen').classList.remove('hidden');
+                    
+                    // Get and display user name
+                    const userDoc2 = await getDoc(doc(db, 'users', user.uid));
+                    const userName = userDoc2.exists() && userDoc2.data().name ? userDoc2.data().name : user.email;
+                    document.getElementById('userEmail').textContent = userName;
+                    
+                    // Update role badge
+                    const roleBadge = document.getElementById('roleBadge');
+                    if (window.isAdmin) {
+                        console.log('Setting up admin UI');
+                        roleBadge.textContent = 'Admin';
+                        roleBadge.classList.add('admin');
+                        const adminTabBtn = document.getElementById('adminTab');
+                        console.log('Admin tab button element:', adminTabBtn);
+                        if (adminTabBtn) {
+                            adminTabBtn.classList.remove('hidden');
+                            console.log('Admin tab should now be visible');
+                        }
+                    } else {
+                        roleBadge.textContent = 'User';
+                        roleBadge.classList.remove('admin');
+                        document.getElementById('adminTab').classList.add('hidden');
+                    }
+                    
+                    await loadUserData();
                 } else {
-                    window.isAdmin = userDoc.data().role === 'admin';
+                    console.log('No user logged in');
+                    window.currentUser = null;
+                    window.isAdmin = false;
+                    document.getElementById('authScreen').classList.remove('hidden');
+                    document.getElementById('appScreen').classList.add('hidden');
                 }
-                
-                document.getElementById('authScreen').classList.add('hidden');
-                document.getElementById('appScreen').classList.remove('hidden');
-                
-                // Get and display user name
-                const userDoc = await getDoc(doc(db, 'users', user.uid));
-                const userName = userDoc.exists() && userDoc.data().name ? userDoc.data().name : user.email;
-                document.getElementById('userEmail').textContent = userName;
-                
-                // Update role badge
-                const roleBadge = document.getElementById('roleBadge');
-                if (window.isAdmin) {
-                    roleBadge.textContent = 'Admin';
-                    roleBadge.classList.add('admin');
-                    document.getElementById('adminTab').classList.remove('hidden');
-                } else {
-                    roleBadge.textContent = 'User';
-                    roleBadge.classList.remove('admin');
-                    document.getElementById('adminTab').classList.add('hidden');
-                }
-                
-                await loadUserData();
-            } else {
-                window.currentUser = null;
-                window.isAdmin = false;
+            } catch (error) {
+                console.error('Auth state change error:', error);
+                document.getElementById('loadingScreen').classList.add('hidden');
                 document.getElementById('authScreen').classList.remove('hidden');
-                document.getElementById('appScreen').classList.add('hidden');
+                alert('Error loading app: ' + error.message);
             }
         });
 
