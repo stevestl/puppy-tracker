@@ -92,6 +92,16 @@
             gap: 8px;
         }
 
+        .section-title-with-action {
+            justify-content: space-between;
+        }
+
+        .section-title-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .form-group {
             margin-bottom: 20px;
         }
@@ -727,6 +737,185 @@
             height: 20px;
         }
 
+        .easter-egg-trigger {
+            width: 34px;
+            height: 34px;
+            border: 2px solid #e5e7eb;
+            border-radius: 999px;
+            background: #fff8e1;
+            color: #78350f;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            line-height: 1;
+            transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+        }
+
+        .easter-egg-trigger:hover {
+            transform: scale(1.06);
+            border-color: #f59e0b;
+            background: #fef3c7;
+        }
+
+        .bone-hunt-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1200;
+            background: rgba(17, 24, 39, 0.7);
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bone-hunt-panel {
+            width: min(520px, 100%);
+            max-height: 95vh;
+            overflow-y: auto;
+            margin: 0;
+            border-radius: 16px;
+            box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+        }
+
+        .easter-egg-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 50%;
+            background: #e5e7eb;
+            color: #1f2937;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .bone-hunt-help {
+            margin: 0 0 12px;
+            color: #4b5563;
+            font-size: 13px;
+        }
+
+        .bone-hunt-stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .bone-hunt-stat {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 8px;
+            text-align: center;
+            font-size: 13px;
+            color: #334155;
+            font-weight: 600;
+        }
+
+        .bone-hunt-status {
+            min-height: 20px;
+            font-size: 13px;
+            margin-bottom: 10px;
+            color: #0f172a;
+        }
+
+        .bone-hunt-grid {
+            display: grid;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+
+        .bone-tile {
+            aspect-ratio: 1 / 1;
+            border: 2px solid #bfdbfe;
+            border-radius: 10px;
+            background: #dbeafe;
+            color: #1f2937;
+            font-weight: 700;
+            font-size: 14px;
+            position: relative;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .bone-tile.dug {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .bone-tile.has-dog {
+            border-color: #f59e0b;
+            box-shadow: inset 0 0 0 2px #fde68a;
+        }
+
+        .tile-main {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tile-dog {
+            position: absolute;
+            right: 4px;
+            bottom: 2px;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .bone-hunt-controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .bone-control-btn {
+            border: none;
+            border-radius: 10px;
+            background: #1d4ed8;
+            color: white;
+            padding: 10px;
+            min-height: 42px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .bone-control-btn.dig {
+            background: #16a34a;
+            font-size: 14px;
+        }
+
+        .bone-hunt-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .modal-open {
+            overflow: hidden;
+        }
+
+        @media (max-width: 600px) {
+            .bone-hunt-panel {
+                border-radius: 14px;
+                padding: 16px;
+            }
+
+            .bone-hunt-grid {
+                gap: 5px;
+            }
+
+            .bone-control-btn {
+                min-height: 46px;
+                font-size: 18px;
+            }
+        }
+
         .place-name {
             font-weight: 600;
             color: #333;
@@ -813,8 +1002,43 @@
         </div>
 
         <div id="dogSelectorCard" class="card">
-            <div class="section-title"><img src="assets/full_sized_lab.png" alt="" class="lab-icon"> Select Dog</div>
+            <div class="section-title section-title-with-action">
+                <span class="section-title-label"><img src="assets/full_sized_lab.png" alt="" class="lab-icon"> Select Dog</span>
+                <button class="easter-egg-trigger" type="button" onclick="openBoneHunt()" aria-label="Open Bone Hunt mini game" title="Bone Hunt">🦴</button>
+            </div>
             <div class="dog-selector" id="dogSelector"></div>
+        </div>
+
+        <div id="boneHuntModal" class="bone-hunt-modal hidden" role="dialog" aria-modal="true" aria-label="Bone Hunt mini game">
+            <div class="bone-hunt-panel card">
+                <div class="section-title section-title-with-action">
+                    <span class="section-title-label">🐾 Bone Hunt</span>
+                    <button class="easter-egg-close" type="button" onclick="closeBoneHunt()" aria-label="Close Bone Hunt">×</button>
+                </div>
+                <p class="bone-hunt-help">Use arrow keys or WASD to move, then dig. On mobile, use the controls below.</p>
+                <div class="bone-hunt-stats">
+                    <div class="bone-hunt-stat">Time: <span id="boneHuntTimer">0</span>s</div>
+                    <div class="bone-hunt-stat">Bones: <span id="boneHuntFound">0</span>/<span id="boneHuntTotal">0</span></div>
+                    <div class="bone-hunt-stat">Moves: <span id="boneHuntMoves">0</span></div>
+                </div>
+                <div id="boneHuntStatus" class="bone-hunt-status"></div>
+                <div id="boneHuntGrid" class="bone-hunt-grid"></div>
+                <div class="bone-hunt-controls">
+                    <div></div>
+                    <button class="bone-control-btn" type="button" onclick="moveBoneDog(0, -1)" aria-label="Move up">↑</button>
+                    <div></div>
+                    <button class="bone-control-btn" type="button" onclick="moveBoneDog(-1, 0)" aria-label="Move left">←</button>
+                    <button class="bone-control-btn dig" type="button" onclick="digBoneTile()">Dig</button>
+                    <button class="bone-control-btn" type="button" onclick="moveBoneDog(1, 0)" aria-label="Move right">→</button>
+                    <div></div>
+                    <button class="bone-control-btn" type="button" onclick="moveBoneDog(0, 1)" aria-label="Move down">↓</button>
+                    <div></div>
+                </div>
+                <div class="bone-hunt-actions">
+                    <button class="btn btn-primary" type="button" onclick="restartBoneHunt()">Restart</button>
+                    <button class="btn btn-secondary" type="button" onclick="closeBoneHunt()">Close</button>
+                </div>
+            </div>
         </div>
 
         <div class="tabs">
@@ -1167,6 +1391,286 @@
         window.availableDogs = [];
         window.adminDetailRange = '2weeks';
         window.adminEntriesCache = [];
+        window.boneHunt = {
+            isOpen: false,
+            size: 8,
+            totalBones: 10,
+            timeLimit: 60,
+            timeLeft: 60,
+            foundBones: 0,
+            moveCount: 0,
+            dogCol: 0,
+            dogRow: 0,
+            dugTiles: new Set(),
+            bones: new Set(),
+            timerId: null,
+            gameOver: false
+        };
+
+        function getBoneTileKey(col, row) {
+            return `${col},${row}`;
+        }
+
+        function getBoneHuntConfig() {
+            const isMobile = window.matchMedia('(max-width: 600px)').matches;
+            return {
+                size: isMobile ? 6 : 8,
+                totalBones: isMobile ? 7 : 10,
+                timeLimit: isMobile ? 50 : 60
+            };
+        }
+
+        function getAdjacentBoneCount(col, row) {
+            const state = window.boneHunt;
+            let count = 0;
+
+            for (let y = -1; y <= 1; y += 1) {
+                for (let x = -1; x <= 1; x += 1) {
+                    if (x === 0 && y === 0) continue;
+                    const nextCol = col + x;
+                    const nextRow = row + y;
+                    if (nextCol < 0 || nextRow < 0 || nextCol >= state.size || nextRow >= state.size) continue;
+                    if (state.bones.has(getBoneTileKey(nextCol, nextRow))) {
+                        count += 1;
+                    }
+                }
+            }
+
+            return count;
+        }
+
+        function stopBoneHuntTimer() {
+            const state = window.boneHunt;
+            if (state.timerId) {
+                clearInterval(state.timerId);
+                state.timerId = null;
+            }
+        }
+
+        function setBoneHuntStatus(message) {
+            const statusEl = document.getElementById('boneHuntStatus');
+            if (statusEl) statusEl.textContent = message;
+        }
+
+        function finishBoneHunt(didWin) {
+            const state = window.boneHunt;
+            state.gameOver = true;
+            stopBoneHuntTimer();
+
+            if (didWin) {
+                setBoneHuntStatus('Great sniffing. You found every bone!');
+            } else {
+                setBoneHuntStatus('Time is up. Restart and try another run.');
+            }
+        }
+
+        function renderBoneHunt() {
+            const state = window.boneHunt;
+            const timerEl = document.getElementById('boneHuntTimer');
+            const foundEl = document.getElementById('boneHuntFound');
+            const totalEl = document.getElementById('boneHuntTotal');
+            const movesEl = document.getElementById('boneHuntMoves');
+            const gridEl = document.getElementById('boneHuntGrid');
+            if (!gridEl) return;
+
+            timerEl.textContent = String(state.timeLeft);
+            foundEl.textContent = String(state.foundBones);
+            totalEl.textContent = String(state.totalBones);
+            movesEl.textContent = String(state.moveCount);
+
+            gridEl.style.gridTemplateColumns = `repeat(${state.size}, minmax(0, 1fr))`;
+            const tiles = [];
+
+            for (let row = 0; row < state.size; row += 1) {
+                for (let col = 0; col < state.size; col += 1) {
+                    const key = getBoneTileKey(col, row);
+                    const isDug = state.dugTiles.has(key);
+                    const hasBone = state.bones.has(key);
+                    const hasDog = state.dogCol === col && state.dogRow === row;
+                    const adjacent = getAdjacentBoneCount(col, row);
+                    let tileLabel = '';
+
+                    if (isDug) {
+                        tileLabel = hasBone ? '🦴' : (adjacent > 0 ? String(adjacent) : '');
+                    }
+
+                    tiles.push(`
+                        <button
+                            class="bone-tile ${isDug ? 'dug' : ''} ${hasDog ? 'has-dog' : ''}"
+                            type="button"
+                            aria-label="Tile ${col + 1},${row + 1}"
+                            onclick="handleBoneTileTap(${col}, ${row})"
+                        >
+                            <span class="tile-main">${tileLabel}</span>
+                            ${hasDog ? '<span class="tile-dog">🐕</span>' : ''}
+                        </button>
+                    `);
+                }
+            }
+
+            gridEl.innerHTML = tiles.join('');
+        }
+
+        function startBoneHunt() {
+            const state = window.boneHunt;
+            const config = getBoneHuntConfig();
+
+            state.size = config.size;
+            state.totalBones = config.totalBones;
+            state.timeLimit = config.timeLimit;
+            state.timeLeft = config.timeLimit;
+            state.foundBones = 0;
+            state.moveCount = 0;
+            state.gameOver = false;
+            state.dugTiles = new Set();
+            state.bones = new Set();
+            state.dogCol = Math.floor(state.size / 2);
+            state.dogRow = Math.floor(state.size / 2);
+
+            const startingKey = getBoneTileKey(state.dogCol, state.dogRow);
+            while (state.bones.size < state.totalBones) {
+                const col = Math.floor(Math.random() * state.size);
+                const row = Math.floor(Math.random() * state.size);
+                const key = getBoneTileKey(col, row);
+                if (key === startingKey) continue;
+                state.bones.add(key);
+            }
+
+            stopBoneHuntTimer();
+            state.timerId = setInterval(() => {
+                if (!state.isOpen || state.gameOver) {
+                    stopBoneHuntTimer();
+                    return;
+                }
+
+                state.timeLeft -= 1;
+                if (state.timeLeft <= 0) {
+                    state.timeLeft = 0;
+                    renderBoneHunt();
+                    finishBoneHunt(false);
+                    return;
+                }
+                renderBoneHunt();
+            }, 1000);
+
+            setBoneHuntStatus('Find every hidden bone before the timer runs out.');
+            renderBoneHunt();
+        }
+
+        function handleBoneHuntKeydown(event) {
+            const state = window.boneHunt;
+            if (!state.isOpen || state.gameOver) return;
+
+            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target?.tagName)) return;
+
+            if (event.key === 'ArrowUp' || event.key.toLowerCase() === 'w') {
+                event.preventDefault();
+                window.moveBoneDog(0, -1);
+                return;
+            }
+            if (event.key === 'ArrowDown' || event.key.toLowerCase() === 's') {
+                event.preventDefault();
+                window.moveBoneDog(0, 1);
+                return;
+            }
+            if (event.key === 'ArrowLeft' || event.key.toLowerCase() === 'a') {
+                event.preventDefault();
+                window.moveBoneDog(-1, 0);
+                return;
+            }
+            if (event.key === 'ArrowRight' || event.key.toLowerCase() === 'd') {
+                event.preventDefault();
+                window.moveBoneDog(1, 0);
+                return;
+            }
+            if (event.key === ' ' || event.key === 'Enter') {
+                event.preventDefault();
+                window.digBoneTile();
+            }
+        }
+
+        window.openBoneHunt = function() {
+            const modalEl = document.getElementById('boneHuntModal');
+            if (!modalEl) return;
+            window.boneHunt.isOpen = true;
+            modalEl.classList.remove('hidden');
+            document.body.classList.add('modal-open');
+            startBoneHunt();
+        };
+
+        window.closeBoneHunt = function() {
+            const modalEl = document.getElementById('boneHuntModal');
+            if (!modalEl) return;
+            window.boneHunt.isOpen = false;
+            modalEl.classList.add('hidden');
+            document.body.classList.remove('modal-open');
+            stopBoneHuntTimer();
+        };
+
+        window.restartBoneHunt = function() {
+            if (!window.boneHunt.isOpen) return;
+            startBoneHunt();
+        };
+
+        window.moveBoneDog = function(dx, dy) {
+            const state = window.boneHunt;
+            if (!state.isOpen || state.gameOver) return;
+
+            const nextCol = state.dogCol + dx;
+            const nextRow = state.dogRow + dy;
+            if (nextCol < 0 || nextRow < 0 || nextCol >= state.size || nextRow >= state.size) return;
+
+            state.dogCol = nextCol;
+            state.dogRow = nextRow;
+            state.moveCount += 1;
+            renderBoneHunt();
+        };
+
+        window.digBoneTile = function() {
+            const state = window.boneHunt;
+            if (!state.isOpen || state.gameOver) return;
+
+            const key = getBoneTileKey(state.dogCol, state.dogRow);
+            if (state.dugTiles.has(key)) {
+                setBoneHuntStatus('This tile is already dug.');
+                return;
+            }
+
+            state.dugTiles.add(key);
+            if (state.bones.has(key)) {
+                state.foundBones += 1;
+                setBoneHuntStatus('Bone found!');
+            } else {
+                state.timeLeft = Math.max(0, state.timeLeft - 1);
+                setBoneHuntStatus('No bone there. Keep searching.');
+            }
+
+            renderBoneHunt();
+            if (state.foundBones >= state.totalBones) {
+                finishBoneHunt(true);
+            } else if (state.timeLeft <= 0) {
+                finishBoneHunt(false);
+            }
+        };
+
+        window.handleBoneTileTap = function(col, row) {
+            const state = window.boneHunt;
+            if (!state.isOpen || state.gameOver) return;
+
+            const deltaCol = col - state.dogCol;
+            const deltaRow = row - state.dogRow;
+            const distance = Math.abs(deltaCol) + Math.abs(deltaRow);
+
+            if (distance === 0) {
+                window.digBoneTile();
+                return;
+            }
+            if (distance !== 1) return;
+
+            window.moveBoneDog(deltaCol, deltaRow);
+        };
+
+        window.addEventListener('keydown', handleBoneHuntKeydown);
 
         // Auth state observer with timeout
         let authTimeout = setTimeout(() => {
