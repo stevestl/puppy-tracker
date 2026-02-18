@@ -737,26 +737,13 @@
             height: 20px;
         }
 
-        .easter-egg-trigger {
-            width: 34px;
-            height: 34px;
-            border: 2px solid #e5e7eb;
-            border-radius: 999px;
-            background: #fff8e1;
-            color: #78350f;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+        .easter-egg-icon-btn {
+            border: none;
+            background: transparent;
+            padding: 0;
+            margin: 0;
+            line-height: 0;
             cursor: pointer;
-            font-size: 18px;
-            line-height: 1;
-            transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-        }
-
-        .easter-egg-trigger:hover {
-            transform: scale(1.06);
-            border-color: #f59e0b;
-            background: #fef3c7;
         }
 
         .bone-hunt-modal {
@@ -905,18 +892,76 @@
         }
 
         @media (max-width: 600px) {
+            .bone-hunt-modal {
+                padding: 6px;
+            }
+
             .bone-hunt-panel {
-                border-radius: 14px;
-                padding: 16px;
+                width: min(360px, 100%);
+                max-height: calc(100dvh - 12px);
+                border-radius: 12px;
+                padding: 12px;
+                overflow-y: hidden;
+            }
+
+            .bone-hunt-panel .section-title {
+                font-size: 16px;
+                margin-bottom: 8px;
+            }
+
+            .bone-hunt-help {
+                font-size: 12px;
+                margin-bottom: 8px;
+            }
+
+            .bone-hunt-stats {
+                gap: 6px;
+                margin-bottom: 6px;
+            }
+
+            .bone-hunt-stat {
+                padding: 6px;
+                font-size: 12px;
+            }
+
+            .bone-hunt-status {
+                min-height: 16px;
+                font-size: 12px;
+                margin-bottom: 6px;
             }
 
             .bone-hunt-grid {
-                gap: 5px;
+                gap: 4px;
+                margin-bottom: 8px;
+            }
+
+            .bone-tile {
+                border-radius: 8px;
+                font-size: 12px;
+            }
+
+            .tile-dog {
+                font-size: 13px;
+            }
+
+            .bone-hunt-controls {
+                gap: 6px;
+                margin-bottom: 6px;
             }
 
             .bone-control-btn {
-                min-height: 36px;
-                font-size: 14px;
+                min-height: 30px;
+                font-size: 13px;
+                padding: 4px;
+                border-radius: 8px;
+            }
+
+            .bone-control-btn.dig {
+                font-size: 11px;
+            }
+
+            .bone-hunt-actions {
+                gap: 6px;
             }
         }
 
@@ -1006,9 +1051,11 @@
         </div>
 
         <div id="dogSelectorCard" class="card">
-            <div class="section-title section-title-with-action">
-                <span class="section-title-label"><img src="assets/full_sized_lab.png" alt="" class="lab-icon"> Select Dog</span>
-                <button class="easter-egg-trigger" type="button" onclick="openBoneHunt()" aria-label="Open Bone Hunt mini game" title="Bone Hunt">🦴</button>
+            <div class="section-title">
+                <button class="easter-egg-icon-btn" type="button" onclick="openBoneHunt()" aria-label="Open Bone Hunt mini game" title="Bone Hunt">
+                    <img src="assets/full_sized_lab.png" alt="" class="lab-icon">
+                </button>
+                Select Dog
             </div>
             <div class="dog-selector" id="dogSelector"></div>
         </div>
@@ -1399,8 +1446,8 @@
             isOpen: false,
             size: 8,
             totalBones: 10,
-            timeLimit: 60,
-            timeLeft: 60,
+            timeLimit: 180,
+            timeLeft: 180,
             foundBones: 0,
             moveCount: 0,
             dogCol: 0,
@@ -1418,9 +1465,9 @@
         function getBoneHuntConfig() {
             const isMobile = window.matchMedia('(max-width: 600px)').matches;
             return {
-                size: isMobile ? 6 : 8,
-                totalBones: isMobile ? 7 : 10,
-                timeLimit: isMobile ? 50 : 60
+                size: isMobile ? 5 : 8,
+                totalBones: isMobile ? 6 : 10,
+                timeLimit: 180
             };
         }
 
