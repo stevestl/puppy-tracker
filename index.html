@@ -104,6 +104,12 @@
             font-size: 14px;
         }
 
+        .required-indicator {
+            color: #dc2626;
+            font-weight: 700;
+            margin-left: 2px;
+        }
+
         .form-group input,
         .form-group select,
         .form-group textarea {
@@ -831,27 +837,17 @@
                         <span>📍 Capture Current Location</span>
                     </button>
                     <div id="locationStatus" class="location-status hidden"></div>
-                    <div id="nearbyPlaces" class="hidden" style="margin-top: 15px;">
-                        <label style="display: block; color: #333; font-weight: 500; margin-bottom: 8px; font-size: 14px;">
-                            Nearby Places (or type manually below)
-                        </label>
-                        <div id="placesList"></div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="section-title">📝 Interaction Details</div>
-                    
-                    <div class="form-group">
+                    <div class="form-group" style="margin-top: 15px;">
                         <label>Location Name</label>
                         <input type="text" id="locationName" placeholder="e.g., St Louis Art Museum, Forest Park">
                     </div>
                     <div class="form-group">
-                        <label>Location Type</label>
+                        <label>Location Type<span class="required-indicator">*</span></label>
                         <select id="locationType">
                             <option value="">Select type...</option>
                             <option value="Store">Store/Shopping</option>
                             <option value="Restaurant">Restaurant/Café</option>
+                            <option value="Museum">Museum</option>
                             <option value="Park">Park/Outdoor</option>
                             <option value="Vet">Veterinary Office</option>
                             <option value="Public Transit">Public Transportation</option>
@@ -861,6 +857,19 @@
                             <option value="Other">Other</option>
                         </select>
                     </div>
+                    <div id="nearbyPlaces" class="hidden" style="margin-top: 15px;">
+                        <label style="display: block; color: #333; font-weight: 500; margin-bottom: 8px; font-size: 14px;">
+                            Nearby Places (or type manually below)
+                        </label>
+                        <div id="placesList"></div>
+                    </div>
+                    <small style="display: block; margin-top: 10px; color: #666; font-size: 12px;">
+                        <span class="required-indicator">*</span> Required: Location Type and Overall Behavior. Capture location or enter Location Name.
+                    </small>
+                </div>
+
+                <div class="card">
+                    <div class="section-title">📝 Interaction Details</div>
 
                     <div class="form-group">
                         <label>Duration: <span id="durationDisplay">0</span> hours</label>
@@ -871,7 +880,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Overall Behavior</label>
+                        <label>Overall Behavior<span class="required-indicator">*</span></label>
                         <select id="behavior">
                             <option value="">Select rating...</option>
                             <option value="Excellent">Excellent</option>
@@ -1823,7 +1832,7 @@
                 return;
             }
 
-            const locationName = document.getElementById('locationName').value;
+            const locationName = document.getElementById('locationName').value.trim();
             const locationType = document.getElementById('locationType').value;
             const duration = parseFloat(document.getElementById('duration').value) || 0;
             const behavior = document.getElementById('behavior').value;
@@ -1831,8 +1840,8 @@
             const distractions = getCheckedValues('distraction');
             const commands = getCheckedValues('command');
 
-            if (!window.currentLocation) {
-                alert('Please capture your location first');
+            if (!window.currentLocation && !locationName) {
+                alert('Please capture your location or enter a location name manually');
                 return;
             }
 
