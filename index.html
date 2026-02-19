@@ -1193,6 +1193,12 @@
                         <span>📍 Capture Current Location</span>
                     </button>
                     <div id="locationStatus" class="location-status hidden"></div>
+                    <div id="nearbyPlaces" class="hidden" style="margin-top: 15px;">
+                        <label style="display: block; color: #333; font-weight: 500; margin-bottom: 8px; font-size: 14px;">
+                            Nearby Places (or type manually below)
+                        </label>
+                        <div id="placesList"></div>
+                    </div>
                     <div class="form-group" style="margin-top: 15px;">
                         <label>Location Name</label>
                         <input type="text" id="locationName" placeholder="e.g., St Louis Art Museum, Forest Park">
@@ -1201,23 +1207,17 @@
                         <label>Location Type<span class="required-indicator">*</span></label>
                         <select id="locationType">
                             <option value="">Select type...</option>
-                            <option value="Store">Store/Shopping</option>
-                            <option value="Restaurant">Restaurant/Café</option>
-                            <option value="Museum">Museum</option>
-                            <option value="Park">Park/Outdoor</option>
-                            <option value="Vet">Veterinary Office</option>
-                            <option value="Public Transit">Public Transportation</option>
-                            <option value="Office">Office/Workplace</option>
-                            <option value="Medical">Medical Facility</option>
                             <option value="Worship">House of Worship</option>
+                            <option value="Medical">Medical Facility</option>
+                            <option value="Museum">Museum</option>
+                            <option value="Office">Office/Workplace</option>
+                            <option value="Park">Park/Outdoor</option>
+                            <option value="Public Transit">Public Transportation</option>
+                            <option value="Restaurant">Restaurant/Café</option>
+                            <option value="Store">Store/Shopping</option>
+                            <option value="Vet">Veterinary Office</option>
                             <option value="Other">Other</option>
                         </select>
-                    </div>
-                    <div id="nearbyPlaces" class="hidden" style="margin-top: 15px;">
-                        <label style="display: block; color: #333; font-weight: 500; margin-bottom: 8px; font-size: 14px;">
-                            Nearby Places (or type manually below)
-                        </label>
-                        <div id="placesList"></div>
                     </div>
                     <small style="display: block; margin-top: 10px; color: #666; font-size: 12px;">
                         <span class="required-indicator">*</span> Required: Location Type and Overall Behavior. Capture location or enter Location Name.
@@ -1627,7 +1627,7 @@
         const APP_CHECK_PLACEHOLDER = 'REPLACE_WITH_RECAPTCHA_V3_SITE_KEY';
         const appCheckSiteKey = '6LcgqmwsAAAAAJGB8riyJ9efiXhmPZMYPIy_V05q';
         if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
-            self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+            self.FIREBASE_APPCHECK_DEBUG_TOKEN = 'AE67CEF8-7D87-4FB7-98E0-98162C4D9D20';
         }
         let appCheck = null;
         if (appCheckSiteKey && appCheckSiteKey !== APP_CHECK_PLACEHOLDER) {
