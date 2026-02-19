@@ -15,12 +15,16 @@ Service Puppy Tracker is a single-page web app for trainers and administrators t
   - Commands practiced
   - Notes
 - Shows training history with date-range filtering.
+- Supports in-app editing of existing training entries for owners/admins.
 - Generates copy/paste biweekly summaries.
 - Exports CSV for trainer and admin workflows.
 - Provides admin tools for:
+  - All training data dashboard and CSV export
+  - User role management (user/admin)
   - Litter registration
   - Dog-to-trainer assignment
-  - Global reporting and CSV export
+  - Dog rename and propagation across assignments/history
+  - Duplicate event detection
 - Includes an easter egg mini-game (Bone Hunt) hidden behind the icon left of "Select Dog".
 
 ## Tech stack
@@ -79,8 +83,8 @@ The app now includes built-in guides:
   - Open `Settings` tab.
   - Use `Open User Documentation`.
 - Admin documentation (admin-only):
-  - Open `Admin` tab.
-  - Use `Open Admin Documentation`.
+  - Log in as an admin user.
+  - Use `Admin Guide` in the top-right of the app header.
 
 ## Firebase admin management notes
 

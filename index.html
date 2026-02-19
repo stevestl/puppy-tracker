@@ -52,6 +52,26 @@
             gap: 10px;
         }
 
+        .title-text {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-guide-header-btn {
+            width: fit-content;
+            max-width: 20%;
+            min-width: 0;
+            flex: 0 1 auto;
+            margin-left: auto;
+            margin-top: 0;
+            padding: 4px 6px;
+            font-size: 11px;
+            border-width: 1px;
+            justify-content: center;
+            white-space: nowrap;
+        }
+
         .puppy-info {
             color: #666;
             font-size: 14px;
@@ -279,6 +299,23 @@
             border-radius: 6px;
             font-size: 12px;
             cursor: pointer;
+        }
+
+        .edit-btn {
+            background: var(--duo-blue);
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .entry-actions {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
         }
 
         .tabs {
@@ -643,6 +680,68 @@
             flex-wrap: wrap;
         }
 
+        .admin-inline-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: end;
+            margin-top: 10px;
+        }
+
+        .admin-inline-row .form-group {
+            flex: 1 1 180px;
+            margin-bottom: 0;
+        }
+
+        .admin-inline-row .btn {
+            width: auto;
+            min-width: 150px;
+            margin-top: 0;
+            align-self: end;
+        }
+
+        .admin-user-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 10px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .admin-user-row:last-child {
+            border-bottom: none;
+        }
+
+        .admin-user-role {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            color: #374151;
+            background: #f3f4f6;
+            border-radius: 999px;
+            padding: 4px 10px;
+        }
+
+        .admin-user-role.admin {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .quality-list {
+            margin-top: 10px;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background: #f9fafb;
+            font-size: 13px;
+            color: #374151;
+            max-height: 220px;
+            overflow-y: auto;
+            line-height: 1.45;
+        }
+
         .admin-detail-table-wrap {
             overflow-x: auto;
             border: 1px solid #e5e7eb;
@@ -726,15 +825,15 @@
         }
 
         .lab-icon {
-            width: 22px;
-            height: 22px;
+            width: 35px;
+            height: 35px;
             flex-shrink: 0;
             vertical-align: middle;
         }
 
         .section-title .lab-icon {
-            width: 20px;
-            height: 20px;
+            width: 35px;
+            height: 35px;
         }
 
         .easter-egg-icon-btn {
@@ -744,6 +843,11 @@
             margin: 0;
             line-height: 0;
             cursor: pointer;
+        }
+
+        .easter-egg-icon-btn .lab-icon {
+            width: 35px;
+            height: 35px;
         }
 
         .bone-hunt-modal {
@@ -1044,6 +1148,10 @@
             .docs-section ul {
                 font-size: 13px;
             }
+
+            .admin-inline-row .btn {
+                width: 100%;
+            }
         }
 
         .place-name {
@@ -1117,7 +1225,12 @@
 
     <div id="appScreen" class="container hidden">
         <div class="header">
-            <h1><img src="assets/full_sized_lab.png" alt="" class="lab-icon"> Service Puppy Tracker</h1>
+            <h1>
+                <span class="title-text"><img src="assets/full_sized_lab.png" alt="" class="lab-icon"> Service Puppy Tracker</span>
+                <button class="btn btn-secondary admin-guide-header-btn hidden" id="adminGuideHeaderBtn" onclick="openAdminDocs()">
+                    Admin Guide
+                </button>
+            </h1>
             <div class="puppy-info" id="puppyInfo">Select a dog below</div>
             <div class="sync-status" id="syncStatus">
                 <span>●</span> <span id="syncText">Synced</span>
@@ -1219,9 +1332,6 @@
                             <option value="Other">Other</option>
                         </select>
                     </div>
-                    <small style="display: block; margin-top: 10px; color: #666; font-size: 12px;">
-                        <span class="required-indicator">*</span> Required: Location Type and Overall Behavior. Capture location or enter Location Name.
-                    </small>
                 </div>
 
                 <div class="card">
@@ -1308,13 +1418,16 @@
 
                     <div class="form-group">
                         <label>Notes</label>
-                        <textarea id="notes" maxlength="256" oninput="updateNotesCounter()" placeholder="Any additional observations, incidents, or achievements..."></textarea>
-                        <small id="notesCounter" style="color: #666; font-size: 12px;">256 characters remaining</small>
+                        <textarea id="notes" maxlength="128" oninput="updateNotesCounter()" placeholder="Any additional observations, incidents, or achievements..."></textarea>
+                        <small id="notesCounter" style="color: #666; font-size: 12px;">128 characters remaining</small>
                     </div>
 
                     <button class="btn btn-primary" onclick="saveEntry()">
                         💾 Save Entry
                     </button>
+                    <small style="display: block; margin-top: 10px; color: #666; font-size: 12px;">
+                        <span class="required-indicator">*</span> Required: Location Type and Overall Behavior. Capture location or enter Location Name.
+                    </small>
                 </div>
             </div>
         </div>
@@ -1412,13 +1525,66 @@
         <!-- Admin Tab -->
         <div id="adminTab" class="tab-content">
             <div class="card">
-                <div class="section-title">🛠️ Admin Guide</div>
-                <div class="info-box">
-                    Admin-only instructions for litters, assignments, permissions, and exports.
+                <div class="section-title">📊 All Training Data</div>
+                <div id="adminStats"></div>
+                <div class="admin-range-controls">
+                    <button class="filter-btn" id="adminRange2WeeksBtn" onclick="setAdminDetailRange('2weeks')">Rolling 2 Weeks</button>
+                    <button class="filter-btn" id="adminRange12MonthsBtn" onclick="setAdminDetailRange('12months')">Rolling 12 Months</button>
                 </div>
-                <button class="btn btn-secondary" onclick="openAdminDocs()">
-                    Open Admin Documentation
+                <button class="btn btn-secondary" onclick="exportAdminDisplayedRecords()">
+                    📤 Export Displayed Records (CSV)
                 </button>
+                <div id="adminDetailTable"></div>
+            </div>
+
+            <div class="card">
+                <div class="section-title">👥 User Role Management</div>
+                <div class="info-box">
+                    Promote or demote existing users in-app. Changes apply at next login refresh.
+                </div>
+                <div class="admin-inline-row">
+                    <div class="form-group">
+                        <label>User Email</label>
+                        <input type="email" id="roleUserEmail" placeholder="trainer@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Role</label>
+                        <select id="roleValue">
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveUserRoleChange()">Save Role</button>
+                </div>
+                <div class="admin-scroll-list" id="userRoleList" style="margin-top: 14px;"></div>
+            </div>
+
+            <div class="card">
+                <div class="section-title"><img src="assets/full_sized_lab.png" alt="" class="lab-icon"> Assign Dog to Trainer</div>
+                
+                <div class="info-box">
+                    Assign registered dogs to trainer emails (including yourself). Trainers must have at least one dog assigned before they can sign up.
+                </div>
+                
+                <div class="form-group">
+                    <label>Trainer Email</label>
+                    <input type="email" id="trainerEmail" placeholder="trainer@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label>Dog Name</label>
+                    <input type="text" id="dogName" list="registeredDogOptions" placeholder="Registered dog's name">
+                    <datalist id="registeredDogOptions"></datalist>
+                </div>
+
+                <button class="btn btn-primary" onclick="assignDog()">
+                    ➕ Assign Dog to Trainer
+                </button>
+
+                <details class="admin-collapsible" open>
+                    <summary>Current Assignments (<span id="trainerAssignmentsCount">0</span> trainers)</summary>
+                    <div id="assignmentsList" class="admin-scroll-list"></div>
+                </details>
             </div>
 
             <div class="card">
@@ -1454,44 +1620,40 @@
             </div>
 
             <div class="card">
-                <div class="section-title"><img src="assets/full_sized_lab.png" alt="" class="lab-icon"> Assign Dog to Trainer</div>
-                
+                <div class="section-title">✏️ Dog Rename and Popigation</div>
                 <div class="info-box">
-                    Assign registered dogs to trainer emails (including yourself). Trainers must have at least one dog assigned before they can sign up.
+                    Rename dog records and propagate the new name to assignments and historical entries.
                 </div>
-                
-                <div class="form-group">
-                    <label>Trainer Email</label>
-                    <input type="email" id="trainerEmail" placeholder="trainer@email.com">
+                <div class="admin-inline-row">
+                    <div class="form-group">
+                        <label>Current Dog Name</label>
+                        <input type="text" id="renameOldDogName" placeholder="Current spelling">
+                    </div>
+                    <div class="form-group">
+                        <label>New Dog Name</label>
+                        <input type="text" id="renameNewDogName" placeholder="Corrected spelling">
+                    </div>
                 </div>
-
-                <div class="form-group">
-                    <label>Dog Name</label>
-                    <input type="text" id="dogName" list="registeredDogOptions" placeholder="Registered dog's name">
-                    <datalist id="registeredDogOptions"></datalist>
+                <div class="admin-inline-row">
+                    <div class="form-group">
+                        <label>Mother Name (optional update)</label>
+                        <input type="text" id="renameMotherName" placeholder="Leave blank to keep">
+                    </div>
+                    <div class="form-group">
+                        <label>Litter Name (optional update)</label>
+                        <input type="text" id="renameLitterName" placeholder="Leave blank to keep">
+                    </div>
+                    <button class="btn btn-primary" onclick="renameDogAndPropagate()">Rename Dog</button>
                 </div>
-
-                <button class="btn btn-primary" onclick="assignDog()">
-                    ➕ Assign Dog to Trainer
-                </button>
-
-                <details class="admin-collapsible" open>
-                    <summary>Current Assignments (<span id="trainerAssignmentsCount">0</span> trainers)</summary>
-                    <div id="assignmentsList" class="admin-scroll-list"></div>
-                </details>
             </div>
 
             <div class="card">
-                <div class="section-title">📊 All Training Data</div>
-                <div id="adminStats"></div>
-                <div class="admin-range-controls">
-                    <button class="filter-btn" id="adminRange2WeeksBtn" onclick="setAdminDetailRange('2weeks')">Rolling 2 Weeks</button>
-                    <button class="filter-btn" id="adminRange12MonthsBtn" onclick="setAdminDetailRange('12months')">Rolling 12 Months</button>
+                <div class="section-title">🧪 Duplicate Event Detection</div>
+                <div class="info-box">
+                    Scan for duplicate dogs, duplicate assignments, and near-identical recent entries.
                 </div>
-                <button class="btn btn-secondary" onclick="exportAdminDisplayedRecords()">
-                    📤 Export Displayed Records (CSV)
-                </button>
-                <div id="adminDetailTable"></div>
+                <button class="btn btn-secondary" onclick="runDuplicateScan()">Run Duplicate Scan</button>
+                <div id="duplicateReport" class="quality-list">No scan has been run yet.</div>
             </div>
         </div>
 
@@ -1557,6 +1719,7 @@
                 <div class="docs-section">
                     <h4>Access and permissions</h4>
                     <ul>
+                        <li>The Admin Guide is opened from the top-right <code>Open Admin Guide</code> header button.</li>
                         <li>Only users with role <code>admin</code> in <code>users</code> can access the Admin tab.</li>
                         <li>Each trainer must have at least one <code>dog_assignments</code> record before signup/login is allowed.</li>
                         <li>Unauthorized authenticated users are automatically signed out.</li>
@@ -1635,6 +1798,80 @@
                 </div>
             </div>
         </div>
+
+        <div id="editEntryModal" class="docs-modal hidden" role="dialog" aria-modal="true" aria-label="Edit training entry">
+            <div class="docs-panel card">
+                <div class="section-title section-title-with-action docs-title">
+                    <span class="section-title-label">✏️ Edit Entry</span>
+                    <button class="easter-egg-close" type="button" onclick="closeEditEntryModal()" aria-label="Close entry editor">×</button>
+                </div>
+                <div class="form-group">
+                    <label>Location Name</label>
+                    <input type="text" id="editLocationName" placeholder="Location name">
+                </div>
+                <div class="form-group">
+                    <label>Location Type</label>
+                    <select id="editLocationType">
+                        <option value="">Select type...</option>
+                        <option value="Worship">House of Worship</option>
+                        <option value="Medical">Medical Facility</option>
+                        <option value="Museum">Museum</option>
+                        <option value="Office">Office/Workplace</option>
+                        <option value="Park">Park/Outdoor</option>
+                        <option value="Public Transit">Public Transportation</option>
+                        <option value="Restaurant">Restaurant/Café</option>
+                        <option value="Store">Store/Shopping</option>
+                        <option value="Vet">Veterinary Office</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Duration (hours)</label>
+                    <input type="number" id="editDuration" min="0" max="5" step="0.5">
+                </div>
+                <div class="form-group">
+                    <label>Overall Behavior</label>
+                    <select id="editBehavior">
+                        <option value="">Select rating...</option>
+                        <option value="Excellent">Excellent</option>
+                        <option value="Good">Good</option>
+                        <option value="Fair">Fair</option>
+                        <option value="Needs Improvement">Needs Improvement</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Distractions Present</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label"><input type="checkbox" name="editDistraction" value="Other dogs"> Other dogs</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editDistraction" value="Children"> Children</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editDistraction" value="Food"> Food</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editDistraction" value="Loud noises"> Loud noises</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editDistraction" value="Crowds"> Crowds</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editDistraction" value="Other animals"> Other animals</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Commands Practiced</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Sit"> Sit</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Stay"> Stay</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Leave it"> Leave it</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Let's Go"> Let's Go</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Kennel"> Kennel</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Potty"> Potty</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Name Recognition"> Name Recognition</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="editNotes" maxlength="128" placeholder="Update notes"></textarea>
+                </div>
+                <div class="docs-close-row">
+                    <button class="btn btn-primary" type="button" onclick="saveEditedEntry()">Save Changes</button>
+                    <button class="btn btn-secondary" type="button" onclick="closeEditEntryModal()" style="margin-left: 8px;">Cancel</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Firebase SDK -->
@@ -1687,6 +1924,9 @@
         window.availableDogs = [];
         window.adminDetailRange = '2weeks';
         window.adminEntriesCache = [];
+        window.entryCacheById = new Map();
+        window.editingEntryId = null;
+        window.duplicateScanCache = null;
         window.boneHunt = {
             isOpen: false,
             size: 8,
@@ -1970,7 +2210,8 @@
             const anyOpen = shouldLock
                 || window.boneHunt?.isOpen
                 || !document.getElementById('userDocsModal')?.classList.contains('hidden')
-                || !document.getElementById('adminDocsModal')?.classList.contains('hidden');
+                || !document.getElementById('adminDocsModal')?.classList.contains('hidden')
+                || !document.getElementById('editEntryModal')?.classList.contains('hidden');
 
             document.body.classList.toggle('modal-open', anyOpen);
         }
@@ -2009,8 +2250,9 @@
 
             const userModalOpen = !document.getElementById('userDocsModal')?.classList.contains('hidden');
             const adminModalOpen = !document.getElementById('adminDocsModal')?.classList.contains('hidden');
+            const editEntryOpen = !document.getElementById('editEntryModal')?.classList.contains('hidden');
             const boneOpen = window.boneHunt?.isOpen;
-            if (!userModalOpen && !adminModalOpen && !boneOpen) return;
+            if (!userModalOpen && !adminModalOpen && !editEntryOpen && !boneOpen) return;
 
             event.preventDefault();
             if (boneOpen) {
@@ -2021,6 +2263,9 @@
             }
             if (adminModalOpen) {
                 window.closeAdminDocs();
+            }
+            if (editEntryOpen) {
+                window.closeEditEntryModal();
             }
         }
 
@@ -2102,6 +2347,7 @@
                     
                     // Update role badge
                     const roleBadge = document.getElementById('roleBadge');
+                    const adminGuideHeaderBtn = document.getElementById('adminGuideHeaderBtn');
                     if (window.isAdmin) {
                         console.log('Setting up admin UI');
                         roleBadge.textContent = 'Admin';
@@ -2112,12 +2358,18 @@
                             adminTabBtn.classList.remove('hidden');
                             console.log('Admin tab should now be visible');
                         }
+                        if (adminGuideHeaderBtn) {
+                            adminGuideHeaderBtn.classList.remove('hidden');
+                        }
                     } else {
                         roleBadge.textContent = 'User';
                         roleBadge.classList.remove('admin');
                         const adminTabBtn = document.getElementById('adminTabButton');
                         if (adminTabBtn) {
                             adminTabBtn.classList.add('hidden');
+                        }
+                        if (adminGuideHeaderBtn) {
+                            adminGuideHeaderBtn.classList.add('hidden');
                         }
                     }
                     
@@ -2127,8 +2379,12 @@
                     window.currentUser = null;
                     window.isAdmin = false;
                     const adminTabBtn = document.getElementById('adminTabButton');
+                    const adminGuideHeaderBtn = document.getElementById('adminGuideHeaderBtn');
                     if (adminTabBtn) {
                         adminTabBtn.classList.add('hidden');
+                    }
+                    if (adminGuideHeaderBtn) {
+                        adminGuideHeaderBtn.classList.add('hidden');
                     }
                     document.getElementById('authScreen').classList.remove('hidden');
                     document.getElementById('appScreen').classList.add('hidden');
@@ -2151,8 +2407,12 @@
                 document.getElementById('loadingScreen').classList.add('hidden');
 
                 const adminTabBtn = document.getElementById('adminTabButton');
+                const adminGuideHeaderBtn = document.getElementById('adminGuideHeaderBtn');
                 if (adminTabBtn && !hasAuthenticatedUser) {
                     adminTabBtn.classList.add('hidden');
+                }
+                if (adminGuideHeaderBtn && !hasAuthenticatedUser) {
+                    adminGuideHeaderBtn.classList.add('hidden');
                 }
 
                 if (hasAuthenticatedUser) {
@@ -2368,6 +2628,31 @@
             );
         }
 
+        function normalizeEmail(email) {
+            return String(email || '').trim().toLowerCase();
+        }
+
+        function normalizeText(value) {
+            return String(value || '').replace(/\s+/g, ' ').trim().toLowerCase();
+        }
+
+        function getEntryDuplicateSignature(entry) {
+            const durationValue = entry.duration === null || entry.duration === undefined || entry.duration === ''
+                ? ''
+                : String(entry.duration);
+            return [
+                normalizeText(entry.userId),
+                normalizeText(entry.dogName),
+                normalizeText(entry.locationType),
+                normalizeText(entry.behavior),
+                normalizeText(entry.locationName),
+                normalizeText(entry.notes),
+                durationValue,
+                Array.isArray(entry.commands) ? entry.commands.map(c => normalizeText(c)).sort().join('|') : '',
+                Array.isArray(entry.distractions) ? entry.distractions.map(d => normalizeText(d)).sort().join('|') : ''
+            ].join('::');
+        }
+
         function escapeHtml(value) {
             return String(value || '')
                 .replace(/&/g, '&amp;')
@@ -2413,6 +2698,25 @@
             }
 
             try {
+                const existingConflicts = [];
+                for (const dogName of dogNames) {
+                    const existingSnap = await getDoc(doc(db, 'dogs', getDogDocId(dogName)));
+                    if (!existingSnap.exists()) continue;
+                    const existing = existingSnap.data() || {};
+                    const existingLitter = normalizeName(existing.litterName);
+                    const existingMother = normalizeName(existing.motherName);
+                    if ((existingLitter && existingLitter !== litterName) || (existingMother && existingMother !== motherName)) {
+                        existingConflicts.push(`${dogName} (currently ${existingLitter || 'Unknown litter'} / ${existingMother || 'Unknown mother'})`);
+                    }
+                }
+
+                if (existingConflicts.length > 0) {
+                    const proceed = confirm(
+                        `Some dogs are already assigned to different litter/mother values:\n\n${existingConflicts.join('\n')}\n\nContinue and overwrite these dog records?`
+                    );
+                    if (!proceed) return;
+                }
+
                 const upserts = dogNames.map(dogName => {
                     const dogRef = doc(db, 'dogs', getDogDocId(dogName));
                     return setDoc(dogRef, {
@@ -2435,7 +2739,7 @@
         };
 
         window.assignDog = async function() {
-            const trainerEmail = document.getElementById('trainerEmail').value.trim().toLowerCase();
+            const trainerEmail = normalizeEmail(document.getElementById('trainerEmail').value);
             const selectedDogValue = document.getElementById('dogName').value.trim();
             const dogNameInput = resolveDogNameFromSelection(selectedDogValue);
             
@@ -2459,6 +2763,17 @@
                 }
 
                 const registeredDogName = dogDocSnap.data().dogName || dogNameInput;
+                const existingAssignmentsSnapshot = await getDocs(collection(db, 'dog_assignments'));
+                const alreadyAssigned = existingAssignmentsSnapshot.docs.some((assignmentDoc) => {
+                    const data = assignmentDoc.data() || {};
+                    return normalizeEmail(data.trainerEmail) === trainerEmail
+                        && normalizeText(data.dogName) === normalizeText(registeredDogName);
+                });
+
+                if (alreadyAssigned) {
+                    alert('This trainer already has that dog assigned.');
+                    return;
+                }
 
                 await addDoc(collection(db, 'dog_assignments'), {
                     trainerEmail: trainerEmail,
@@ -2607,6 +2922,295 @@
             }).join('');
         };
 
+        window.loadUserRoleDirectory = async function() {
+            const container = document.getElementById('userRoleList');
+            if (!container) return;
+
+            const usersSnapshot = await getDocs(collection(db, 'users'));
+            const users = [];
+            usersSnapshot.forEach((userDoc) => {
+                const data = userDoc.data() || {};
+                users.push({
+                    id: userDoc.id,
+                    email: normalizeEmail(data.email),
+                    name: normalizeName(data.name),
+                    role: data.role === 'admin' ? 'admin' : 'user'
+                });
+            });
+
+            users.sort((a, b) => (a.email || '').localeCompare(b.email || ''));
+            if (users.length === 0) {
+                container.innerHTML = '<div class="empty-state">No user records yet</div>';
+                return;
+            }
+
+            container.innerHTML = users.map((user) => `
+                <div class="admin-user-row">
+                    <div>
+                        <div class="admin-group-title">${escapeHtml(user.email || user.id)}</div>
+                        ${user.name ? `<div class="admin-meta">${escapeHtml(user.name)}</div>` : ''}
+                    </div>
+                    <div class="admin-pill-list">
+                        <span class="admin-user-role ${user.role === 'admin' ? 'admin' : ''}">${user.role}</span>
+                        <button
+                            class="delete-btn"
+                            style="background:${user.role === 'admin' ? '#6b7280' : '#0e5a9f'};"
+                            onclick="setUserRoleById('${user.id}', '${user.role === 'admin' ? 'user' : 'admin'}')"
+                        >
+                            ${user.role === 'admin' ? 'Demote' : 'Promote'}
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        window.setUserRoleById = async function(userId, nextRole) {
+            if (!window.isAdmin) return;
+            const role = nextRole === 'admin' ? 'admin' : 'user';
+            if (!confirm(`Set this user role to ${role}?`)) return;
+
+            try {
+                await setDoc(doc(db, 'users', userId), {
+                    role: role,
+                    updatedAt: new Date().toISOString(),
+                    updatedBy: window.currentUser.uid
+                }, { merge: true });
+                await loadUserRoleDirectory();
+                alert(`✅ User role updated to ${role}.`);
+            } catch (error) {
+                alert('Error updating role: ' + error.message);
+            }
+        };
+
+        window.saveUserRoleChange = async function() {
+            if (!window.isAdmin) return;
+            const email = normalizeEmail(document.getElementById('roleUserEmail').value);
+            const role = document.getElementById('roleValue').value === 'admin' ? 'admin' : 'user';
+            if (!email) {
+                alert('Please enter a user email.');
+                return;
+            }
+
+            try {
+                const userQuery = query(collection(db, 'users'), where('email', '==', email));
+                const userSnapshot = await getDocs(userQuery);
+
+                if (userSnapshot.empty) {
+                    alert('No user record found for that email. The user must sign up first.');
+                    return;
+                }
+
+                const updates = [];
+                userSnapshot.forEach((userDoc) => {
+                    updates.push(setDoc(doc(db, 'users', userDoc.id), {
+                        role: role,
+                        updatedAt: new Date().toISOString(),
+                        updatedBy: window.currentUser.uid
+                    }, { merge: true }));
+                });
+                await Promise.all(updates);
+                await loadUserRoleDirectory();
+                document.getElementById('roleUserEmail').value = '';
+                alert(`✅ Updated ${userSnapshot.size} user record(s) to ${role}.`);
+            } catch (error) {
+                alert('Error updating user role: ' + error.message);
+            }
+        };
+
+        window.renameDogAndPropagate = async function() {
+            const oldName = normalizeName(document.getElementById('renameOldDogName').value);
+            const newName = normalizeName(document.getElementById('renameNewDogName').value);
+            const newMotherInput = normalizeName(document.getElementById('renameMotherName').value);
+            const newLitterInput = normalizeName(document.getElementById('renameLitterName').value);
+
+            if (!oldName || !newName) {
+                alert('Please enter both current and new dog names.');
+                return;
+            }
+
+            const dogsSnapshot = await getDocs(collection(db, 'dogs'));
+            const dogDocs = dogsSnapshot.docs.map((dogDoc) => ({ id: dogDoc.id, data: dogDoc.data() || {} }));
+            const oldDog = dogDocs.find((dog) => normalizeText(dog.data.dogName) === normalizeText(oldName));
+
+            if (!oldDog) {
+                alert('Could not find that current dog name in registered dogs.');
+                return;
+            }
+
+            const sourceDogName = normalizeName(oldDog.data.dogName) || oldName;
+            const sourceDocId = oldDog.id;
+            const targetDocId = getDogDocId(newName);
+
+            if (sourceDocId !== targetDocId) {
+                const targetDocSnap = await getDoc(doc(db, 'dogs', targetDocId));
+                if (targetDocSnap.exists()) {
+                    alert('A dog with that new name already exists. Choose a different name.');
+                    return;
+                }
+            }
+
+            const assignmentsSnapshot = await getDocs(collection(db, 'dog_assignments'));
+            const matchingAssignments = assignmentsSnapshot.docs.filter((assignmentDoc) => {
+                const assignment = assignmentDoc.data() || {};
+                return normalizeText(assignment.dogName) === normalizeText(sourceDogName);
+            });
+
+            const entriesSnapshot = await getDocs(collection(db, 'entries'));
+            const matchingEntries = entriesSnapshot.docs.filter((entryDoc) => {
+                const entry = entryDoc.data() || {};
+                return normalizeText(entry.dogName) === normalizeText(sourceDogName);
+            });
+
+            const proceed = confirm(
+                `Rename "${sourceDogName}" to "${newName}" and propagate?\n\nAssignments to update: ${matchingAssignments.length}\nEntries to update: ${matchingEntries.length}`
+            );
+            if (!proceed) return;
+
+            try {
+                await setDoc(doc(db, 'dogs', targetDocId), {
+                    ...oldDog.data,
+                    dogName: newName,
+                    motherName: newMotherInput || normalizeName(oldDog.data.motherName),
+                    litterName: newLitterInput || normalizeName(oldDog.data.litterName),
+                    updatedAt: new Date().toISOString(),
+                    updatedBy: window.currentUser.uid
+                }, { merge: true });
+
+                const assignmentUpdates = matchingAssignments.map((assignmentDoc) => setDoc(
+                    doc(db, 'dog_assignments', assignmentDoc.id),
+                    {
+                        dogName: newName,
+                        updatedAt: new Date().toISOString(),
+                        updatedBy: window.currentUser.uid
+                    },
+                    { merge: true }
+                ));
+
+                const entryUpdates = matchingEntries.map((entryDoc) => setDoc(
+                    doc(db, 'entries', entryDoc.id),
+                    {
+                        dogName: newName,
+                        updatedAt: new Date().toISOString(),
+                        updatedBy: window.currentUser.uid
+                    },
+                    { merge: true }
+                ));
+
+                await Promise.all([...assignmentUpdates, ...entryUpdates]);
+
+                if (sourceDocId !== targetDocId) {
+                    await deleteDoc(doc(db, 'dogs', sourceDocId));
+                }
+
+                if (window.selectedDog && normalizeText(window.selectedDog) === normalizeText(sourceDogName)) {
+                    window.selectedDog = newName;
+                    document.getElementById('puppyInfo').textContent = `Training ${newName}`;
+                }
+
+                document.getElementById('renameOldDogName').value = '';
+                document.getElementById('renameNewDogName').value = '';
+                document.getElementById('renameMotherName').value = '';
+                document.getElementById('renameLitterName').value = '';
+
+                await loadRegisteredDogs();
+                await loadAssignments();
+                await loadUserDogs();
+                await loadEntries();
+                await loadAdminStats();
+
+                alert('✅ Dog name updated and propagated to assignments/history.');
+            } catch (error) {
+                alert('Error renaming dog: ' + error.message);
+            }
+        };
+
+        window.runDuplicateScan = async function() {
+            const reportEl = document.getElementById('duplicateReport');
+            if (!reportEl) return;
+            reportEl.textContent = 'Scanning...';
+
+            try {
+                const [dogsSnapshot, assignmentsSnapshot, entriesSnapshot] = await Promise.all([
+                    getDocs(collection(db, 'dogs')),
+                    getDocs(collection(db, 'dog_assignments')),
+                    getDocs(collection(db, 'entries'))
+                ]);
+
+                const dogGroups = new Map();
+                dogsSnapshot.forEach((dogDoc) => {
+                    const dog = dogDoc.data() || {};
+                    const key = normalizeText(dog.dogName);
+                    if (!key) return;
+                    if (!dogGroups.has(key)) dogGroups.set(key, []);
+                    dogGroups.get(key).push(dog.dogName || dogDoc.id);
+                });
+
+                const assignmentGroups = new Map();
+                assignmentsSnapshot.forEach((assignmentDoc) => {
+                    const assignment = assignmentDoc.data() || {};
+                    const key = `${normalizeEmail(assignment.trainerEmail)}::${normalizeText(assignment.dogName)}`;
+                    if (!assignmentGroups.has(key)) assignmentGroups.set(key, []);
+                    assignmentGroups.get(key).push(assignmentDoc.id);
+                });
+
+                const entryGroups = new Map();
+                entriesSnapshot.forEach((entryDoc) => {
+                    const entry = entryDoc.data() || {};
+                    const signature = getEntryDuplicateSignature(entry);
+                    if (!entryGroups.has(signature)) entryGroups.set(signature, []);
+                    entryGroups.get(signature).push({ id: entryDoc.id, timestamp: entry.timestamp, dogName: entry.dogName });
+                });
+
+                const duplicateDogs = Array.from(dogGroups.entries()).filter(([, list]) => list.length > 1);
+                const duplicateAssignments = Array.from(assignmentGroups.entries()).filter(([, list]) => list.length > 1);
+                const nearDuplicateEntries = [];
+
+                entryGroups.forEach((records) => {
+                    if (records.length < 2) return;
+                    const sorted = records.slice().sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+                    for (let i = 1; i < sorted.length; i += 1) {
+                        const previous = new Date(sorted[i - 1].timestamp);
+                        const current = new Date(sorted[i].timestamp);
+                        if (Number.isNaN(previous.getTime()) || Number.isNaN(current.getTime())) continue;
+                        const minutes = Math.abs(current - previous) / 60000;
+                        if (minutes <= 20) {
+                            nearDuplicateEntries.push({
+                                dogName: sorted[i].dogName || 'Unknown dog',
+                                firstId: sorted[i - 1].id,
+                                secondId: sorted[i].id,
+                                minutesApart: Math.round(minutes)
+                            });
+                        }
+                    }
+                });
+
+                const lines = [];
+                lines.push(`<div><strong>Duplicate dogs:</strong> ${duplicateDogs.length}</div>`);
+                if (duplicateDogs.length > 0) {
+                    lines.push(`<ul>${duplicateDogs.slice(0, 12).map(([, list]) => `<li>${list.map(escapeHtml).join(', ')}</li>`).join('')}</ul>`);
+                }
+
+                lines.push(`<div style="margin-top:8px;"><strong>Duplicate assignments:</strong> ${duplicateAssignments.length}</div>`);
+                if (duplicateAssignments.length > 0) {
+                    lines.push(`<ul>${duplicateAssignments.slice(0, 12).map(([key, ids]) => `<li>${escapeHtml(key)} (${ids.length} records)</li>`).join('')}</ul>`);
+                }
+
+                lines.push(`<div style="margin-top:8px;"><strong>Near-identical entries (within 20 min):</strong> ${nearDuplicateEntries.length}</div>`);
+                if (nearDuplicateEntries.length > 0) {
+                    lines.push(`<ul>${nearDuplicateEntries.slice(0, 15).map((item) => `<li>${escapeHtml(item.dogName)}: ${escapeHtml(item.firstId)} / ${escapeHtml(item.secondId)} (${item.minutesApart}m apart)</li>`).join('')}</ul>`);
+                }
+
+                if (duplicateDogs.length === 0 && duplicateAssignments.length === 0 && nearDuplicateEntries.length === 0) {
+                    lines.push('<div style="margin-top:8px;">No duplicates detected.</div>');
+                }
+
+                window.duplicateScanCache = { duplicateDogs, duplicateAssignments, nearDuplicateEntries };
+                reportEl.innerHTML = lines.join('');
+            } catch (error) {
+                reportEl.textContent = 'Duplicate scan failed: ' + error.message;
+            }
+        };
+
         window.loadUserDogs = async function() {
             const normalizedEmail = (window.currentUser?.email || '').trim().toLowerCase();
             const assignmentsQuery = query(
@@ -2678,12 +3282,38 @@
                 await loadRegisteredDogs();
                 await loadAssignments();
                 await loadAdminStats();
+                await loadUserRoleDirectory();
             }
             
             if (window.selectedDog) {
                 await loadEntries();
             }
         };
+
+        async function findNearDuplicateEntry(candidateEntry, excludeEntryId = null) {
+            const entriesSnapshot = await getDocs(collection(window.db, 'entries'));
+            const candidateSignature = getEntryDuplicateSignature(candidateEntry);
+            const candidateTime = new Date(candidateEntry.timestamp || new Date().toISOString());
+            if (Number.isNaN(candidateTime.getTime())) return null;
+
+            let duplicate = null;
+            entriesSnapshot.forEach((entryDoc) => {
+                if (duplicate) return;
+                if (excludeEntryId && entryDoc.id === excludeEntryId) return;
+                const existing = entryDoc.data() || {};
+                const existingSignature = getEntryDuplicateSignature(existing);
+                if (existingSignature !== candidateSignature) return;
+
+                const existingTime = new Date(existing.timestamp);
+                if (Number.isNaN(existingTime.getTime())) return;
+                const minutesApart = Math.abs(candidateTime - existingTime) / 60000;
+                if (minutesApart <= 20) {
+                    duplicate = { id: entryDoc.id, minutesApart: Math.round(minutesApart), timestamp: existing.timestamp };
+                }
+            });
+
+            return duplicate;
+        }
 
         window.saveEntry = async function() {
             if (!window.selectedDog) {
@@ -2695,7 +3325,7 @@
             const locationType = document.getElementById('locationType').value;
             const duration = parseFloat(document.getElementById('duration').value) || 0;
             const behavior = document.getElementById('behavior').value;
-            const notes = document.getElementById('notes').value.slice(0, 256);
+            const notes = document.getElementById('notes').value.slice(0, 128);
             const distractions = getCheckedValues('distraction');
             const commands = getCheckedValues('command');
 
@@ -2727,6 +3357,17 @@
             };
 
             try {
+                const nearDuplicate = await findNearDuplicateEntry(entry);
+                if (nearDuplicate) {
+                    const keepGoing = confirm(
+                        `Possible duplicate entry detected (within ${nearDuplicate.minutesApart} minute(s), ID: ${nearDuplicate.id}).\n\nSave anyway?`
+                    );
+                    if (!keepGoing) {
+                        setSyncStatus('synced');
+                        return;
+                    }
+                }
+
                 await addDoc(collection(window.db, 'entries'), entry);
                 
                 // Reset form
@@ -2737,7 +3378,9 @@
                 document.getElementById('behavior').value = '';
                 document.getElementById('notes').value = '';
                 updateNotesCounter();
-                document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+                document.querySelectorAll('#logFormContainer input[name="distraction"], #logFormContainer input[name="command"]').forEach(cb => {
+                    cb.checked = false;
+                });
                 document.getElementById('nearbyPlaces').classList.add('hidden');
                 
                 window.currentLocation = null;
@@ -2772,6 +3415,7 @@
                 }
                 dogSet.add(data.dogName);
             });
+            window.entryCacheById = new Map(allEntries.map((entry) => [entry.id, entry]));
 
             // Filter entries
             let entries;
@@ -3018,6 +3662,9 @@
                 const userDisplay = ((window.isAdmin || entry.userId !== window.currentUser.uid) && entry.userEmail) ? 
                     `<div><strong>Trainer:</strong> ${entry.userEmail}</div>` : '';
                 const dogDisplay = `<div><strong>Dog:</strong> ${entry.dogName}</div>`;
+                const canManageEntry = entry.userId === window.currentUser.uid || window.isAdmin;
+                const distractions = Array.isArray(entry.distractions) ? entry.distractions : [];
+                const commands = Array.isArray(entry.commands) ? entry.commands : [];
 
                 return `
                     <div class="entry">
@@ -3027,8 +3674,12 @@
                                 ${locationName}
                                 <div class="entry-location" style="font-size: 11px; color: #999;">${locationStr}</div>
                             </div>
-                            ${entry.userId === window.currentUser.uid || window.isAdmin ? 
-                                `<button class="delete-btn" onclick="deleteEntry('${entry.id}')">Delete</button>` : ''}
+                            ${canManageEntry ? `
+                                <div class="entry-actions">
+                                    <button class="edit-btn" onclick="openEditEntryModal('${entry.id}')">Edit</button>
+                                    <button class="delete-btn" onclick="deleteEntry('${entry.id}')">Delete</button>
+                                </div>
+                            ` : ''}
                         </div>
                         <div class="entry-content">
                             ${dogDisplay}
@@ -3036,13 +3687,98 @@
                             <div><strong>Type:</strong> ${entry.locationType}</div>
                             ${entry.duration ? `<div><strong>Duration:</strong> ${entry.duration} hours</div>` : ''}
                             <div><strong>Behavior:</strong> ${entry.behavior}</div>
-                            ${entry.distractions.length > 0 ? `<div><strong>Distractions:</strong> ${entry.distractions.join(', ')}</div>` : ''}
-                            ${entry.commands.length > 0 ? `<div><strong>Commands:</strong> ${entry.commands.join(', ')}</div>` : ''}
+                            ${distractions.length > 0 ? `<div><strong>Distractions:</strong> ${distractions.join(', ')}</div>` : ''}
+                            ${commands.length > 0 ? `<div><strong>Commands:</strong> ${commands.join(', ')}</div>` : ''}
                             ${entry.notes ? `<div><strong>Notes:</strong> ${entry.notes}</div>` : ''}
                         </div>
                     </div>
                 `;
             }).join('');
+        };
+
+        window.openEditEntryModal = function(entryId) {
+            const entry = window.entryCacheById?.get(entryId);
+            if (!entry) {
+                alert('Entry not found. Refresh and try again.');
+                return;
+            }
+            if (!(window.isAdmin || entry.userId === window.currentUser?.uid)) {
+                alert('You do not have permission to edit this entry.');
+                return;
+            }
+
+            window.editingEntryId = entryId;
+            document.getElementById('editLocationName').value = entry.locationName || '';
+            document.getElementById('editLocationType').value = entry.locationType || '';
+            document.getElementById('editDuration').value = entry.duration ?? '';
+            document.getElementById('editBehavior').value = entry.behavior || '';
+            document.getElementById('editNotes').value = entry.notes || '';
+
+            const distractions = Array.isArray(entry.distractions) ? entry.distractions : [];
+            const commands = Array.isArray(entry.commands) ? entry.commands : [];
+            document.querySelectorAll('input[name="editDistraction"]').forEach((cb) => {
+                cb.checked = distractions.includes(cb.value);
+            });
+            document.querySelectorAll('input[name="editCommand"]').forEach((cb) => {
+                cb.checked = commands.includes(cb.value);
+            });
+
+            document.getElementById('editEntryModal').classList.remove('hidden');
+            setModalBodyLock(true);
+        };
+
+        window.closeEditEntryModal = function() {
+            window.editingEntryId = null;
+            document.getElementById('editEntryModal').classList.add('hidden');
+            setModalBodyLock(false);
+        };
+
+        window.saveEditedEntry = async function() {
+            const entryId = window.editingEntryId;
+            if (!entryId) return;
+            const originalEntry = window.entryCacheById?.get(entryId);
+            if (!originalEntry) {
+                alert('Entry cache was cleared. Refresh and retry.');
+                return;
+            }
+            if (!(window.isAdmin || originalEntry.userId === window.currentUser?.uid)) {
+                alert('You do not have permission to edit this entry.');
+                return;
+            }
+
+            const locationType = document.getElementById('editLocationType').value;
+            const behavior = document.getElementById('editBehavior').value;
+            if (!locationType || !behavior) {
+                alert('Location Type and Overall Behavior are required.');
+                return;
+            }
+
+            const updatedEntry = {
+                locationName: normalizeName(document.getElementById('editLocationName').value),
+                locationType: locationType,
+                duration: (() => {
+                    const value = document.getElementById('editDuration').value;
+                    return value === '' ? null : (parseFloat(value) || null);
+                })(),
+                behavior: behavior,
+                distractions: getCheckedValues('editDistraction'),
+                commands: getCheckedValues('editCommand'),
+                notes: document.getElementById('editNotes').value.slice(0, 128),
+                updatedAt: new Date().toISOString(),
+                updatedBy: window.currentUser.uid
+            };
+
+            try {
+                await setDoc(doc(window.db, 'entries', entryId), updatedEntry, { merge: true });
+                window.closeEditEntryModal();
+                await loadEntries();
+                if (window.isAdmin) {
+                    await loadAdminStats();
+                }
+                alert('✅ Entry updated.');
+            } catch (error) {
+                alert('Error updating entry: ' + error.message);
+            }
         };
 
         window.deleteEntry = async function(id) {
@@ -3506,6 +4242,7 @@
                 window.loadRegisteredDogs();
                 window.loadAssignments();
                 window.loadAdminStats();
+                window.loadUserRoleDirectory();
             }
             console.log('=== switchTab complete ===');
         }
@@ -3698,7 +4435,7 @@
             const counterEl = document.getElementById('notesCounter');
             if (!notesEl || !counterEl) return;
 
-            const maxLength = 256;
+            const maxLength = 128;
             if (notesEl.value.length > maxLength) {
                 notesEl.value = notesEl.value.slice(0, maxLength);
             }
