@@ -11,20 +11,25 @@ Service Puppy Tracker is a single-page web app for trainers and administrators t
   - Location type
   - Duration
   - Behavior rating
+  - Required behavior comments when behavior is Fair/Needs Improvement
   - Distractions observed
   - Commands practiced
-  - Notes
+  - General notes
 - Shows training history with date-range filtering.
+- Adds a Reporting tab (available to all users) with access-restricted analytics.
 - Supports in-app editing of existing training entries for owners/admins.
 - Generates copy/paste biweekly summaries.
 - Exports CSV for trainer and admin workflows.
 - Provides admin tools for:
   - All training data dashboard and CSV export
-  - User role management (user/admin)
+  - User role management (user/admin) with trainer access controls
+  - Trainer deactivation/reactivation with `Active only` / `All users` filter and status counts
   - Litter registration
   - Dog-to-trainer assignment
   - Dog rename and propagation across assignments/history
-  - Duplicate event detection
+  - Duplicate event detection with one-click resolution for duplicate assignment/entry/dog records
+  - Trainer metadata warnings (missing name, suspicious phone format)
+  - Trend charts: behavior over time, command coverage, and dog progress trajectory
 - Includes an easter egg mini-game (Bone Hunt) hidden behind the icon left of "Select Dog".
 
 ## Tech stack
@@ -99,6 +104,14 @@ The app now includes built-in guides:
   - Export CSV first for backup.
   - Remove related assignment records before deleting dog records.
   - Manually delete affected docs in Firestore collections (`entries`, `dog_assignments`, `dogs`, `users`) as needed.
+
+## Trainer deactivation behavior
+
+- Deactivation in-app does two things:
+  - Removes all `dog_assignments` for that trainer email.
+  - Sets `users/{uid}.disabled = true`.
+- Disabled trainers are blocked at login by the app auth gate.
+- Existing `entries` are retained for history and reporting.
 
 ## Easter egg: Bone Hunt
 
