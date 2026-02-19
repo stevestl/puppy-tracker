@@ -1734,7 +1734,7 @@
                 <div class="section-title"><img src="assets/full_sized_lab.png" alt="" class="lab-icon"> Assign Dog to Trainer</div>
                 
                 <div class="info-box">
-                    Assign registered dogs to trainer emails (including yourself). Trainers must have at least one dog assigned before they can sign up.
+                    Assign registered dogs to trainer emails (including yourself). Trainers must have at least one dog assigned before they can sign up. Use "Add Dog" in Current Assignments to quickly add another dog for an existing trainer.
                 </div>
                 
                 <div class="form-group">
@@ -3083,6 +3083,24 @@
             }
         };
 
+        window.prepareAdditionalAssignment = function(encodedEmail, encodedPhone = '') {
+            if (!window.isAdmin) return;
+            const email = normalizeEmail(decodeURIComponent(String(encodedEmail || '')));
+            const phone = normalizeName(decodeURIComponent(String(encodedPhone || '')));
+            if (!email) return;
+
+            const emailInput = document.getElementById('trainerEmail');
+            const phoneInput = document.getElementById('trainerPhone');
+            const dogInput = document.getElementById('dogName');
+            if (!emailInput || !phoneInput || !dogInput) return;
+
+            emailInput.value = email;
+            phoneInput.value = phone;
+            dogInput.value = '';
+            dogInput.focus();
+            dogInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        };
+
         window.loadRegisteredDogs = async function() {
             const dogsSnapshot = await getDocs(collection(db, 'dogs'));
             const dogs = [];
@@ -3154,6 +3172,8 @@
             try {
                 await deleteDoc(doc(db, 'dog_assignments', assignmentId));
                 await loadAssignments();
+                await loadUserDogs();
+                await loadEntries();
                 alert('✅ Assignment removed');
             } catch (error) {
                 alert('Error: ' + error.message);
@@ -3210,12 +3230,17 @@
                 const userMeta = userMetaByEmail.get(email) || {};
                 const trainerName = normalizeName(firstAssignment.trainerName) || userMeta.name;
                 const trainerPhone = normalizeName(firstAssignment.trainerPhone) || userMeta.phone;
+                const encodedEmail = encodeURIComponent(email);
+                const encodedPhone = encodeURIComponent(trainerPhone || '');
                 return `
                     <div class="admin-group-row">
                         <div class="admin-group-title">
                             ${trainerName ? `${escapeHtml(trainerName)} ` : ''}<span style="font-weight:500;">(${escapeHtml(email)})</span>
                         </div>
                         ${trainerPhone ? `<div class="admin-meta">Phone: ${escapeHtml(trainerPhone)}</div>` : ''}
+                        <div style="margin-bottom: 8px;">
+                            <button class="edit-btn" onclick="prepareAdditionalAssignment('${encodedEmail}', '${encodedPhone}')">+ Add Dog</button>
+                        </div>
                         <div class="admin-pill-list">
                             ${dogs.map(d => `
                                 <span class="admin-pill">
@@ -3770,10 +3795,15 @@
             const dogSelectorCard = document.getElementById('dogSelectorCard');
             
             if (window.userDogs.length === 0) {
+                window.selectedDog = null;
+                document.getElementById('puppyInfo').textContent = 'Select a dog below';
+                document.getElementById('noDogSelected').classList.remove('hidden');
+                document.getElementById('logFormContainer').classList.add('hidden');
                 if (window.isAdmin) {
                     dogSelectorCard.classList.add('hidden');
                     dogSelector.innerHTML = '<div class="empty-state">You have no dogs assigned. Assign yourself a dog in the Admin tab if you\'re also a trainer.</div>';
                 } else {
+                    dogSelectorCard.classList.remove('hidden');
                     dogSelector.innerHTML = '<div class="empty-state">No dogs assigned. Contact your administrator.</div>';
                 }
                 return;
@@ -3781,6 +3811,11 @@
 
             if (!window.userDogs.includes(window.selectedDog)) {
                 window.selectedDog = null;
+            }
+            if (!window.selectedDog) {
+                document.getElementById('puppyInfo').textContent = 'Select a dog below';
+                document.getElementById('noDogSelected').classList.remove('hidden');
+                document.getElementById('logFormContainer').classList.add('hidden');
             }
             if (window.userDogs.length === 1 && !window.selectedDog) {
                 window.selectedDog = window.userDogs[0];
