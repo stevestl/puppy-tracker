@@ -887,6 +887,73 @@
             justify-content: flex-end;
         }
 
+        .docs-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1250;
+            background: rgba(17, 24, 39, 0.72);
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .docs-modal.hidden {
+            display: none;
+        }
+
+        .docs-panel {
+            width: min(680px, 100%);
+            max-height: 92vh;
+            overflow-y: auto;
+            margin: 0;
+            border-radius: 16px;
+        }
+
+        .docs-title {
+            margin-bottom: 8px;
+        }
+
+        .docs-intro {
+            margin-bottom: 14px;
+            color: #4b5563;
+            font-size: 14px;
+        }
+
+        .docs-section {
+            margin-bottom: 14px;
+        }
+
+        .docs-section h4 {
+            color: var(--duo-navy);
+            margin-bottom: 6px;
+            font-size: 15px;
+        }
+
+        .docs-section ul {
+            margin-left: 18px;
+            color: #334155;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .docs-section li {
+            margin-bottom: 4px;
+        }
+
+        .docs-close-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 6px;
+        }
+
+        .docs-close-row .btn {
+            width: auto;
+            min-width: 110px;
+            margin-top: 0;
+            padding: 10px 14px;
+        }
+
         .modal-open {
             overflow: hidden;
         }
@@ -962,6 +1029,20 @@
 
             .bone-hunt-actions {
                 gap: 6px;
+            }
+
+            .docs-modal {
+                padding: 8px;
+            }
+
+            .docs-panel {
+                max-height: calc(100dvh - 16px);
+                border-radius: 12px;
+                padding: 16px;
+            }
+
+            .docs-section ul {
+                font-size: 13px;
             }
         }
 
@@ -1276,6 +1357,16 @@
         <!-- Settings Tab -->
         <div id="settingsTab" class="tab-content">
             <div class="card">
+                <div class="section-title">📘 User Guide</div>
+                <div class="info-box">
+                    Quick instructions for logging sessions, filtering history, and exporting reports.
+                </div>
+                <button class="btn btn-secondary" onclick="openUserDocs()">
+                    Open User Documentation
+                </button>
+            </div>
+
+            <div class="card">
                 <div class="section-title">⚙️ Profile Settings</div>
                 
                 <div class="form-group">
@@ -1320,6 +1411,16 @@
 
         <!-- Admin Tab -->
         <div id="adminTab" class="tab-content">
+            <div class="card">
+                <div class="section-title">🛠️ Admin Guide</div>
+                <div class="info-box">
+                    Admin-only instructions for litters, assignments, permissions, and exports.
+                </div>
+                <button class="btn btn-secondary" onclick="openAdminDocs()">
+                    Open Admin Documentation
+                </button>
+            </div>
+
             <div class="card">
                 <div class="section-title"><img src="assets/full_sized_lab.png" alt="" class="lab-icon"> Litter Management</div>
                 
@@ -1393,6 +1494,116 @@
                 <div id="adminDetailTable"></div>
             </div>
         </div>
+
+        <div id="userDocsModal" class="docs-modal hidden" role="dialog" aria-modal="true" aria-label="User documentation">
+            <div class="docs-panel card">
+                <div class="section-title section-title-with-action docs-title">
+                    <span class="section-title-label">📘 User Documentation</span>
+                    <button class="easter-egg-close" type="button" onclick="closeUserDocs()" aria-label="Close user documentation">×</button>
+                </div>
+                <p class="docs-intro">Use this guide to log consistent training sessions and share clean summaries.</p>
+
+                <div class="docs-section">
+                    <h4>Getting started</h4>
+                    <ul>
+                        <li>Sign in with an email that has an assigned dog.</li>
+                        <li>Select a dog from the Select Dog card before creating entries.</li>
+                        <li>If no dog appears, contact your admin for an assignment.</li>
+                    </ul>
+                </div>
+
+                <div class="docs-section">
+                    <h4>Create a training entry</h4>
+                    <ul>
+                        <li>Capture location or type a location name manually.</li>
+                        <li>Select required fields: Location Type and Overall Behavior.</li>
+                        <li>Set duration, choose distractions and commands, and add short notes.</li>
+                        <li>Use Save Entry to sync data to Firestore.</li>
+                    </ul>
+                </div>
+
+                <div class="docs-section">
+                    <h4>Review history and reports</h4>
+                    <ul>
+                        <li>Use Start Date and End Date filters in History to control the report period.</li>
+                        <li>Use Copy Summary for biweekly report text.</li>
+                        <li>Use Export Entries (CSV) for spreadsheet reporting.</li>
+                    </ul>
+                </div>
+
+                <div class="docs-section">
+                    <h4>Profile and account</h4>
+                    <ul>
+                        <li>Set your name, handler name, and organization in Settings.</li>
+                        <li>Change your password from the Change Password card.</li>
+                        <li>If login fails after account creation, verify your admin assignment.</li>
+                    </ul>
+                </div>
+
+                <div class="docs-close-row">
+                    <button class="btn btn-secondary" type="button" onclick="closeUserDocs()">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="adminDocsModal" class="docs-modal hidden" role="dialog" aria-modal="true" aria-label="Admin documentation">
+            <div class="docs-panel card">
+                <div class="section-title section-title-with-action docs-title">
+                    <span class="section-title-label">🛠️ Admin Documentation</span>
+                    <button class="easter-egg-close" type="button" onclick="closeAdminDocs()" aria-label="Close admin documentation">×</button>
+                </div>
+                <p class="docs-intro">Use this guide for onboarding trainers, assigning dogs, and exporting complete records.</p>
+
+                <div class="docs-section">
+                    <h4>Access and permissions</h4>
+                    <ul>
+                        <li>Only users with role <code>admin</code> in <code>users</code> can access the Admin tab.</li>
+                        <li>Each trainer must have at least one <code>dog_assignments</code> record before signup/login is allowed.</li>
+                        <li>Unauthorized authenticated users are automatically signed out.</li>
+                    </ul>
+                </div>
+
+                <div class="docs-section">
+                    <h4>Litter management workflow</h4>
+                    <ul>
+                        <li>Add mother name, litter name, and one or more dog names.</li>
+                        <li>Dogs are stored in <code>dogs</code> and become assignable immediately.</li>
+                        <li>Use the Registered Dogs section to confirm roster coverage.</li>
+                    </ul>
+                </div>
+
+                <div class="docs-section">
+                    <h4>Trainer assignment workflow</h4>
+                    <ul>
+                        <li>Assign a registered dog to a trainer email in Assign Dog to Trainer.</li>
+                        <li>Use normalized lowercase trainer emails to avoid duplicates.</li>
+                        <li>Remove assignments when dogs are reassigned or trainers roll off.</li>
+                    </ul>
+                </div>
+
+                <div class="docs-section">
+                    <h4>Data review and exports</h4>
+                    <ul>
+                        <li>All Training Data supports rolling 2-week and 12-month views.</li>
+                        <li>Use Export Displayed Records (CSV) to download the filtered admin view.</li>
+                        <li>Use History filters for spot checks before sharing data externally.</li>
+                    </ul>
+                </div>
+
+                <div class="docs-section">
+                    <h4>Operational checks</h4>
+                    <ul>
+                        <li>Confirm new trainers can sign in only after assignment exists.</li>
+                        <li>Review assignments and registered dogs weekly for drift.</li>
+                        <li>Keep names and litter labels consistent for clean reporting.</li>
+                    </ul>
+                </div>
+
+                <div class="docs-close-row">
+                    <button class="btn btn-secondary" type="button" onclick="closeAdminDocs()">Close</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Firebase SDK -->
@@ -1415,6 +1626,9 @@
         const app = initializeApp(firebaseConfig);
         const APP_CHECK_PLACEHOLDER = 'REPLACE_WITH_RECAPTCHA_V3_SITE_KEY';
         const appCheckSiteKey = '6LcgqmwsAAAAAJGB8riyJ9efiXhmPZMYPIy_V05q';
+        if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+            self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+        }
         let appCheck = null;
         if (appCheckSiteKey && appCheckSiteKey !== APP_CHECK_PLACEHOLDER) {
             appCheck = initializeAppCheck(app, {
@@ -1645,7 +1859,7 @@
             if (!modalEl) return;
             window.boneHunt.isOpen = true;
             modalEl.classList.remove('hidden');
-            document.body.classList.add('modal-open');
+            setModalBodyLock(true);
             startBoneHunt();
         };
 
@@ -1654,7 +1868,7 @@
             if (!modalEl) return;
             window.boneHunt.isOpen = false;
             modalEl.classList.add('hidden');
-            document.body.classList.remove('modal-open');
+            setModalBodyLock(false);
             stopBoneHuntTimer();
         };
 
@@ -1721,7 +1935,66 @@
             window.moveBoneDog(deltaCol, deltaRow);
         };
 
+        function setModalBodyLock(shouldLock) {
+            const anyOpen = shouldLock
+                || window.boneHunt?.isOpen
+                || !document.getElementById('userDocsModal')?.classList.contains('hidden')
+                || !document.getElementById('adminDocsModal')?.classList.contains('hidden');
+
+            document.body.classList.toggle('modal-open', anyOpen);
+        }
+
+        window.openUserDocs = function() {
+            const modalEl = document.getElementById('userDocsModal');
+            if (!modalEl) return;
+            modalEl.classList.remove('hidden');
+            setModalBodyLock(true);
+        };
+
+        window.closeUserDocs = function() {
+            const modalEl = document.getElementById('userDocsModal');
+            if (!modalEl) return;
+            modalEl.classList.add('hidden');
+            setModalBodyLock(false);
+        };
+
+        window.openAdminDocs = function() {
+            if (!window.isAdmin) return;
+            const modalEl = document.getElementById('adminDocsModal');
+            if (!modalEl) return;
+            modalEl.classList.remove('hidden');
+            setModalBodyLock(true);
+        };
+
+        window.closeAdminDocs = function() {
+            const modalEl = document.getElementById('adminDocsModal');
+            if (!modalEl) return;
+            modalEl.classList.add('hidden');
+            setModalBodyLock(false);
+        };
+
+        function handleDocsModalKeydown(event) {
+            if (event.key !== 'Escape') return;
+
+            const userModalOpen = !document.getElementById('userDocsModal')?.classList.contains('hidden');
+            const adminModalOpen = !document.getElementById('adminDocsModal')?.classList.contains('hidden');
+            const boneOpen = window.boneHunt?.isOpen;
+            if (!userModalOpen && !adminModalOpen && !boneOpen) return;
+
+            event.preventDefault();
+            if (boneOpen) {
+                window.closeBoneHunt();
+            }
+            if (userModalOpen) {
+                window.closeUserDocs();
+            }
+            if (adminModalOpen) {
+                window.closeAdminDocs();
+            }
+        }
+
         window.addEventListener('keydown', handleBoneHuntKeydown);
+        window.addEventListener('keydown', handleDocsModalKeydown);
 
         // Auth state observer with timeout
         let authTimeout = setTimeout(() => {
