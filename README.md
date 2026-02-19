@@ -82,6 +82,20 @@ The app now includes built-in guides:
   - Open `Admin` tab.
   - Use `Open Admin Documentation`.
 
+## Firebase admin management notes
+
+- Promote a user to admin:
+  - In Firestore, open `users/{uid}` and set `role` to `admin` (string).
+  - User must sign out/sign in again for role refresh.
+- Litter maintenance:
+  - Prefer entering a full litter in one pass from the app.
+  - If litter entries are partial or spelling corrections are needed later, updates may require direct Firestore edits.
+  - Dog name spelling fixes usually require creating a corrected dog record and updating related `dog_assignments` and `entries`.
+- Deleting records not supported in app:
+  - Export CSV first for backup.
+  - Remove related assignment records before deleting dog records.
+  - Manually delete affected docs in Firestore collections (`entries`, `dog_assignments`, `dogs`, `users`) as needed.
+
 ## Easter egg: Bone Hunt
 
 - Trigger: click the icon to the left of `Select Dog`.

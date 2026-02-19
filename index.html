@@ -1564,11 +1564,32 @@
                 </div>
 
                 <div class="docs-section">
+                    <h4>Firebase Console: promote user to admin</h4>
+                    <ul>
+                        <li>Open Firebase Console for <code>puppy-tracker-c630b</code> and go to Firestore Data.</li>
+                        <li>Open collection <code>users</code>, then open the user document by UID.</li>
+                        <li>Set field <code>role</code> to <code>admin</code> (string), then save.</li>
+                        <li>Have the user log out and back in so role checks refresh in the app.</li>
+                    </ul>
+                </div>
+
+                <div class="docs-section">
                     <h4>Litter management workflow</h4>
                     <ul>
                         <li>Add mother name, litter name, and one or more dog names.</li>
                         <li>Dogs are stored in <code>dogs</code> and become assignable immediately.</li>
                         <li>Use the Registered Dogs section to confirm roster coverage.</li>
+                        <li>Enter a litter completely when possible; partial litter entry usually requires follow-up edits in Firebase.</li>
+                    </ul>
+                </div>
+
+                <div class="docs-section">
+                    <h4>Firebase Console: add or correct dogs in a litter</h4>
+                    <ul>
+                        <li>To add missing dogs, use the app if possible; otherwise add a new document in <code>dogs</code>.</li>
+                        <li>Dog document ID is generated from normalized dog name, so spelling corrections usually need a new document.</li>
+                        <li>For spelling fixes: create a corrected <code>dogs</code> doc, update affected <code>dog_assignments</code> and <code>entries.dogName</code>, then remove the incorrect dog doc.</li>
+                        <li>Keep <code>dogName</code>, <code>motherName</code>, and <code>litterName</code> consistent across records for reporting accuracy.</li>
                     </ul>
                 </div>
 
@@ -1587,6 +1608,16 @@
                         <li>All Training Data supports rolling 2-week and 12-month views.</li>
                         <li>Use Export Displayed Records (CSV) to download the filtered admin view.</li>
                         <li>Use History filters for spot checks before sharing data externally.</li>
+                    </ul>
+                </div>
+
+                <div class="docs-section">
+                    <h4>Firebase Console: delete records not removable in app</h4>
+                    <ul>
+                        <li>The app supports deleting assignments, but some corrections require manual Firestore cleanup.</li>
+                        <li>Before deleting, export CSV from admin view for backup/audit.</li>
+                        <li>In Firestore Data, delete target docs from <code>entries</code>, <code>dogs</code>, or <code>users</code> only after checking downstream impact.</li>
+                        <li>If deleting a dog, first remove/update related <code>dog_assignments</code> to prevent authorization and reporting issues.</li>
                     </ul>
                 </div>
 
