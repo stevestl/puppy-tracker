@@ -981,6 +981,11 @@
             cursor: pointer;
         }
 
+        .title-easter-egg-btn {
+            display: inline-flex;
+            align-items: center;
+        }
+
         .easter-egg-icon-btn .lab-icon {
             width: 35px;
             height: 35px;
@@ -1384,10 +1389,15 @@
         </div>
     </div>
 
-    <div id="appScreen" class="container hidden">
-        <div class="header">
+        <div id="appScreen" class="container hidden">
+            <div class="header">
             <h1>
-                <span class="title-text"><img src="assets/full_sized_lab.png" alt="" class="lab-icon"> Service Puppy Tracker</span>
+                <span class="title-text">
+                    <button class="easter-egg-icon-btn title-easter-egg-btn" type="button" onclick="openBoneHunt()" aria-label="Open Bone Hunt mini game" title="Bone Hunt">
+                        <img src="assets/full_sized_lab.png" alt="" class="lab-icon">
+                    </button>
+                    Service Puppy Tracker
+                </span>
                 <button class="btn btn-secondary admin-guide-header-btn hidden" id="adminGuideHeaderBtn" onclick="openAdminDocs()">
                     Admin Guide
                 </button>
@@ -1406,12 +1416,7 @@
         </div>
 
         <div id="dogSelectorCard" class="card">
-            <div class="section-title">
-                <button class="easter-egg-icon-btn" type="button" onclick="openBoneHunt()" aria-label="Open Bone Hunt mini game" title="Bone Hunt">
-                    <img src="assets/full_sized_lab.png" alt="" class="lab-icon">
-                </button>
-                Select Dog
-            </div>
+            <div class="section-title">Select Dog</div>
             <div class="dog-selector" id="dogSelector"></div>
         </div>
 

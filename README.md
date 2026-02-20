@@ -30,7 +30,7 @@ Service Puppy Tracker is a single-page web app for trainers and administrators t
   - Duplicate event detection with one-click resolution for duplicate assignment/entry/dog records
   - Trainer metadata warnings (missing name, suspicious phone format)
   - Trend charts: behavior over time, command coverage, and dog progress trajectory
-- Includes an easter egg mini-game (Bone Hunt) hidden behind the icon left of "Select Dog".
+- Includes an easter egg mini-game (Bone Hunt) hidden behind the icon beside the "Service Puppy Tracker" title.
 
 ## Tech stack
 
@@ -115,7 +115,7 @@ The app now includes built-in guides:
 
 ## Easter egg: Bone Hunt
 
-- Trigger: click the icon to the left of `Select Dog`.
+- Trigger: click the icon beside the `Service Puppy Tracker` title.
 - Goal: move the dog across tiles and dig up hidden bones before the timer expires.
 - Controls:
   - Desktop: arrow keys or `WASD` to move, `Space`/`Enter` to dig.
