@@ -1673,11 +1673,11 @@
             <div class="card">
                 <div class="section-title">📊 All Training Data</div>
                 <div id="adminStats"></div>
-                <div id="adminTrendCharts" class="trend-wrap"></div>
                 <div class="trend-card">
                     <div class="trend-title">Weekly Training Hours (Rolling 26 Weeks)</div>
                     <canvas id="weeklyHoursCanvas" style="width: 100%; height: 180px;"></canvas>
                 </div>
+                <div id="adminTrendCharts" class="trend-wrap"></div>
                 <div class="admin-range-controls">
                     <button class="filter-btn" id="adminRange2WeeksBtn" onclick="setAdminDetailRange('2weeks')">Rolling
                         2 Weeks</button>
@@ -4821,9 +4821,13 @@
                 </div>
             `;
 
-            renderAdminTrendCharts(window.adminEntriesCache || []);
-            renderAdminDetailTableForCurrentRange();
             renderWeeklyHoursChart(window.adminEntriesCache);
+
+            const initialRange = window.adminDetailRange || '2weeks';
+            const filtered = getAdminEntriesForRange(initialRange);
+
+            renderAdminTrendCharts(filtered);
+            renderAdminDetailTableForCurrentRange();
         };
 
         function behaviorToScore(value) {
@@ -4960,12 +4964,15 @@
         }
 
         function setAdminDetailRange(range) {
-            window.adminDetailRange = range;
+            window.adminDetailRange = range === '12months' ? '12months' : '2weeks';
 
-            // Re-render everything using existing data
-            renderAdminStats(window.adminEntriesCache);
-            renderAdminTrendCharts(window.adminEntriesCache);
-            renderWeeklyHoursChart(window.adminEntriesCache);
+            const filtered = getAdminEntriesForRange(window.adminDetailRange);
+
+            // Only filtered components
+            renderAdminTrendCharts(filtered);
+            renderAdminDetailTableForCurrentRange();
+
+            // DO NOT re-render time-series (intentionally global)
         }
 
         function getAdminRangeStartDate(rangeKey) {
@@ -5050,8 +5057,7 @@
         }
 
         window.setAdminDetailRange = function (rangeKey) {
-            window.adminDetailRange = rangeKey === '12months' ? '12months' : '2weeks';
-            renderAdminDetailTableForCurrentRange();
+            setAdminDetailRange(rangeKey);
         };
 
         window.exportAdminDisplayedRecords = async function () {
