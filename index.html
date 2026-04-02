@@ -1674,6 +1674,7 @@
                 <div class="section-title">📊 All Training Data</div>
                 <div id="adminStats"></div>
                 <div id="adminTrendCharts" class="trend-wrap"></div>
+                <div id="weeklyHoursChart" class="trend-card"></div>
                 <div class="admin-range-controls">
                     <button class="filter-btn" id="adminRange2WeeksBtn" onclick="setAdminDetailRange('2weeks')">Rolling
                         2 Weeks</button>
@@ -1973,12 +1974,14 @@
                     <h4>Firebase Console: add or correct dogs in a litter</h4>
                     <ul>
                         <li>To add missing dogs, use the app if possible; otherwise add a new document in
-                            <code>dogs</code>.</li>
+                            <code>dogs</code>.
+                        </li>
                         <li>Dog document ID is generated from normalized dog name, so spelling corrections usually need
                             a new document.</li>
                         <li>For spelling fixes: create a corrected <code>dogs</code> doc, update affected
                             <code>dog_assignments</code> and <code>entries.dogName</code>, then remove the incorrect dog
-                            doc.</li>
+                            doc.
+                        </li>
                         <li>Keep <code>dogName</code>, <code>motherName</code>, and <code>litterName</code> consistent
                             across records for reporting accuracy.</li>
                     </ul>
@@ -2024,7 +2027,8 @@
                             cleanup.</li>
                         <li>Before deleting, export CSV from admin view for backup/audit.</li>
                         <li>In Firestore Data, delete target docs from <code>entries</code>, <code>dogs</code>, or
-                            <code>users</code> only after checking downstream impact.</li>
+                            <code>users</code> only after checking downstream impact.
+                        </li>
                         <li>If deleting a dog, first remove/update related <code>dog_assignments</code> to prevent
                             authorization and reporting issues.</li>
                     </ul>
@@ -4244,6 +4248,71 @@
             return normalized.slice(0, maxLength - 1).trim() + '…';
         }
 
+        function renderWeeklyHoursChart(entries) {
+            const container = document.getElementById('weeklyHoursChart');
+            if (!container) return;
+
+            // Build rolling 26-week buckets
+            const now = new Date();
+            const weeks = [];
+            const weekMap = {};
+
+            for (let i = 25; i >= 0; i--) {
+                const d = new Date(now);
+                d.setDate(d.getDate() - i * 7);
+
+                const year = d.getFullYear();
+                const week = getWeekNumber(d);
+                const key = `${year}-W${String(week).padStart(2, '0')}`;
+
+                weeks.push(key);
+                weekMap[key] = 0;
+            }
+
+            // Aggregate durations
+            entries.forEach(e => {
+                if (!e.timestamp || !e.duration) return;
+
+                const d = new Date(e.timestamp);
+                const year = d.getFullYear();
+                const week = getWeekNumber(d);
+                const key = `${year}-W${String(week).padStart(2, '0')}`;
+
+                if (weekMap[key] !== undefined) {
+                    weekMap[key] += Number(e.duration) || 0;
+                }
+            });
+
+            // Render
+            let html = `<div class="trend-title">Weekly Training Hours (Rolling 26 Weeks)</div>`;
+            const max = Math.max(...Object.values(weekMap), 1);
+
+            weeks.forEach(w => {
+                const val = weekMap[w];
+                const pct = (val / max) * 100;
+
+                html += `
+            <div class="trend-row">
+                <div>${w}</div>
+                <div class="trend-bar">
+                    <div class="trend-bar-fill" style="width:${pct}%"></div>
+                </div>
+                <div>${val.toFixed(1)}</div>
+            </div>
+        `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function getWeekNumber(d) {
+            const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            const dayNum = date.getUTCDay() || 7;
+            date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+            return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+        }
+
         function renderHistorySummary(entries) {
             const summaryEl = document.getElementById('historySummaryText');
             if (!summaryEl) return;
@@ -4673,6 +4742,7 @@
 
             renderAdminTrendCharts(window.adminEntriesCache || []);
             renderAdminDetailTableForCurrentRange();
+            renderWeeklyHoursChart(window.adminEntriesCache);
         };
 
         function behaviorToScore(value) {
@@ -4806,6 +4876,15 @@
                     ${dogRows}
                 </div>
             `;
+        }
+
+        function setAdminDetailRange(range) {
+            window.adminDetailRange = range;
+
+            // Re-render everything using existing data
+            renderAdminStats(window.adminEntriesCache);
+            renderAdminTrendCharts(window.adminEntriesCache);
+            renderWeeklyHoursChart(window.adminEntriesCache);
         }
 
         function getAdminRangeStartDate(rangeKey) {
