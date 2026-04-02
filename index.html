@@ -4249,8 +4249,20 @@
         }
 
         function renderWeeklyHoursChart(entries) {
-            const container = document.getElementById('weeklyHoursChart');
-            if (!container) return;
+            const canvas = document.getElementById('weeklyHoursCanvas');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+
+            // Handle high-DPI displays (important for crisp lines)
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+
+            const width = rect.width;
+            const height = rect.height;
 
             // Build rolling 26-week buckets
             const now = new Date();
@@ -4269,7 +4281,7 @@
                 weekMap[key] = 0;
             }
 
-            // Aggregate durations
+            // Aggregate
             entries.forEach(e => {
                 if (!e.timestamp || !e.duration) return;
 
@@ -4283,26 +4295,92 @@
                 }
             });
 
-            // Render
-            let html = `<div class="trend-title">Weekly Training Hours (Rolling 26 Weeks)</div>`;
-            const max = Math.max(...Object.values(weekMap), 1);
+            const data = weeks.map(w => weekMap[w]);
+            const max = Math.max(...data, 1);
 
-            weeks.forEach(w => {
-                const val = weekMap[w];
-                const pct = (val / max) * 100;
+            // Layout
+            const padding = 30;
+            const chartWidth = width - padding * 2;
+            const chartHeight = height - padding * 2;
+            const stepX = chartWidth / (data.length - 1);
 
-                html += `
-            <div class="trend-row">
-                <div>${w}</div>
-                <div class="trend-bar">
-                    <div class="trend-bar-fill" style="width:${pct}%"></div>
-                </div>
-                <div>${val.toFixed(1)}</div>
-            </div>
-        `;
+            ctx.clearRect(0, 0, width, height);
+
+            // Y-axis ticks
+            ctx.fillStyle = '#666';
+            ctx.font = '10px sans-serif';
+            ctx.textAlign = 'right';
+
+            const yTicks = 4;
+            for (let i = 0; i <= yTicks; i++) {
+                const val = (max / yTicks) * i;
+                const y = height - padding - (val / max) * chartHeight;
+
+                ctx.beginPath();
+                ctx.moveTo(padding - 4, y);
+                ctx.lineTo(padding, y);
+                ctx.strokeStyle = '#ccc';
+                ctx.stroke();
+
+                ctx.fillText(val.toFixed(1), padding - 6, y + 3);
+            }
+
+            // Axes
+            ctx.strokeStyle = '#ccc';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, height - padding);
+            ctx.lineTo(width - padding, height - padding);
+            ctx.stroke();
+            
+            // x-axis labels
+            ctx.textAlign = 'center';
+
+            const labelStep = Math.ceil(data.length / 6);
+
+            weeks.forEach((w, i) => {
+                if (i % labelStep !== 0) return;
+
+                const x = padding + i * stepX;
+                const label = w.slice(2);
+
+                ctx.fillText(label, x, height - padding + 12);
             });
 
-            container.innerHTML = html;
+            // Smoothed line
+            ctx.beginPath();
+
+            data.forEach((val, i) => {
+                const x = padding + i * stepX;
+                const y = height - padding - (val / max) * chartHeight;
+
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    const prevX = padding + (i - 1) * stepX;
+                    const prevY = height - padding - (data[i - 1] / max) * chartHeight;
+
+                    const cpX = (prevX + x) / 2;
+
+                    ctx.quadraticCurveTo(cpX, prevY, x, y);
+                }
+            });
+
+            ctx.strokeStyle = '#0e5a9f';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Points
+            data.forEach((val, i) => {
+                const x = padding + i * stepX;
+                const y = height - padding - (val / max) * chartHeight;
+
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fillStyle = '#0e5a9f';
+                ctx.fill();
+            });
         }
 
         function getWeekNumber(d) {
