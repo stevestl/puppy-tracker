@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -40,7 +41,7 @@
             border-radius: 20px;
             padding: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
 
         .header h1 {
@@ -99,7 +100,7 @@
             border-radius: 20px;
             padding: 25px;
             margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
 
         .section-title {
@@ -1012,7 +1013,7 @@
             overflow-y: auto;
             margin: 0;
             border-radius: 16px;
-            box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
         }
 
         .easter-egg-close {
@@ -1338,6 +1339,7 @@
         }
     </style>
 </head>
+
 <body>
     <div id="loadingScreen" class="loading">
         <h2>Loading...</h2>
@@ -1345,16 +1347,19 @@
 
     <div id="authScreen" class="auth-container hidden">
         <div class="card">
-            <div class="section-title"><img src="assets/full_sized_lab.png" alt="" class="lab-icon"> Service Puppy Tracker</div>
-            
+            <div class="section-title"><img src="assets/full_sized_lab.png" alt="" class="lab-icon"> Service Puppy
+                Tracker</div>
+
             <div id="loginForm">
                 <div class="form-group">
                     <label>Email</label>
-                    <input type="email" id="loginEmail" placeholder="your@email.com" onkeydown="handleLoginKeydown(event)">
+                    <input type="email" id="loginEmail" placeholder="your@email.com"
+                        onkeydown="handleLoginKeydown(event)">
                 </div>
                 <div class="form-group">
                     <label>Password</label>
-                    <input type="password" id="loginPassword" placeholder="Password" onkeydown="handleLoginKeydown(event)">
+                    <input type="password" id="loginPassword" placeholder="Password"
+                        onkeydown="handleLoginKeydown(event)">
                 </div>
                 <button class="btn btn-primary" onclick="login()">Login</button>
                 <div class="auth-toggle">
@@ -1389,16 +1394,18 @@
         </div>
     </div>
 
-        <div id="appScreen" class="container hidden">
-            <div class="header">
+    <div id="appScreen" class="container hidden">
+        <div class="header">
             <h1>
                 <span class="title-text">
-                    <button class="easter-egg-icon-btn title-easter-egg-btn" type="button" onclick="openBoneHunt()" aria-label="Open Bone Hunt mini game" title="Bone Hunt">
+                    <button class="easter-egg-icon-btn title-easter-egg-btn" type="button" onclick="openBoneHunt()"
+                        aria-label="Open Bone Hunt mini game" title="Bone Hunt">
                         <img src="assets/full_sized_lab.png" alt="" class="lab-icon">
                     </button>
                     Service Puppy Tracker
                 </span>
-                <button class="btn btn-secondary admin-guide-header-btn hidden" id="adminGuideHeaderBtn" onclick="openAdminDocs()">
+                <button class="btn btn-secondary admin-guide-header-btn hidden" id="adminGuideHeaderBtn"
+                    onclick="openAdminDocs()">
                     Admin Guide
                 </button>
             </h1>
@@ -1420,29 +1427,37 @@
             <div class="dog-selector" id="dogSelector"></div>
         </div>
 
-        <div id="boneHuntModal" class="bone-hunt-modal hidden" role="dialog" aria-modal="true" aria-label="Bone Hunt mini game">
+        <div id="boneHuntModal" class="bone-hunt-modal hidden" role="dialog" aria-modal="true"
+            aria-label="Bone Hunt mini game">
             <div class="bone-hunt-panel card">
                 <div class="section-title section-title-with-action">
                     <span class="section-title-label">🐾 Bone Hunt</span>
-                    <button class="easter-egg-close" type="button" onclick="closeBoneHunt()" aria-label="Close Bone Hunt">×</button>
+                    <button class="easter-egg-close" type="button" onclick="closeBoneHunt()"
+                        aria-label="Close Bone Hunt">×</button>
                 </div>
-                <p class="bone-hunt-help">Use arrow keys or WASD to move, then dig. On mobile, use the controls below.</p>
+                <p class="bone-hunt-help">Use arrow keys or WASD to move, then dig. On mobile, use the controls below.
+                </p>
                 <div class="bone-hunt-stats">
                     <div class="bone-hunt-stat">Time: <span id="boneHuntTimer">0</span>s</div>
-                    <div class="bone-hunt-stat">Bones: <span id="boneHuntFound">0</span>/<span id="boneHuntTotal">0</span></div>
+                    <div class="bone-hunt-stat">Bones: <span id="boneHuntFound">0</span>/<span
+                            id="boneHuntTotal">0</span></div>
                     <div class="bone-hunt-stat">Moves: <span id="boneHuntMoves">0</span></div>
                 </div>
                 <div id="boneHuntStatus" class="bone-hunt-status"></div>
                 <div id="boneHuntGrid" class="bone-hunt-grid"></div>
                 <div class="bone-hunt-controls">
                     <div></div>
-                    <button class="bone-control-btn" type="button" onclick="moveBoneDog(0, -1)" aria-label="Move up">↑</button>
+                    <button class="bone-control-btn" type="button" onclick="moveBoneDog(0, -1)"
+                        aria-label="Move up">↑</button>
                     <div></div>
-                    <button class="bone-control-btn" type="button" onclick="moveBoneDog(-1, 0)" aria-label="Move left">←</button>
+                    <button class="bone-control-btn" type="button" onclick="moveBoneDog(-1, 0)"
+                        aria-label="Move left">←</button>
                     <button class="bone-control-btn dig" type="button" onclick="digBoneTile()">Dig</button>
-                    <button class="bone-control-btn" type="button" onclick="moveBoneDog(1, 0)" aria-label="Move right">→</button>
+                    <button class="bone-control-btn" type="button" onclick="moveBoneDog(1, 0)"
+                        aria-label="Move right">→</button>
                     <div></div>
-                    <button class="bone-control-btn" type="button" onclick="moveBoneDog(0, 1)" aria-label="Move down">↓</button>
+                    <button class="bone-control-btn" type="button" onclick="moveBoneDog(0, 1)"
+                        aria-label="Move down">↓</button>
                     <div></div>
                 </div>
                 <div class="bone-hunt-actions">
@@ -1474,7 +1489,8 @@
                     </button>
                     <div id="locationStatus" class="location-status hidden"></div>
                     <div id="nearbyPlaces" class="hidden" style="margin-top: 15px;">
-                        <label style="display: block; color: #333; font-weight: 500; margin-bottom: 8px; font-size: 14px;">
+                        <label
+                            style="display: block; color: #333; font-weight: 500; margin-bottom: 8px; font-size: 14px;">
                             Nearby Places (or type manually below)
                         </label>
                         <div id="placesList"></div>
@@ -1506,10 +1522,9 @@
 
                     <div class="form-group">
                         <label>Duration: <span id="durationDisplay">0</span> hours</label>
-                        <input type="range" id="duration" min="0" max="5" step="0.5" value="0" 
-                               onchange="updateDurationDisplay(this.value)"
-                               oninput="updateDurationDisplay(this.value)"
-                               style="width: 100%;">
+                        <input type="range" id="duration" min="0" max="5" step="0.5" value="0"
+                            onchange="updateDurationDisplay(this.value)" oninput="updateDurationDisplay(this.value)"
+                            style="width: 100%;">
                     </div>
 
                     <div class="form-group">
@@ -1525,8 +1540,10 @@
 
                     <div class="form-group hidden" id="behaviorCommentsGroup">
                         <label>Behavior Comments<span class="required-indicator">*</span></label>
-                        <textarea id="behaviorComments" maxlength="128" oninput="updateBehaviorCommentsCounter()" placeholder="Describe incident(s) or observations, e.g., startled by loud noise and needed time to re-focus."></textarea>
-                        <small id="behaviorCommentsCounter" style="color: #666; font-size: 12px;">128 characters remaining</small>
+                        <textarea id="behaviorComments" maxlength="128" oninput="updateBehaviorCommentsCounter()"
+                            placeholder="Describe incident(s) or observations, e.g., startled by loud noise and needed time to re-focus."></textarea>
+                        <small id="behaviorCommentsCounter" style="color: #666; font-size: 12px;">128 characters
+                            remaining</small>
                     </div>
 
                     <div class="form-group">
@@ -1562,9 +1579,9 @@
                             <label class="checkbox-label">
                                 <input type="checkbox" name="command" value="Down"> Down
                             </label>
-                            <!-- <label class="checkbox-label">
+                            <label class="checkbox-label">
                                 <input type="checkbox" name="command" value="Stay"> Stay
-                            </label> -->
+                            </label>
                             <label class="checkbox-label">
                                 <input type="checkbox" name="command" value="Place"> Place
                             </label>
@@ -1572,14 +1589,17 @@
                                 <input type="checkbox" name="command" value="Heel"> Heel
                             </label>
                             <label class="checkbox-label">
-                                <input type="checkbox" name="command" value="Leave it"> Leave it
+                                <input type="checkbox" name="command" value="Front"> Front
                             </label>
                             <label class="checkbox-label">
-                                <input type="checkbox" name="command" value="Climb"> Climb
+                                <input type="checkbox" name="command" value="Leave it"> Leave it
                             </label>
                             <!-- <label class="checkbox-label">
-                                <input type="checkbox" name="command" value="Focus"> Focus
+                                <input type="checkbox" name="command" value="Climb"> Climb
                             </label> -->
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="command" value="Touch"> Touch
+                            </label>
                             <label class="checkbox-label">
                                 <input type="checkbox" name="command" value="Let's Go"> Let's Go
                             </label>
@@ -1597,7 +1617,8 @@
 
                     <div class="form-group">
                         <label>General Notes</label>
-                        <textarea id="notes" maxlength="128" oninput="updateNotesCounter()" placeholder="General context, progress notes, or routine details."></textarea>
+                        <textarea id="notes" maxlength="128" oninput="updateNotesCounter()"
+                            placeholder="General context, progress notes, or routine details."></textarea>
                         <small id="notesCounter" style="color: #666; font-size: 12px;">128 characters remaining</small>
                     </div>
 
@@ -1605,7 +1626,8 @@
                         💾 Save Entry
                     </button>
                     <small style="display: block; margin-top: 10px; color: #666; font-size: 12px;">
-                        <span class="required-indicator">*</span> Required: Location Type and Overall Behavior. Capture location or enter Location Name.
+                        <span class="required-indicator">*</span> Required: Location Type and Overall Behavior. Capture
+                        location or enter Location Name.
                     </small>
                 </div>
             </div>
@@ -1653,8 +1675,10 @@
                 <div id="adminStats"></div>
                 <div id="adminTrendCharts" class="trend-wrap"></div>
                 <div class="admin-range-controls">
-                    <button class="filter-btn" id="adminRange2WeeksBtn" onclick="setAdminDetailRange('2weeks')">Rolling 2 Weeks</button>
-                    <button class="filter-btn" id="adminRange12MonthsBtn" onclick="setAdminDetailRange('12months')">Rolling 12 Months</button>
+                    <button class="filter-btn" id="adminRange2WeeksBtn" onclick="setAdminDetailRange('2weeks')">Rolling
+                        2 Weeks</button>
+                    <button class="filter-btn" id="adminRange12MonthsBtn"
+                        onclick="setAdminDetailRange('12months')">Rolling 12 Months</button>
                 </div>
                 <div id="adminDetailTable"></div>
                 <button class="btn btn-secondary" onclick="exportAdminDisplayedRecords()">
@@ -1677,12 +1701,12 @@
 
             <div class="card">
                 <div class="section-title">⚙️ Profile Settings</div>
-                
+
                 <div class="form-group">
                     <label>Your Name</label>
                     <input type="text" id="userName" placeholder="Your full name">
                 </div>
-                
+
                 <div class="form-group">
                     <label>Trainer Name (for reports)</label>
                     <input type="text" id="handlerName" placeholder="Your name">
@@ -1701,7 +1725,7 @@
 
             <div class="card">
                 <div class="section-title">🔐 Change Password</div>
-                
+
                 <div class="form-group">
                     <label>Current Password</label>
                     <input type="password" id="currentPassword" placeholder="Current password">
@@ -1723,7 +1747,8 @@
             <div class="card">
                 <div class="section-title">👥 User Management</div>
                 <div class="info-box">
-                    Manage user roles and trainer access in one place. Deactivation removes assignments and blocks login.
+                    Manage user roles and trainer access in one place. Deactivation removes assignments and blocks
+                    login.
                 </div>
                 <div class="admin-inline-row">
                     <div class="form-group">
@@ -1734,17 +1759,21 @@
                         </select>
                     </div>
                 </div>
-                <div class="admin-meta" id="trainerAccessCounts" style="margin-top: 10px;">Users: 0 · Admins: 0 · Active: 0 · Inactive: 0 · Showing: 0</div>
+                <div class="admin-meta" id="trainerAccessCounts" style="margin-top: 10px;">Users: 0 · Admins: 0 ·
+                    Active: 0 · Inactive: 0 · Showing: 0</div>
                 <div class="admin-scroll-list combined-user-list" id="userRoleList" style="margin-top: 14px;"></div>
             </div>
 
             <div class="card">
-                <div class="section-title"><img src="assets/full_sized_lab.png" alt="" class="lab-icon"> Assign Dog to Trainer</div>
-                
+                <div class="section-title"><img src="assets/full_sized_lab.png" alt="" class="lab-icon"> Assign Dog to
+                    Trainer</div>
+
                 <div class="info-box">
-                    Assign registered dogs to trainer emails (including yourself). Trainers must have at least one dog assigned before they can sign up. Use "Add Dog" in Current Assignments to quickly add another dog for an existing trainer.
+                    Assign registered dogs to trainer emails (including yourself). Trainers must have at least one dog
+                    assigned before they can sign up. Use "Add Dog" in Current Assignments to quickly add another dog
+                    for an existing trainer.
                 </div>
-                
+
                 <div class="form-group">
                     <label>Trainer Email</label>
                     <input type="email" id="trainerEmail" placeholder="trainer@email.com">
@@ -1772,12 +1801,13 @@
             </div>
 
             <div class="card">
-                <div class="section-title"><img src="assets/full_sized_lab.png" alt="" class="lab-icon"> Litter Management</div>
-                
+                <div class="section-title"><img src="assets/full_sized_lab.png" alt="" class="lab-icon"> Litter
+                    Management</div>
+
                 <div class="info-box">
                     Add all dogs in a litter at once. Only dogs in this list can be assigned to trainers.
                 </div>
-                
+
                 <div class="form-group">
                     <label>Mother's Name</label>
                     <input type="text" id="litterMotherName" placeholder="e.g., Gemma">
@@ -1790,7 +1820,8 @@
 
                 <div class="form-group">
                     <label>Dogs in Litter</label>
-                    <textarea id="litterDogNames" placeholder="Enter dog names separated by commas or new lines"></textarea>
+                    <textarea id="litterDogNames"
+                        placeholder="Enter dog names separated by commas or new lines"></textarea>
                 </div>
 
                 <button class="btn btn-primary" onclick="addLitterDogs()">
@@ -1841,11 +1872,13 @@
             </div>
         </div>
 
-        <div id="userDocsModal" class="docs-modal hidden" role="dialog" aria-modal="true" aria-label="User documentation">
+        <div id="userDocsModal" class="docs-modal hidden" role="dialog" aria-modal="true"
+            aria-label="User documentation">
             <div class="docs-panel card">
                 <div class="section-title section-title-with-action docs-title">
                     <span class="section-title-label">📘 User Documentation</span>
-                    <button class="easter-egg-close" type="button" onclick="closeUserDocs()" aria-label="Close user documentation">×</button>
+                    <button class="easter-egg-close" type="button" onclick="closeUserDocs()"
+                        aria-label="Close user documentation">×</button>
                 </div>
                 <p class="docs-intro">Use this guide to log consistent training sessions and share clean summaries.</p>
 
@@ -1892,20 +1925,25 @@
             </div>
         </div>
 
-        <div id="adminDocsModal" class="docs-modal hidden" role="dialog" aria-modal="true" aria-label="Admin documentation">
+        <div id="adminDocsModal" class="docs-modal hidden" role="dialog" aria-modal="true"
+            aria-label="Admin documentation">
             <div class="docs-panel card">
                 <div class="section-title section-title-with-action docs-title">
                     <span class="section-title-label">🛠️ Admin Documentation</span>
-                    <button class="easter-egg-close" type="button" onclick="closeAdminDocs()" aria-label="Close admin documentation">×</button>
+                    <button class="easter-egg-close" type="button" onclick="closeAdminDocs()"
+                        aria-label="Close admin documentation">×</button>
                 </div>
-                <p class="docs-intro">Use this guide for onboarding trainers, assigning dogs, and exporting complete records.</p>
+                <p class="docs-intro">Use this guide for onboarding trainers, assigning dogs, and exporting complete
+                    records.</p>
 
                 <div class="docs-section">
                     <h4>Access and permissions</h4>
                     <ul>
-                        <li>The Admin Guide is opened from the top-right <code>Open Admin Guide</code> header button.</li>
+                        <li>The Admin Guide is opened from the top-right <code>Open Admin Guide</code> header button.
+                        </li>
                         <li>Only users with role <code>admin</code> in <code>users</code> can access the Admin tab.</li>
-                        <li>Each trainer must have at least one <code>dog_assignments</code> record before signup/login is allowed.</li>
+                        <li>Each trainer must have at least one <code>dog_assignments</code> record before signup/login
+                            is allowed.</li>
                         <li>Unauthorized authenticated users are automatically signed out.</li>
                     </ul>
                 </div>
@@ -1926,17 +1964,23 @@
                         <li>Add mother name, litter name, and one or more dog names.</li>
                         <li>Dogs are stored in <code>dogs</code> and become assignable immediately.</li>
                         <li>Use the Registered Dogs section to confirm roster coverage.</li>
-                        <li>Enter a litter completely when possible; partial litter entry usually requires follow-up edits in Firebase.</li>
+                        <li>Enter a litter completely when possible; partial litter entry usually requires follow-up
+                            edits in Firebase.</li>
                     </ul>
                 </div>
 
                 <div class="docs-section">
                     <h4>Firebase Console: add or correct dogs in a litter</h4>
                     <ul>
-                        <li>To add missing dogs, use the app if possible; otherwise add a new document in <code>dogs</code>.</li>
-                        <li>Dog document ID is generated from normalized dog name, so spelling corrections usually need a new document.</li>
-                        <li>For spelling fixes: create a corrected <code>dogs</code> doc, update affected <code>dog_assignments</code> and <code>entries.dogName</code>, then remove the incorrect dog doc.</li>
-                        <li>Keep <code>dogName</code>, <code>motherName</code>, and <code>litterName</code> consistent across records for reporting accuracy.</li>
+                        <li>To add missing dogs, use the app if possible; otherwise add a new document in
+                            <code>dogs</code>.</li>
+                        <li>Dog document ID is generated from normalized dog name, so spelling corrections usually need
+                            a new document.</li>
+                        <li>For spelling fixes: create a corrected <code>dogs</code> doc, update affected
+                            <code>dog_assignments</code> and <code>entries.dogName</code>, then remove the incorrect dog
+                            doc.</li>
+                        <li>Keep <code>dogName</code>, <code>motherName</code>, and <code>litterName</code> consistent
+                            across records for reporting accuracy.</li>
                     </ul>
                 </div>
 
@@ -1952,8 +1996,10 @@
                 <div class="docs-section">
                     <h4>Trainer deactivation workflow</h4>
                     <ul>
-                        <li>Use the combined User Management rows to change role and deactivate/reactivate in one place.</li>
-                        <li>Use the filter above the rows: <code>Active only</code> (default) or <code>All users</code>.</li>
+                        <li>Use the combined User Management rows to change role and deactivate/reactivate in one place.
+                        </li>
+                        <li>Use the filter above the rows: <code>Active only</code> (default) or <code>All users</code>.
+                        </li>
                         <li>Review status counts shown above the list.</li>
                         <li>Admins cannot be deactivated until their role is changed to <code>user</code>.</li>
                         <li>Deactivate removes all assignments and marks the user as disabled.</li>
@@ -1974,10 +2020,13 @@
                 <div class="docs-section">
                     <h4>Firebase Console: delete records not removable in app</h4>
                     <ul>
-                        <li>The app supports deleting assignments, but some corrections require manual Firestore cleanup.</li>
+                        <li>The app supports deleting assignments, but some corrections require manual Firestore
+                            cleanup.</li>
                         <li>Before deleting, export CSV from admin view for backup/audit.</li>
-                        <li>In Firestore Data, delete target docs from <code>entries</code>, <code>dogs</code>, or <code>users</code> only after checking downstream impact.</li>
-                        <li>If deleting a dog, first remove/update related <code>dog_assignments</code> to prevent authorization and reporting issues.</li>
+                        <li>In Firestore Data, delete target docs from <code>entries</code>, <code>dogs</code>, or
+                            <code>users</code> only after checking downstream impact.</li>
+                        <li>If deleting a dog, first remove/update related <code>dog_assignments</code> to prevent
+                            authorization and reporting issues.</li>
                     </ul>
                 </div>
 
@@ -1996,11 +2045,13 @@
             </div>
         </div>
 
-        <div id="editEntryModal" class="docs-modal hidden" role="dialog" aria-modal="true" aria-label="Edit training entry">
+        <div id="editEntryModal" class="docs-modal hidden" role="dialog" aria-modal="true"
+            aria-label="Edit training entry">
             <div class="docs-panel card">
                 <div class="section-title section-title-with-action docs-title">
                     <span class="section-title-label">✏️ Edit Entry</span>
-                    <button class="easter-egg-close" type="button" onclick="closeEditEntryModal()" aria-label="Close entry editor">×</button>
+                    <button class="easter-egg-close" type="button" onclick="closeEditEntryModal()"
+                        aria-label="Close entry editor">×</button>
                 </div>
                 <div class="form-group">
                     <label>Location Name</label>
@@ -2038,52 +2089,77 @@
                 </div>
                 <div class="form-group hidden" id="editBehaviorCommentsGroup">
                     <label>Behavior Comments<span class="required-indicator">*</span></label>
-                    <textarea id="editBehaviorComments" maxlength="128" oninput="updateEditBehaviorCommentsCounter()" placeholder="Describe incident(s) or observations, e.g., pulled toward another dog and needed repeated focus cues."></textarea>
-                    <small id="editBehaviorCommentsCounter" style="color: #666; font-size: 12px;">128 characters remaining</small>
+                    <textarea id="editBehaviorComments" maxlength="128" oninput="updateEditBehaviorCommentsCounter()"
+                        placeholder="Describe incident(s) or observations, e.g., pulled toward another dog and needed repeated focus cues."></textarea>
+                    <small id="editBehaviorCommentsCounter" style="color: #666; font-size: 12px;">128 characters
+                        remaining</small>
                 </div>
                 <div class="form-group">
                     <label>Distractions Present</label>
                     <div class="checkbox-group">
-                        <label class="checkbox-label"><input type="checkbox" name="editDistraction" value="Other dogs"> Other dogs</label>
-                        <label class="checkbox-label"><input type="checkbox" name="editDistraction" value="Children"> Children</label>
-                        <label class="checkbox-label"><input type="checkbox" name="editDistraction" value="Food"> Food</label>
-                        <label class="checkbox-label"><input type="checkbox" name="editDistraction" value="Loud noises"> Loud noises</label>
-                        <label class="checkbox-label"><input type="checkbox" name="editDistraction" value="Crowds"> Crowds</label>
-                        <label class="checkbox-label"><input type="checkbox" name="editDistraction" value="Other animals"> Other animals</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editDistraction" value="Other dogs">
+                            Other dogs</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editDistraction" value="Children">
+                            Children</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editDistraction" value="Food">
+                            Food</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editDistraction" value="Loud noises">
+                            Loud noises</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editDistraction" value="Crowds">
+                            Crowds</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editDistraction"
+                                value="Other animals"> Other animals</label>
                     </div>
                 </div>
                 <div class="form-group">
                     <label>Commands Practiced</label>
                     <div class="checkbox-group">
                         <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Sit"> Sit</label>
-                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Heel"> Heel</label>
-                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Front"> Front</label>
-                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Leave it"> Leave it</label>
-                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Let's Go"> Let's Go</label>
-                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Kennel"> Kennel</label>
-                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Potty"> Potty</label>
-                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Name Recognition"> Name Recognition</label>
-                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Stay"> Stay</label>
-                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Touch"> Touch</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Down">
+                            Down</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Place">
+                            Place</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Heel">
+                            Heel</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Front">
+                            Front</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Leave it"> Leave
+                            it</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Let's Go"> Let's
+                            Go</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Kennel">
+                            Kennel</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Potty">
+                            Potty</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editCommand"
+                                value="Name Recognition"> Name Recognition</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Stay">
+                            Stay</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Touch">
+                            Touch</label>
                         <!-- <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Climb"> Climb</label> -->
                     </div>
                 </div>
                 <div class="form-group">
                     <label>General Notes</label>
-                    <textarea id="editNotes" maxlength="128" placeholder="Update general context/progress notes"></textarea>
+                    <textarea id="editNotes" maxlength="128"
+                        placeholder="Update general context/progress notes"></textarea>
                 </div>
                 <div class="docs-close-row">
                     <button class="btn btn-primary" type="button" onclick="saveEditedEntry()">Save Changes</button>
-                    <button class="btn btn-secondary" type="button" onclick="closeEditEntryModal()" style="margin-left: 8px;">Cancel</button>
+                    <button class="btn btn-secondary" type="button" onclick="closeEditEntryModal()"
+                        style="margin-left: 8px;">Cancel</button>
                 </div>
             </div>
         </div>
 
-        <div id="reactivationReminderModal" class="docs-modal hidden" role="dialog" aria-modal="true" aria-label="Reactivation reminder">
+        <div id="reactivationReminderModal" class="docs-modal hidden" role="dialog" aria-modal="true"
+            aria-label="Reactivation reminder">
             <div class="docs-panel card">
                 <div class="section-title section-title-with-action docs-title">
                     <span class="section-title-label">✅ Trainer Reactivated</span>
-                    <button class="easter-egg-close" type="button" onclick="closeReactivationReminder()" aria-label="Close reminder">×</button>
+                    <button class="easter-egg-close" type="button" onclick="closeReactivationReminder()"
+                        aria-label="Close reminder">×</button>
                 </div>
                 <p class="docs-intro">A dog assignment is required to complete reactivation and allow login.</p>
                 <div class="docs-section">
@@ -2352,7 +2428,7 @@
             }
         }
 
-        window.openBoneHunt = function() {
+        window.openBoneHunt = function () {
             const modalEl = document.getElementById('boneHuntModal');
             if (!modalEl) return;
             window.boneHunt.isOpen = true;
@@ -2361,7 +2437,7 @@
             startBoneHunt();
         };
 
-        window.closeBoneHunt = function() {
+        window.closeBoneHunt = function () {
             const modalEl = document.getElementById('boneHuntModal');
             if (!modalEl) return;
             window.boneHunt.isOpen = false;
@@ -2370,12 +2446,12 @@
             stopBoneHuntTimer();
         };
 
-        window.restartBoneHunt = function() {
+        window.restartBoneHunt = function () {
             if (!window.boneHunt.isOpen) return;
             startBoneHunt();
         };
 
-        window.moveBoneDog = function(dx, dy) {
+        window.moveBoneDog = function (dx, dy) {
             const state = window.boneHunt;
             if (!state.isOpen || state.gameOver) return;
 
@@ -2389,7 +2465,7 @@
             renderBoneHunt();
         };
 
-        window.digBoneTile = function() {
+        window.digBoneTile = function () {
             const state = window.boneHunt;
             if (!state.isOpen || state.gameOver) return;
 
@@ -2416,7 +2492,7 @@
             }
         };
 
-        window.handleBoneTileTap = function(col, row) {
+        window.handleBoneTileTap = function (col, row) {
             const state = window.boneHunt;
             if (!state.isOpen || state.gameOver) return;
 
@@ -2444,21 +2520,21 @@
             document.body.classList.toggle('modal-open', anyOpen);
         }
 
-        window.openUserDocs = function() {
+        window.openUserDocs = function () {
             const modalEl = document.getElementById('userDocsModal');
             if (!modalEl) return;
             modalEl.classList.remove('hidden');
             setModalBodyLock(true);
         };
 
-        window.closeUserDocs = function() {
+        window.closeUserDocs = function () {
             const modalEl = document.getElementById('userDocsModal');
             if (!modalEl) return;
             modalEl.classList.add('hidden');
             setModalBodyLock(false);
         };
 
-        window.openAdminDocs = function() {
+        window.openAdminDocs = function () {
             if (!window.isAdmin) return;
             const modalEl = document.getElementById('adminDocsModal');
             if (!modalEl) return;
@@ -2466,21 +2542,21 @@
             setModalBodyLock(true);
         };
 
-        window.closeAdminDocs = function() {
+        window.closeAdminDocs = function () {
             const modalEl = document.getElementById('adminDocsModal');
             if (!modalEl) return;
             modalEl.classList.add('hidden');
             setModalBodyLock(false);
         };
 
-        window.openReactivationReminder = function() {
+        window.openReactivationReminder = function () {
             const modalEl = document.getElementById('reactivationReminderModal');
             if (!modalEl) return;
             modalEl.classList.remove('hidden');
             setModalBodyLock(true);
         };
 
-        window.closeReactivationReminder = function() {
+        window.closeReactivationReminder = function () {
             const modalEl = document.getElementById('reactivationReminderModal');
             if (!modalEl) return;
             modalEl.classList.add('hidden');
@@ -2529,15 +2605,15 @@
             try {
                 clearTimeout(authTimeout);
                 document.getElementById('loadingScreen').classList.add('hidden');
-                
+
                 if (user) {
                     console.log('User logged in:', user.email);
                     window.currentUser = user;
-                    
+
                     // Check if user is admin
                     const userDocSnap = await getDoc(doc(db, 'users', user.uid));
                     let userProfileData = null;
-                    
+
                     const normalizedEmail = (user.email || '').trim().toLowerCase();
 
                     if (!userDocSnap.exists()) {
@@ -2596,12 +2672,12 @@
                             return;
                         }
                     }
-                    
+
                     console.log('Is admin:', window.isAdmin);
-                    
+
                     document.getElementById('authScreen').classList.add('hidden');
                     document.getElementById('appScreen').classList.remove('hidden');
-                    
+
                     // Update role badge
                     const roleBadge = document.getElementById('roleBadge');
                     const adminGuideHeaderBtn = document.getElementById('adminGuideHeaderBtn');
@@ -2629,7 +2705,7 @@
                             adminGuideHeaderBtn.classList.add('hidden');
                         }
                     }
-                    
+
                     await loadUserData();
                 } else {
                     console.log('No user logged in');
@@ -2690,7 +2766,7 @@
             }
         });
 
-        window.signup = async function() {
+        window.signup = async function () {
             const name = document.getElementById('signupName').value.trim();
             const email = document.getElementById('signupEmail').value.trim().toLowerCase();
             const password = document.getElementById('signupPassword').value;
@@ -2709,7 +2785,7 @@
                 // Create the Firebase Auth user first
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 console.log('Auth user created');
-                
+
                 // Verify this email has at least one admin-assigned dog before allowing signup.
                 try {
                     const assignmentsQuery = query(
@@ -2717,7 +2793,7 @@
                         where('trainerEmail', '==', email)
                     );
                     const assignmentsSnapshot = await getDocs(assignmentsQuery);
-                    
+
                     if (assignmentsSnapshot.empty) {
                         // No authorization - delete the account
                         try {
@@ -2740,7 +2816,7 @@
                     alert('Unable to verify authorization. Please contact your administrator.');
                     return;
                 }
-                
+
                 // Create user document only after authorization check passes
                 await setDoc(doc(db, 'users', userCredential.user.uid), {
                     name: name,
@@ -2770,7 +2846,7 @@
             }
         };
 
-        window.login = async function() {
+        window.login = async function () {
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
 
@@ -2786,14 +2862,14 @@
             }
         };
 
-        window.handleLoginKeydown = function(event) {
+        window.handleLoginKeydown = function (event) {
             if (event.key === 'Enter') {
                 event.preventDefault();
                 login();
             }
         };
 
-        window.forgotPassword = async function() {
+        window.forgotPassword = async function () {
             const email = (document.getElementById('loginEmail').value || '').trim().toLowerCase();
 
             if (!email) {
@@ -2815,13 +2891,13 @@
             alert('If an account exists for that email, a password reset link will be sent.');
         };
 
-        window.logout = async function() {
+        window.logout = async function () {
             if (confirm('Are you sure you want to logout?')) {
                 await signOut(auth);
             }
         };
 
-        window.changePassword = async function() {
+        window.changePassword = async function () {
             const currentPassword = document.getElementById('currentPassword').value;
             const newPassword = document.getElementById('newPassword').value;
 
@@ -2842,10 +2918,10 @@
                 );
                 await reauthenticateWithCredential(window.currentUser, credential);
                 await updatePassword(window.currentUser, newPassword);
-                
+
                 document.getElementById('currentPassword').value = '';
                 document.getElementById('newPassword').value = '';
-                
+
                 alert('✅ Password changed successfully!');
             } catch (error) {
                 if (error.code === 'auth/wrong-password') {
@@ -2856,12 +2932,12 @@
             }
         };
 
-        window.showSignup = function() {
+        window.showSignup = function () {
             document.getElementById('loginForm').classList.add('hidden');
             document.getElementById('signupForm').classList.remove('hidden');
         };
 
-        window.showLogin = function() {
+        window.showLogin = function () {
             document.getElementById('signupForm').classList.add('hidden');
             document.getElementById('loginForm').classList.remove('hidden');
         };
@@ -2967,7 +3043,7 @@
             return normalizedSelection;
         }
 
-        window.addLitterDogs = async function() {
+        window.addLitterDogs = async function () {
             const motherName = normalizeName(document.getElementById('litterMotherName').value);
             const litterName = normalizeName(document.getElementById('litterName').value);
             const dogNames = parseDogNames(document.getElementById('litterDogNames').value);
@@ -3018,12 +3094,12 @@
             }
         };
 
-        window.assignDog = async function() {
+        window.assignDog = async function () {
             const trainerEmail = normalizeEmail(document.getElementById('trainerEmail').value);
             const trainerPhone = normalizeName(document.getElementById('trainerPhone').value);
             const selectedDogValue = document.getElementById('dogName').value.trim();
             const dogNameInput = resolveDogNameFromSelection(selectedDogValue);
-            
+
             if (!trainerEmail || !selectedDogValue || !dogNameInput) {
                 alert('Please enter both trainer email and dog name');
                 return;
@@ -3083,7 +3159,7 @@
                 document.getElementById('dogName').value = '';
                 alert('✅ Dog assigned to trainer!');
                 await loadAssignments();
-                
+
                 // If admin assigned a dog to themselves, refresh their dog list
                 if (trainerEmail === (window.currentUser.email || '').trim().toLowerCase()) {
                     await loadUserDogs();
@@ -3093,7 +3169,7 @@
             }
         };
 
-        window.prepareAdditionalAssignment = function(encodedEmail, encodedPhone = '') {
+        window.prepareAdditionalAssignment = function (encodedEmail, encodedPhone = '') {
             if (!window.isAdmin) return;
             const email = normalizeEmail(decodeURIComponent(String(encodedEmail || '')));
             const phone = normalizeName(decodeURIComponent(String(encodedPhone || '')));
@@ -3111,7 +3187,7 @@
             dogInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
         };
 
-        window.loadRegisteredDogs = async function() {
+        window.loadRegisteredDogs = async function () {
             const dogsSnapshot = await getDocs(collection(db, 'dogs'));
             const dogs = [];
 
@@ -3167,16 +3243,16 @@
                         <div class="admin-meta">Mother: ${escapeHtml(motherName)}</div>
                         <div class="admin-pill-list" style="margin-top: 6px;">
                             ${dogNames
-                                .sort((a, b) => a.localeCompare(b))
-                                .map(dogName => `<span class="admin-pill">${escapeHtml(dogName)}</span>`)
-                                .join('')}
+                        .sort((a, b) => a.localeCompare(b))
+                        .map(dogName => `<span class="admin-pill">${escapeHtml(dogName)}</span>`)
+                        .join('')}
                         </div>
                     </div>
                 `;
             }).join('');
         };
 
-        window.removeAssignment = async function(assignmentId) {
+        window.removeAssignment = async function (assignmentId) {
             if (!confirm('Remove this assignment?')) return;
 
             try {
@@ -3190,7 +3266,7 @@
             }
         };
 
-        window.loadAssignments = async function() {
+        window.loadAssignments = async function () {
             const querySnapshot = await getDocs(collection(db, 'dog_assignments'));
             const usersSnapshot = await getDocs(collection(db, 'users'));
             const assignments = [];
@@ -3264,7 +3340,7 @@
             }).join('');
         };
 
-        window.loadUserManagementList = async function() {
+        window.loadUserManagementList = async function () {
             if (!window.isAdmin) return;
             const listEl = document.getElementById('userRoleList');
             const filterEl = document.getElementById('trainerAccessFilter');
@@ -3329,10 +3405,10 @@
                         </div>
                         <div class="admin-meta">${escapeHtml(user.email)} · Assignments: ${user.assignmentCount}</div>
                         ${(() => {
-                            const warnings = getTrainerMetadataWarnings(user);
-                            if (warnings.length === 0) return '';
-                            return `<div class="metadata-warning">⚠ ${escapeHtml(warnings.join(' · '))}</div>`;
-                        })()}
+                    const warnings = getTrainerMetadataWarnings(user);
+                    if (warnings.length === 0) return '';
+                    return `<div class="metadata-warning">⚠ ${escapeHtml(warnings.join(' · '))}</div>`;
+                })()}
                     </div>
                     <div class="admin-user-right">
                         <div class="admin-user-subrow">
@@ -3350,22 +3426,22 @@
                             <span class="management-label">Status:</span>
                             <span class="management-status ${user.disabled ? 'inactive' : 'active'}">${user.disabled ? 'inactive' : 'active'}</span>
                             ${user.disabled
-                                ? `<button class="delete-btn" style="background:#0e5a9f;" onclick="reactivateTrainer('${user.id}')">Reactivate</button>`
-                                : (user.role === 'admin'
-                                    ? ''
-                                    : `<button class="delete-btn" onclick="deactivateTrainer('${user.id}')">Deactivate</button>`)
-                            }
+                    ? `<button class="delete-btn" style="background:#0e5a9f;" onclick="reactivateTrainer('${user.id}')">Reactivate</button>`
+                    : (user.role === 'admin'
+                        ? ''
+                        : `<button class="delete-btn" onclick="deactivateTrainer('${user.id}')">Deactivate</button>`)
+                }
                         </div>
                     </div>
                 </div>
             `).join('');
         };
 
-        window.loadTrainerAccessList = async function() {
+        window.loadTrainerAccessList = async function () {
             await window.loadUserManagementList();
         };
 
-        window.setUserRoleById = async function(userId, nextRole) {
+        window.setUserRoleById = async function (userId, nextRole) {
             if (!window.isAdmin) return;
             const role = nextRole === 'admin' ? 'admin' : 'user';
             if (!confirm(`Set this user role to ${role}?`)) return;
@@ -3383,7 +3459,7 @@
             }
         };
 
-        window.deactivateTrainer = async function(userId) {
+        window.deactivateTrainer = async function (userId) {
             if (!window.isAdmin) return;
             const userRef = doc(db, 'users', userId);
             const userSnap = await getDoc(userRef);
@@ -3432,7 +3508,7 @@
             }
         };
 
-        window.reactivateTrainer = async function(userId) {
+        window.reactivateTrainer = async function (userId) {
             if (!window.isAdmin) return;
             if (!confirm('Reactivate this trainer account? They will still need at least one assignment to log in.')) return;
 
@@ -3449,7 +3525,7 @@
             }
         };
 
-        window.renameDogAndPropagate = async function() {
+        window.renameDogAndPropagate = async function () {
             const oldName = normalizeName(document.getElementById('renameOldDogName').value);
             const newName = normalizeName(document.getElementById('renameNewDogName').value);
             const newMotherInput = normalizeName(document.getElementById('renameMotherName').value);
@@ -3556,7 +3632,7 @@
             }
         };
 
-        window.runDuplicateScan = async function() {
+        window.runDuplicateScan = async function () {
             const reportEl = document.getElementById('duplicateReport');
             if (!reportEl) return;
             reportEl.textContent = 'Scanning...';
@@ -3667,7 +3743,7 @@
             return sections.join('');
         }
 
-        window.resolveDuplicateAssignment = async function(key) {
+        window.resolveDuplicateAssignment = async function (key) {
             if (!window.isAdmin) return;
             const decodedKey = decodeURIComponent(String(key || ''));
             const [trainerEmailRaw, dogNameRaw] = decodedKey.split('::');
@@ -3707,7 +3783,7 @@
             }
         };
 
-        window.resolveDuplicateDog = async function(key) {
+        window.resolveDuplicateDog = async function (key) {
             if (!window.isAdmin) return;
             const normalizedName = decodeURIComponent(String(key || ''));
             if (!normalizedName) return;
@@ -3773,7 +3849,7 @@
             }
         };
 
-        window.resolveDuplicateEntry = async function(entryId) {
+        window.resolveDuplicateEntry = async function (entryId) {
             if (!window.isAdmin) return;
             if (!entryId) return;
             if (!confirm(`Delete duplicate entry ${entryId}?`)) return;
@@ -3788,14 +3864,14 @@
             }
         };
 
-        window.loadUserDogs = async function() {
+        window.loadUserDogs = async function () {
             const normalizedEmail = (window.currentUser?.email || '').trim().toLowerCase();
             const assignmentsQuery = query(
                 collection(db, 'dog_assignments'),
                 where('trainerEmail', '==', normalizedEmail)
             );
             const assignmentsSnapshot = await getDocs(assignmentsQuery);
-            
+
             window.userDogs = [];
             assignmentsSnapshot.forEach((doc) => {
                 window.userDogs.push(doc.data().dogName);
@@ -3803,7 +3879,7 @@
 
             const dogSelector = document.getElementById('dogSelector');
             const dogSelectorCard = document.getElementById('dogSelectorCard');
-            
+
             if (window.userDogs.length === 0) {
                 window.selectedDog = null;
                 document.getElementById('puppyInfo').textContent = 'Select a dog below';
@@ -3843,35 +3919,35 @@
             `).join('');
         };
 
-        window.selectDog = function(dogName) {
+        window.selectDog = function (dogName) {
             window.selectedDog = dogName;
-            
+
             // Update UI
             document.querySelectorAll('.dog-chip').forEach(chip => {
                 chip.classList.toggle('active', chip.textContent.trim() === dogName);
             });
-            
+
             document.getElementById('puppyInfo').textContent = `Training ${dogName}`;
             document.getElementById('noDogSelected').classList.add('hidden');
             document.getElementById('logFormContainer').classList.remove('hidden');
-            
+
             // Reload entries for this dog
             if (document.getElementById('historyTab').classList.contains('active')) {
                 loadEntries();
             }
         };
 
-        window.loadUserData = async function() {
+        window.loadUserData = async function () {
             await loadSettings();
             await loadUserDogs();
-            
+
             if (window.isAdmin) {
                 await loadRegisteredDogs();
                 await loadAssignments();
                 await loadAdminStats();
                 await loadUserManagementList();
             }
-            
+
             if (window.selectedDog) {
                 await loadEntries();
             }
@@ -3902,7 +3978,7 @@
             return duplicate;
         }
 
-        window.saveEntry = async function() {
+        window.saveEntry = async function () {
             if (!window.selectedDog) {
                 alert('Please select a dog first');
                 return;
@@ -3964,7 +4040,7 @@
                 }
 
                 await addDoc(collection(window.db, 'entries'), entry);
-                
+
                 // Reset form
                 document.getElementById('locationName').value = '';
                 document.getElementById('locationType').value = '';
@@ -3980,7 +4056,7 @@
                     cb.checked = false;
                 });
                 document.getElementById('nearbyPlaces').classList.add('hidden');
-                
+
                 window.currentLocation = null;
                 window.selectedPlace = null;
                 document.getElementById('locationStatus').classList.add('hidden');
@@ -3994,17 +4070,17 @@
             }
         };
 
-        window.loadEntries = async function() {
+        window.loadEntries = async function () {
             ensureHistoryDateFilterInitialized();
 
             const entriesRef = collection(window.db, 'entries');
             const q = query(entriesRef, orderBy('timestamp', 'desc'));
             const querySnapshot = await getDocs(q);
-            
+
             const allEntries = [];
             const userMap = new Map();
             const dogSet = new Set();
-            
+
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
                 allEntries.push({ id: doc.id, ...data });
@@ -4025,11 +4101,11 @@
                 if (window.selectedDogFilter !== 'all') {
                     entries = entries.filter(e => e.dogName === window.selectedDogFilter);
                 }
-                
+
                 // Show filters
                 const filterContainer = document.getElementById('userFilterContainer');
                 filterContainer.classList.remove('hidden');
-                
+
                 const userFilters = `
                     <button class="filter-btn ${window.selectedUserFilter === 'all' ? 'active' : ''}" 
                             onclick="filterByUser('all')">All Users</button>
@@ -4038,7 +4114,7 @@
                                 onclick="filterByUser('${uid}')">${email}</button>
                     `).join('')}
                 `;
-                
+
                 const dogFilters = `
                     <button class="filter-btn ${window.selectedDogFilter === 'all' ? 'active' : ''}" 
                             onclick="filterByDog('all')">All Dogs</button>
@@ -4047,7 +4123,7 @@
                                 onclick="filterByDog('${dog}')">${dog}</button>
                     `).join('')}
                 `;
-                
+
                 filterContainer.innerHTML = userFilters + dogFilters;
             } else {
                 const accessibleDogs = new Set(window.userDogs || []);
@@ -4129,7 +4205,7 @@
             return entryDate >= startDate && entryDate < endExclusive;
         }
 
-        window.applyHistoryDateFilter = function() {
+        window.applyHistoryDateFilter = function () {
             const startInput = document.getElementById('historyStartDate');
             const endInput = document.getElementById('historyEndDate');
 
@@ -4147,7 +4223,7 @@
             loadEntries();
         };
 
-        window.resetHistoryDateFilter = function() {
+        window.resetHistoryDateFilter = function () {
             const defaultRange = getDefaultHistoryDateRange();
             window.historyStartDate = defaultRange.start;
             window.historyEndDate = defaultRange.end;
@@ -4218,7 +4294,7 @@
             summaryEl.value = lines.join('\n').trim();
         }
 
-        window.copyHistorySummary = async function() {
+        window.copyHistorySummary = async function () {
             const summaryEl = document.getElementById('historySummaryText');
             if (!summaryEl || !summaryEl.value) return;
 
@@ -4232,17 +4308,17 @@
             }
         };
 
-        window.filterByUser = function(userId) {
+        window.filterByUser = function (userId) {
             window.selectedUserFilter = userId;
             loadEntries();
         };
 
-        window.filterByDog = function(dogName) {
+        window.filterByDog = function (dogName) {
             window.selectedDogFilter = dogName;
             loadEntries();
         };
 
-        window.displayEntries = function(entries) {
+        window.displayEntries = function (entries) {
             const container = document.getElementById('entriesList');
 
             if (entries.length === 0) {
@@ -4252,12 +4328,12 @@
 
             container.innerHTML = entries.map(entry => {
                 const date = new Date(entry.timestamp);
-                const locationStr = entry.location 
+                const locationStr = entry.location
                     ? `${entry.location.latitude.toFixed(6)}, ${entry.location.longitude.toFixed(6)}`
                     : 'No location';
-                
+
                 const locationName = entry.locationName ? `<div class="entry-location">📍 ${entry.locationName}</div>` : '';
-                const userDisplay = ((window.isAdmin || entry.userId !== window.currentUser.uid) && entry.userEmail) ? 
+                const userDisplay = ((window.isAdmin || entry.userId !== window.currentUser.uid) && entry.userEmail) ?
                     `<div><strong>Trainer:</strong> ${entry.userEmail}</div>` : '';
                 const dogDisplay = `<div><strong>Dog:</strong> ${entry.dogName}</div>`;
                 const canManageEntry = entry.userId === window.currentUser.uid || window.isAdmin;
@@ -4295,7 +4371,7 @@
             }).join('');
         };
 
-        window.openEditEntryModal = function(entryId) {
+        window.openEditEntryModal = function (entryId) {
             const entry = window.entryCacheById?.get(entryId);
             if (!entry) {
                 alert('Entry not found. Refresh and try again.');
@@ -4329,13 +4405,13 @@
             setModalBodyLock(true);
         };
 
-        window.closeEditEntryModal = function() {
+        window.closeEditEntryModal = function () {
             window.editingEntryId = null;
             document.getElementById('editEntryModal').classList.add('hidden');
             setModalBodyLock(false);
         };
 
-        window.saveEditedEntry = async function() {
+        window.saveEditedEntry = async function () {
             const entryId = window.editingEntryId;
             if (!entryId) return;
             const originalEntry = window.entryCacheById?.get(entryId);
@@ -4390,7 +4466,7 @@
             }
         };
 
-        window.deleteEntry = async function(id) {
+        window.deleteEntry = async function (id) {
             if (!confirm('Delete this entry?')) return;
 
             setSyncStatus('syncing');
@@ -4404,7 +4480,7 @@
             }
         };
 
-        window.saveSettings = async function() {
+        window.saveSettings = async function () {
             const userName = document.getElementById('userName').value;
             const handlerName = document.getElementById('handlerName').value;
             const organizationInput = document.getElementById('organization').value.trim();
@@ -4420,11 +4496,11 @@
                         role: window.isAdmin ? 'admin' : 'user',
                         updatedAt: new Date().toISOString()
                     }, { merge: true });
-                    
+
                     // Update display
                     document.getElementById('userEmail').textContent = userName;
                 }
-                
+
                 // Update handler settings
                 await setDoc(doc(window.db, 'settings', window.currentUser.uid), {
                     handlerName: handlerName,
@@ -4432,7 +4508,7 @@
                 });
 
                 document.getElementById('organization').value = organization;
-                
+
                 setSyncStatus('synced');
                 alert('✅ Settings saved and synced!');
             } catch (error) {
@@ -4441,7 +4517,7 @@
             }
         };
 
-        window.loadSettings = async function() {
+        window.loadSettings = async function () {
             try {
                 // Load user name from users collection
                 const userDocRef = doc(window.db, 'users', window.currentUser.uid);
@@ -4449,11 +4525,11 @@
                 if (userDocSnap.exists() && userDocSnap.data().name) {
                     document.getElementById('userName').value = userDocSnap.data().name || '';
                 }
-                
+
                 // Load handler settings
                 const settingsRef = doc(window.db, 'settings', window.currentUser.uid);
                 const settingsSnap = await getDoc(settingsRef);
-                
+
                 if (settingsSnap.exists()) {
                     const settings = settingsSnap.data();
                     document.getElementById('handlerName').value = settings.handlerName || '';
@@ -4466,7 +4542,7 @@
             }
         };
 
-        window.loadAdminStats = async function() {
+        window.loadAdminStats = async function () {
             const entriesRef = collection(window.db, 'entries');
             const querySnapshot = await getDocs(entriesRef);
             const settingsSnapshot = await getDocs(collection(window.db, 'settings'));
@@ -4476,7 +4552,7 @@
                 handlerNameByUserId.set(docSnap.id, settings.handlerName || '');
             });
             const allEntries = [];
-            
+
             const dogStats = new Map();
             const activeTrainerSet = new Set();
             let totalEntries = 0;
@@ -4493,7 +4569,7 @@
             const twoWeeksAgo = new Date(now);
             twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 13);
             twoWeeksAgo.setHours(0, 0, 0, 0);
-            
+
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
                 const handlerName = handlerNameByUserId.get(data.userId) || '';
@@ -4508,7 +4584,7 @@
             visibleEntries.forEach((data) => {
                 const entryDate = new Date(data.timestamp);
                 const trainerKey = data.userId || data.userEmail || '';
-                
+
                 if (!Number.isNaN(entryDate.getTime()) && entryDate >= twelveMonthsAgo) {
                     totalEntries++;
                     totalHours += parseFloat(data.duration) || 0;
@@ -4791,8 +4867,8 @@
                         </thead>
                         <tbody>
                             ${entries.map(entry => {
-                                const date = new Date(entry.timestamp);
-                                return `
+                const date = new Date(entry.timestamp);
+                return `
                                     <tr>
                                         <td>${Number.isNaN(date.getTime()) ? '' : date.toLocaleString()}</td>
                                         <td>${entry.dogName || ''}</td>
@@ -4806,19 +4882,19 @@
                                         <td>${entry.notes || ''}</td>
                                     </tr>
                                 `;
-                            }).join('')}
+            }).join('')}
                         </tbody>
                     </table>
                 </div>
             `;
         }
 
-        window.setAdminDetailRange = function(rangeKey) {
+        window.setAdminDetailRange = function (rangeKey) {
             window.adminDetailRange = rangeKey === '12months' ? '12months' : '2weeks';
             renderAdminDetailTableForCurrentRange();
         };
 
-        window.exportAdminDisplayedRecords = async function() {
+        window.exportAdminDisplayedRecords = async function () {
             const rangeKey = window.adminDetailRange || '2weeks';
             const entries = getAdminEntriesForRange(rangeKey);
 
@@ -4830,11 +4906,11 @@
             await exportToCSV(entries, `admin-${rangeKey}`);
         };
 
-        window.exportEntries = async function() {
+        window.exportEntries = async function () {
             const entriesRef = collection(window.db, 'entries');
             const q = query(entriesRef, orderBy('timestamp', 'desc'));
             const querySnapshot = await getDocs(q);
-            
+
             const entries = [];
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
@@ -4851,10 +4927,10 @@
             await exportToCSV(entries, window.selectedDog || 'all');
         };
 
-        window.exportAllData = async function() {
+        window.exportAllData = async function () {
             const entriesRef = collection(window.db, 'entries');
             const querySnapshot = await getDocs(entriesRef);
-            
+
             const entries = [];
             querySnapshot.forEach((doc) => {
                 entries.push(doc.data());
@@ -4876,13 +4952,13 @@
             });
 
             const headers = ['Date', 'Time', 'Dog Name', 'Trainer Email', 'Trainer Name', 'Organization',
-                            'Location Name', 'Location Type', 'Duration (hours)', 'Behavior', 'Distractions', 
-                            'Behavior Comments', 'Commands Practiced', 'Latitude', 'Longitude', 'General Notes'];
-            
+                'Location Name', 'Location Type', 'Duration (hours)', 'Behavior', 'Distractions',
+                'Behavior Comments', 'Commands Practiced', 'Latitude', 'Longitude', 'General Notes'];
+
             const rows = entries.map(entry => {
                 const date = new Date(entry.timestamp);
                 const userSettings = settingsMap.get(entry.userId) || {};
-                
+
                 return [
                     date.toLocaleDateString(),
                     date.toLocaleTimeString(),
@@ -4913,9 +4989,9 @@
             URL.revokeObjectURL(url);
         }
 
-        window.updateStats = function(entries) {
+        window.updateStats = function (entries) {
             if (!entries) return;
-            
+
             const statsContainer = document.getElementById('stats');
             const totalHours = entries.reduce((sum, e) => sum + (parseFloat(e.duration) || 0), 0);
 
@@ -4931,12 +5007,12 @@
             `;
         };
 
-        window.setSyncStatus = function(status) {
+        window.setSyncStatus = function (status) {
             const statusEl = document.getElementById('syncStatus');
             const textEl = document.getElementById('syncText');
-            
+
             statusEl.className = 'sync-status';
-            
+
             if (status === 'synced') {
                 statusEl.classList.add('synced');
                 textEl.textContent = 'Synced';
@@ -4953,12 +5029,12 @@
         function switchTab(tab, eventObj) {
             console.log('=== switchTab called ===');
             console.log('Switching to tab:', tab);
-            
+
             // Remove active from all tabs
             document.querySelectorAll('.tab').forEach(t => {
                 t.classList.remove('active');
             });
-            
+
             // Add active to the correct tab button
             if (eventObj && eventObj.target) {
                 eventObj.target.classList.add('active');
@@ -4981,10 +5057,10 @@
             document.querySelectorAll('.tab-content').forEach(t => {
                 t.classList.remove('active');
             });
-            
+
             const tabContentId = tab + 'Tab';
             const tabContent = document.getElementById(tabContentId);
-            
+
             if (tabContent) {
                 tabContent.classList.add('active');
             } else {
@@ -5016,7 +5092,7 @@
             }
 
             navigator.geolocation.getCurrentPosition(
-                async function(position) {
+                async function (position) {
                     window.currentLocation = {
                         latitude: position.coords.latitude,
                         longitude: position.coords.longitude,
@@ -5025,14 +5101,14 @@
                     };
                     statusEl.classList.add('success');
                     statusEl.innerHTML = `✅ Location captured (±${Math.round(window.currentLocation.accuracy)}m accuracy)`;
-                    
+
                     // Fetch nearby places
                     await fetchNearbyPlaces(position.coords.latitude, position.coords.longitude);
                 },
-                function(error) {
+                function (error) {
                     statusEl.classList.add('error');
                     let message = '❌ ';
-                    switch(error.code) {
+                    switch (error.code) {
                         case error.PERMISSION_DENIED:
                             message += 'Location permission denied. Enable in Settings > Safari > Location';
                             break;
@@ -5058,17 +5134,17 @@
         async function fetchNearbyPlaces(lat, lng) {
             const nearbyPlacesDiv = document.getElementById('nearbyPlaces');
             const placesListDiv = document.getElementById('placesList');
-            
+
             nearbyPlacesDiv.classList.remove('hidden');
             placesListDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: #666;">Loading nearby places...</div>';
-            
+
             console.log('Searching near:', lat, lng);
-            
+
             try {
                 // Use Overpass API (OpenStreetMap) - completely free, no API key needed
                 const radius = 100; // meters
                 const overpassUrl = 'https://overpass-api.de/api/interpreter';
-                
+
                 // Query for shops, restaurants, and amenities
                 const query = `
                     [out:json][timeout:10];
@@ -5080,15 +5156,15 @@
                     );
                     out body 10;
                 `;
-                
+
                 const response = await fetch(overpassUrl, {
                     method: 'POST',
                     body: `data=${encodeURIComponent(query)}`
                 });
-                
+
                 const data = await response.json();
                 console.log('OpenStreetMap response:', data);
-                
+
                 if (data.elements && data.elements.length > 0) {
                     // Filter and sort by distance
                     const places = data.elements
@@ -5096,9 +5172,9 @@
                         .map(el => {
                             const elLat = el.lat || (el.center ? el.center.lat : null);
                             const elLng = el.lon || (el.center ? el.center.lon : null);
-                            const distance = elLat && elLng ? 
+                            const distance = elLat && elLng ?
                                 calculateDistance(lat, lng, elLat, elLng) : 999999;
-                            
+
                             return {
                                 name: el.tags.name,
                                 address: [el.tags['addr:street'], el.tags['addr:housenumber']].filter(Boolean).join(' '),
@@ -5108,7 +5184,7 @@
                         })
                         .sort((a, b) => a.distance - b.distance)
                         .slice(0, 5);
-                    
+
                     console.log('Found', places.length, 'places');
                     displayNearbyPlacesOSM(places);
                 } else {
@@ -5119,7 +5195,7 @@
                 placesListDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: #666;">Error loading places. Enter location manually below.</div>';
             }
         }
-        
+
         // Calculate distance between two coordinates (Haversine formula)
         function calculateDistance(lat1, lon1, lat2, lon2) {
             const R = 6371e3; // Earth's radius in meters
@@ -5128,23 +5204,23 @@
             const Δφ = (lat2 - lat1) * Math.PI / 180;
             const Δλ = (lon2 - lon1) * Math.PI / 180;
 
-            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-                    Math.cos(φ1) * Math.cos(φ2) *
-                    Math.sin(Δλ/2) * Math.sin(Δλ/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
             return R * c; // Distance in meters
         }
-        
+
         function displayNearbyPlacesOSM(places) {
             const placesListDiv = document.getElementById('placesList');
             window.nearbyPlacesData = places;
-            
+
             placesListDiv.innerHTML = places.map((place, index) => {
-                const distanceStr = place.distance < 1000 ? 
-                    `${Math.round(place.distance)}m` : 
+                const distanceStr = place.distance < 1000 ?
+                    `${Math.round(place.distance)}m` :
                     `${(place.distance / 1000).toFixed(1)}km`;
-                
+
                 return `
                     <div class="place-option" data-index="${index}">
                         <div class="place-name">${place.name}</div>
@@ -5153,27 +5229,27 @@
                     </div>
                 `;
             }).join('');
-            
+
             // Add click listeners after HTML is inserted
             document.querySelectorAll('.place-option').forEach(el => {
-                el.addEventListener('click', function() {
+                el.addEventListener('click', function () {
                     selectPlaceOSM(parseInt(this.getAttribute('data-index')), this);
                 });
             });
         }
-        
+
         function selectPlaceOSM(index, element) {
             // Remove previous selection
             document.querySelectorAll('.place-option').forEach(el => el.classList.remove('selected'));
-            
+
             // Select this place
             if (element) {
                 element.classList.add('selected');
             }
-            
+
             const place = window.nearbyPlacesData[index];
             window.selectedPlace = place;
-            
+
             // Auto-fill location name
             document.getElementById('locationName').value = place.name;
         }
@@ -5267,4 +5343,5 @@
         updateEditBehaviorCommentsCounter();
     </script>
 </body>
+
 </html>
