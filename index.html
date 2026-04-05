@@ -9,6 +9,10 @@
     <meta name="apple-mobile-web-app-title" content="Puppy Tracker">
     <title>Service Puppy Tracker</title>
     <link rel="icon" type="image/png" href="assets/full_sized_lab.png">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
     <style>
         :root {
             --duo-blue: #0e5a9f;
@@ -674,6 +678,163 @@
             font-family: inherit;
         }
 
+        .history-map-collapsible {
+            margin-bottom: 15px;
+        }
+
+        .history-map-wrap {
+            border-top: 1px solid #e5e7eb;
+            padding: 10px;
+        }
+
+        .history-map-controls {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .history-map-control {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .history-map-control label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #475569;
+        }
+
+        .history-map-control select {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 7px 8px;
+            font-size: 12px;
+            background: #fff;
+            color: #1f2937;
+        }
+
+        .history-map-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .history-map-checkbox {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #334155;
+            font-weight: 600;
+        }
+
+        .history-map-checkbox input {
+            width: 14px;
+            height: 14px;
+        }
+
+        .history-map-fit-btn {
+            width: auto;
+            margin-top: 0;
+            padding: 8px 10px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .history-map-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 0 0 8px;
+        }
+
+        .history-map-legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            color: #475569;
+        }
+
+        .history-map-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(15, 23, 42, 0.2);
+        }
+
+        .history-map-dot.excellent {
+            background: #16a34a;
+        }
+
+        .history-map-dot.good {
+            background: #0e5a9f;
+        }
+
+        .history-map-dot.fair {
+            background: #d97706;
+        }
+
+        .history-map-dot.needs-improvement {
+            background: #dc2626;
+        }
+
+        .history-map-dot.unspecified {
+            background: #6b7280;
+        }
+
+        #historyMapCanvas {
+            width: 100%;
+            height: 280px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background: #f9fafb;
+            overflow: hidden;
+        }
+
+        .history-map-note {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        .history-map-empty {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            font-size: 13px;
+            text-align: center;
+            padding: 12px;
+        }
+
+        .history-map-cluster {
+            background: rgba(14, 90, 159, 0.9);
+            border: 2px solid #fff;
+            border-radius: 999px;
+            color: #fff;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(2, 6, 23, 0.24);
+        }
+
+        .history-map-cluster span {
+            line-height: 1;
+        }
+
         .admin-range-controls {
             display: flex;
             gap: 10px;
@@ -1319,6 +1480,18 @@
                 font-size: 10px;
                 padding: 4px 5px;
             }
+
+            #historyMapCanvas {
+                height: 220px;
+            }
+
+            .history-map-controls {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .history-map-fit-btn {
+                width: 100%;
+            }
         }
 
         .place-name {
@@ -1660,6 +1833,62 @@
                     </div>
                     <textarea id="historySummaryText" class="history-summary-text" readonly></textarea>
                 </div>
+                <details class="admin-collapsible history-map-collapsible" id="historyMapDetails" open>
+                    <summary>Training Location Map</summary>
+                    <div class="history-map-wrap">
+                        <div class="history-map-controls">
+                            <div class="history-map-control">
+                                <label for="historyMapViewMode">View</label>
+                                <select id="historyMapViewMode" onchange="setHistoryMapViewMode(this.value)">
+                                    <option value="pins">Pins</option>
+                                    <option value="heat">Heatmap</option>
+                                </select>
+                            </div>
+                            <div class="history-map-control">
+                                <label for="historyMapBehaviorFilter">Behavior</label>
+                                <select id="historyMapBehaviorFilter" onchange="setHistoryMapFilter('behavior', this.value)">
+                                    <option value="all">All behaviors</option>
+                                </select>
+                            </div>
+                            <div class="history-map-control">
+                                <label for="historyMapDogFilter">Dog</label>
+                                <select id="historyMapDogFilter" onchange="setHistoryMapFilter('dog', this.value)">
+                                    <option value="all">All dogs</option>
+                                </select>
+                            </div>
+                            <div class="history-map-control">
+                                <label for="historyMapTrainerFilter">Trainer</label>
+                                <select id="historyMapTrainerFilter" onchange="setHistoryMapFilter('trainer', this.value)">
+                                    <option value="all">All trainers</option>
+                                </select>
+                            </div>
+                            <div class="history-map-control">
+                                <label for="historyMapLocationTypeFilter">Location Type</label>
+                                <select id="historyMapLocationTypeFilter" onchange="setHistoryMapFilter('locationType', this.value)">
+                                    <option value="all">All location types</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="history-map-actions">
+                            <label class="history-map-checkbox">
+                                <input type="checkbox" id="historyMapShowPath" onchange="toggleHistoryMapPath(this.checked)">
+                                Show path sequence
+                            </label>
+                            <button class="btn btn-secondary history-map-fit-btn" type="button" onclick="fitHistoryMapToVisible()">
+                                Fit Visible Sessions
+                            </button>
+                        </div>
+                        <div class="history-map-legend" id="historyMapLegend">
+                            <span class="history-map-legend-item"><span class="history-map-dot excellent"></span>Excellent</span>
+                            <span class="history-map-legend-item"><span class="history-map-dot good"></span>Good</span>
+                            <span class="history-map-legend-item"><span class="history-map-dot fair"></span>Fair</span>
+                            <span class="history-map-legend-item"><span class="history-map-dot needs-improvement"></span>Needs Improvement</span>
+                            <span class="history-map-legend-item"><span class="history-map-dot unspecified"></span>Unspecified</span>
+                        </div>
+                        <div id="historyMapCanvas"></div>
+                        <div id="historyMapNote" class="history-map-note"></div>
+                    </div>
+                </details>
                 <div id="userFilterContainer" class="user-filter hidden"></div>
                 <button class="btn btn-secondary" onclick="exportEntries()">
                     📤 Export Entries (CSV)
@@ -1909,6 +2138,11 @@
                     <h4>Review history and reports</h4>
                     <ul>
                         <li>Use Start Date and End Date filters in History to control the report period.</li>
+                        <li>Use the default-open Training Location Map to review where sessions took place.</li>
+                        <li>Use map controls to filter by behavior, dog, trainer, and location type.</li>
+                        <li>Switch between clustered Pins and Heatmap view; use Show path sequence to connect sessions in order.</li>
+                        <li>Use Fit Visible Sessions to zoom to the currently mapped results.</li>
+                        <li>Sessions missing GPS coordinates are excluded from the map and counted in a note.</li>
                         <li>Use Copy Summary for biweekly report text.</li>
                         <li>Use Export Entries (CSV) for spreadsheet reporting.</li>
                     </ul>
@@ -2183,6 +2417,11 @@
         </div>
     </div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js';
@@ -2237,6 +2476,23 @@
         window.editingEntryId = null;
         window.duplicateScanCache = null;
         window.trainerAccessFilter = 'active';
+        window.historyMap = null;
+        window.historyMapMarkers = null;
+        window.historyMapPathLayer = null;
+        window.historyMapHeatLayer = null;
+        window.historyMapFilters = {
+            behavior: 'all',
+            dog: 'all',
+            trainer: 'all',
+            locationType: 'all',
+            showPath: false
+        };
+        window.historyMapViewMode = 'pins';
+        window.historyMapSourceRecords = [];
+        window.historyMapVisibleRecords = [];
+        window.historyMapEntriesInRange = 0;
+        window.historyMapExcludedNoGps = 0;
+        window.historyMapToggleHooked = false;
         window.boneHunt = {
             isOpen: false,
             size: 8,
@@ -4149,6 +4405,7 @@
                 : entries;
 
             renderHistorySummary(summaryEntries);
+            renderHistoryMap(entries);
             displayEntries(entries);
             updateStats(entries);
         };
@@ -4210,6 +4467,448 @@
             endExclusive.setDate(endExclusive.getDate() + 1);
 
             return entryDate >= startDate && entryDate < endExclusive;
+        }
+
+        function getEntryCoordinates(entry) {
+            const latitude = Number(entry?.location?.latitude);
+            const longitude = Number(entry?.location?.longitude);
+            if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+            if (Math.abs(latitude) > 90 || Math.abs(longitude) > 180) return null;
+            return { latitude, longitude };
+        }
+
+        function getHistoryMapBehaviorColor(behavior) {
+            const key = normalizeText(behavior);
+            if (key === 'excellent') return '#16a34a';
+            if (key === 'good') return '#0e5a9f';
+            if (key === 'fair') return '#d97706';
+            if (key === 'needs improvement') return '#dc2626';
+            return '#6b7280';
+        }
+
+        function getHistoryMapHeatWeight(record) {
+            const behaviorKey = normalizeText(record?.behaviorLabel);
+            let baseWeight = 0.55;
+            if (behaviorKey === 'excellent') baseWeight = 0.9;
+            if (behaviorKey === 'good') baseWeight = 0.8;
+            if (behaviorKey === 'fair') baseWeight = 0.6;
+            if (behaviorKey === 'needs improvement') baseWeight = 0.45;
+
+            const duration = Number(record?.entry?.duration);
+            const durationBonus = Number.isFinite(duration) && duration > 0
+                ? Math.min(duration / 3, 0.25)
+                : 0;
+
+            return Math.min(1, baseWeight + durationBonus);
+        }
+
+        function buildHistoryMapOptionItems(records, keyField, labelField, behaviorSort = false) {
+            const optionMap = new Map();
+            records.forEach((record) => {
+                const key = record[keyField];
+                const label = record[labelField];
+                if (!key || !label || optionMap.has(key)) return;
+                optionMap.set(key, label);
+            });
+
+            const items = Array.from(optionMap.entries()).map(([value, label]) => ({ value, label }));
+            if (!behaviorSort) {
+                return items.sort((a, b) => a.label.localeCompare(b.label));
+            }
+
+            const behaviorOrder = ['excellent', 'good', 'fair', 'needs improvement'];
+            return items.sort((a, b) => {
+                const aOrder = behaviorOrder.includes(a.value) ? behaviorOrder.indexOf(a.value) : 999;
+                const bOrder = behaviorOrder.includes(b.value) ? behaviorOrder.indexOf(b.value) : 999;
+                if (aOrder !== bOrder) return aOrder - bOrder;
+                return a.label.localeCompare(b.label);
+            });
+        }
+
+        function setHistoryMapSelectOptions(selectEl, items, allLabel, currentValue) {
+            if (!selectEl) return currentValue || 'all';
+            const options = [`<option value="all">${escapeHtml(allLabel)}</option>`].concat(
+                items.map((item) => `<option value="${escapeHtml(item.value)}">${escapeHtml(item.label)}</option>`)
+            );
+            selectEl.innerHTML = options.join('');
+
+            const valueSet = new Set(items.map((item) => item.value));
+            const resolvedValue = currentValue && (currentValue === 'all' || valueSet.has(currentValue))
+                ? currentValue
+                : 'all';
+            selectEl.value = resolvedValue;
+            return resolvedValue;
+        }
+
+        function syncHistoryMapControlState() {
+            const viewModeEl = document.getElementById('historyMapViewMode');
+            const showPathEl = document.getElementById('historyMapShowPath');
+
+            if (viewModeEl) {
+                viewModeEl.value = window.historyMapViewMode === 'heat' ? 'heat' : 'pins';
+            }
+            if (showPathEl) {
+                showPathEl.checked = !!window.historyMapFilters.showPath;
+            }
+        }
+
+        function buildHistoryMapFilterOptions(records) {
+            const behaviorEl = document.getElementById('historyMapBehaviorFilter');
+            const dogEl = document.getElementById('historyMapDogFilter');
+            const trainerEl = document.getElementById('historyMapTrainerFilter');
+            const locationTypeEl = document.getElementById('historyMapLocationTypeFilter');
+
+            const behaviorItems = buildHistoryMapOptionItems(records, 'behaviorKey', 'behaviorLabel', true);
+            const dogItems = buildHistoryMapOptionItems(records, 'dogKey', 'dogLabel');
+            const trainerItems = buildHistoryMapOptionItems(records, 'trainerKey', 'trainerLabel');
+            const locationTypeItems = buildHistoryMapOptionItems(records, 'locationTypeKey', 'locationTypeLabel');
+
+            window.historyMapFilters.behavior = setHistoryMapSelectOptions(
+                behaviorEl,
+                behaviorItems,
+                'All behaviors',
+                window.historyMapFilters.behavior
+            );
+            window.historyMapFilters.dog = setHistoryMapSelectOptions(
+                dogEl,
+                dogItems,
+                'All dogs',
+                window.historyMapFilters.dog
+            );
+            window.historyMapFilters.trainer = setHistoryMapSelectOptions(
+                trainerEl,
+                trainerItems,
+                'All trainers',
+                window.historyMapFilters.trainer
+            );
+            window.historyMapFilters.locationType = setHistoryMapSelectOptions(
+                locationTypeEl,
+                locationTypeItems,
+                'All location types',
+                window.historyMapFilters.locationType
+            );
+
+            syncHistoryMapControlState();
+        }
+
+        function ensureHistoryMapToggleHook() {
+            if (window.historyMapToggleHooked) return;
+            const details = document.getElementById('historyMapDetails');
+            if (!details) return;
+            details.addEventListener('toggle', () => {
+                if (details.open) {
+                    window.invalidateHistoryMapLayout();
+                }
+            });
+            window.historyMapToggleHooked = true;
+        }
+
+        window.invalidateHistoryMapLayout = function () {
+            if (!window.historyMap) return;
+            window.requestAnimationFrame(() => {
+                if (window.historyMap) {
+                    window.historyMap.invalidateSize();
+                }
+            });
+        };
+
+        function destroyHistoryMapInstance() {
+            if (window.historyMap) {
+                window.historyMap.remove();
+            }
+            window.historyMap = null;
+            window.historyMapMarkers = null;
+            window.historyMapPathLayer = null;
+            window.historyMapHeatLayer = null;
+            window.historyMapVisibleRecords = [];
+        }
+
+        function ensureHistoryMapInstance(mapEl, firstRecord) {
+            if (window.historyMap) return;
+            if (!mapEl || !firstRecord) return;
+
+            mapEl.innerHTML = '';
+            window.historyMap = window.L.map(mapEl, {
+                zoomControl: true,
+                scrollWheelZoom: false
+            }).setView([firstRecord.latitude, firstRecord.longitude], 12);
+
+            window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(window.historyMap);
+
+            if (typeof window.L.markerClusterGroup === 'function') {
+                window.historyMapMarkers = window.L.markerClusterGroup({
+                    showCoverageOnHover: false,
+                    maxClusterRadius: 42,
+                    disableClusteringAtZoom: 15,
+                    iconCreateFunction(cluster) {
+                        return window.L.divIcon({
+                            html: `<span>${cluster.getChildCount()}</span>`,
+                            className: 'history-map-cluster',
+                            iconSize: [34, 34]
+                        });
+                    }
+                });
+            } else {
+                window.historyMapMarkers = window.L.layerGroup();
+            }
+
+            window.historyMapPathLayer = window.L.polyline([], {
+                color: '#334155',
+                weight: 3,
+                opacity: 0.7,
+                dashArray: '8 6'
+            });
+        }
+
+        function fitHistoryMapToRecords(records) {
+            if (!window.historyMap || !records || records.length === 0) return;
+
+            if (records.length === 1) {
+                const point = records[0];
+                window.historyMap.setView([point.latitude, point.longitude], 14);
+                return;
+            }
+
+            const bounds = window.L.latLngBounds();
+            records.forEach((record) => bounds.extend([record.latitude, record.longitude]));
+            window.historyMap.fitBounds(bounds, { padding: [20, 20], maxZoom: 14 });
+        }
+
+        function filterHistoryMapRecords(records) {
+            const filters = window.historyMapFilters || {};
+            return records.filter((record) => {
+                if (filters.behavior && filters.behavior !== 'all' && record.behaviorKey !== filters.behavior) return false;
+                if (filters.dog && filters.dog !== 'all' && record.dogKey !== filters.dog) return false;
+                if (filters.trainer && filters.trainer !== 'all' && record.trainerKey !== filters.trainer) return false;
+                if (filters.locationType && filters.locationType !== 'all' && record.locationTypeKey !== filters.locationType) return false;
+                return true;
+            });
+        }
+
+        function updateHistoryMapNote(heatRequestedButUnavailable = false) {
+            const noteEl = document.getElementById('historyMapNote');
+            if (!noteEl) return;
+
+            const total = Number(window.historyMapEntriesInRange || 0);
+            const excluded = Number(window.historyMapExcludedNoGps || 0);
+            const mapped = (window.historyMapSourceRecords || []).length;
+            const visible = (window.historyMapVisibleRecords || []).length;
+
+            const noteParts = [];
+            if (total === 0) {
+                noteParts.push('No training sessions found in this date range.');
+            } else if (excluded > 0) {
+                noteParts.push(`${excluded} training session(s) in this date range are not shown because GPS coordinates were not saved.`);
+            } else {
+                noteParts.push('All sessions in this date range include GPS coordinates.');
+            }
+
+            if (mapped > 0) {
+                noteParts.push(`Showing ${visible} of ${mapped} mapped session(s) after map filters.`);
+                if (visible === 0) {
+                    noteParts.push('No mapped sessions match the current map filters.');
+                }
+            }
+
+            if (heatRequestedButUnavailable) {
+                noteParts.push('Heatmap plugin is unavailable, so pins are shown instead.');
+            }
+
+            noteEl.textContent = noteParts.join(' ');
+        }
+
+        function applyHistoryMapLayers(options = {}) {
+            const fitToVisible = !!options.fitToVisible;
+            const mapEl = document.getElementById('historyMapCanvas');
+            if (!mapEl) return;
+
+            const sourceRecords = window.historyMapSourceRecords || [];
+            if (!window.historyMap || !window.historyMapMarkers) {
+                window.historyMapVisibleRecords = [];
+                updateHistoryMapNote(false);
+                return;
+            }
+
+            const visibleRecords = filterHistoryMapRecords(sourceRecords);
+            window.historyMapVisibleRecords = visibleRecords;
+
+            window.historyMapMarkers.clearLayers();
+
+            if (window.historyMapHeatLayer && window.historyMap.hasLayer(window.historyMapHeatLayer)) {
+                window.historyMap.removeLayer(window.historyMapHeatLayer);
+            }
+
+            if (window.historyMapPathLayer && window.historyMap.hasLayer(window.historyMapPathLayer)) {
+                window.historyMap.removeLayer(window.historyMapPathLayer);
+            }
+
+            const heatAvailable = typeof window.L.heatLayer === 'function';
+            const heatRequested = window.historyMapViewMode === 'heat';
+            const useHeat = heatRequested && heatAvailable;
+
+            if (useHeat) {
+                if (window.historyMap.hasLayer(window.historyMapMarkers)) {
+                    window.historyMap.removeLayer(window.historyMapMarkers);
+                }
+
+                const heatPoints = visibleRecords.map((record) => ([
+                    record.latitude,
+                    record.longitude,
+                    getHistoryMapHeatWeight(record)
+                ]));
+
+                window.historyMapHeatLayer = window.L.heatLayer(heatPoints, {
+                    radius: 24,
+                    blur: 20,
+                    maxZoom: 17,
+                    minOpacity: 0.25,
+                    gradient: {
+                        0.2: '#93c5fd',
+                        0.4: '#60a5fa',
+                        0.6: '#0e5a9f',
+                        0.8: '#f59e0b',
+                        1: '#dc2626'
+                    }
+                });
+                window.historyMapHeatLayer.addTo(window.historyMap);
+            } else {
+                visibleRecords.forEach((record) => {
+                    const entry = record.entry || {};
+                    const date = new Date(entry.timestamp);
+                    const markerColor = getHistoryMapBehaviorColor(entry.behavior);
+                    const marker = window.L.circleMarker([record.latitude, record.longitude], {
+                        radius: 7,
+                        stroke: true,
+                        color: '#ffffff',
+                        weight: 1.5,
+                        fillColor: markerColor,
+                        fillOpacity: 0.9
+                    });
+
+                    marker.bindPopup(`
+                        <div style="min-width: 180px;">
+                            <div style="font-weight: 700; margin-bottom: 4px;">${escapeHtml(record.locationLabel)}</div>
+                            <div><strong>Dog:</strong> ${escapeHtml(record.dogLabel)}</div>
+                            <div><strong>Trainer:</strong> ${escapeHtml(record.trainerLabel)}</div>
+                            <div><strong>Behavior:</strong> ${escapeHtml(record.behaviorLabel)}</div>
+                            <div><strong>Type:</strong> ${escapeHtml(record.locationTypeLabel)}</div>
+                            <div><strong>Date:</strong> ${escapeHtml(date.toLocaleString())}</div>
+                        </div>
+                    `);
+
+                    window.historyMapMarkers.addLayer(marker);
+                });
+
+                if (!window.historyMap.hasLayer(window.historyMapMarkers)) {
+                    window.historyMap.addLayer(window.historyMapMarkers);
+                }
+            }
+
+            const sortedForPath = visibleRecords
+                .slice()
+                .sort((a, b) => a.timestampMs - b.timestampMs);
+
+            if (window.historyMapFilters.showPath && sortedForPath.length >= 2 && window.historyMapPathLayer) {
+                const pathLatLngs = sortedForPath.map((record) => [record.latitude, record.longitude]);
+                window.historyMapPathLayer.setLatLngs(pathLatLngs);
+                window.historyMapPathLayer.addTo(window.historyMap);
+            }
+
+            updateHistoryMapNote(heatRequested && !heatAvailable);
+
+            if (fitToVisible) {
+                fitHistoryMapToRecords(visibleRecords);
+                window.invalidateHistoryMapLayout();
+            }
+        }
+
+        window.setHistoryMapFilter = function (filterKey, value) {
+            const validKeys = ['behavior', 'dog', 'trainer', 'locationType'];
+            if (!validKeys.includes(filterKey)) return;
+            window.historyMapFilters[filterKey] = value || 'all';
+            applyHistoryMapLayers({ fitToVisible: false });
+        };
+
+        window.setHistoryMapViewMode = function (mode) {
+            window.historyMapViewMode = mode === 'heat' ? 'heat' : 'pins';
+            syncHistoryMapControlState();
+            applyHistoryMapLayers({ fitToVisible: false });
+        };
+
+        window.toggleHistoryMapPath = function (enabled) {
+            window.historyMapFilters.showPath = !!enabled;
+            syncHistoryMapControlState();
+            applyHistoryMapLayers({ fitToVisible: false });
+        };
+
+        window.fitHistoryMapToVisible = function () {
+            fitHistoryMapToRecords(window.historyMapVisibleRecords || []);
+            window.invalidateHistoryMapLayout();
+        };
+
+        function renderHistoryMap(entries) {
+            const mapEl = document.getElementById('historyMapCanvas');
+            const noteEl = document.getElementById('historyMapNote');
+            if (!mapEl || !noteEl) return;
+
+            ensureHistoryMapToggleHook();
+            syncHistoryMapControlState();
+
+            const safeEntries = Array.isArray(entries) ? entries : [];
+            window.historyMapEntriesInRange = safeEntries.length;
+
+            if (typeof window.L === 'undefined') {
+                mapEl.innerHTML = '<div class="history-map-empty">Map library failed to load.</div>';
+                window.historyMapSourceRecords = [];
+                window.historyMapVisibleRecords = [];
+                window.historyMapExcludedNoGps = safeEntries.length;
+                updateHistoryMapNote(false);
+                return;
+            }
+
+            const records = [];
+            let excludedWithoutCoordinates = 0;
+            safeEntries.forEach((entry) => {
+                const coords = getEntryCoordinates(entry);
+                if (!coords) {
+                    excludedWithoutCoordinates += 1;
+                    return;
+                }
+
+                const entryDate = new Date(entry.timestamp);
+                records.push({
+                    entry,
+                    latitude: coords.latitude,
+                    longitude: coords.longitude,
+                    behaviorKey: normalizeText(entry.behavior) || 'unspecified',
+                    behaviorLabel: normalizeName(entry.behavior) || 'Unspecified',
+                    dogKey: normalizeText(entry.dogName) || 'unknown-dog',
+                    dogLabel: normalizeName(entry.dogName) || 'Unknown dog',
+                    trainerKey: normalizeText(entry.userEmail) || 'unknown-trainer',
+                    trainerLabel: normalizeEmail(entry.userEmail) || 'Unknown trainer',
+                    locationTypeKey: normalizeText(entry.locationType) || 'unspecified',
+                    locationTypeLabel: normalizeName(entry.locationType) || 'Unspecified',
+                    locationLabel: normalizeName(entry.locationName) || normalizeName(entry.locationType) || 'Training location',
+                    timestampMs: Number.isFinite(entryDate.getTime()) ? entryDate.getTime() : 0
+                });
+            });
+
+            window.historyMapSourceRecords = records;
+            window.historyMapExcludedNoGps = excludedWithoutCoordinates;
+            buildHistoryMapFilterOptions(records);
+
+            if (records.length === 0) {
+                destroyHistoryMapInstance();
+                mapEl.innerHTML = '<div class="history-map-empty">No sessions with GPS coordinates in this date range.</div>';
+                updateHistoryMapNote(false);
+                return;
+            }
+
+            ensureHistoryMapInstance(mapEl, records[0]);
+            applyHistoryMapLayers({ fitToVisible: true });
         }
 
         window.applyHistoryDateFilter = function () {
@@ -5235,6 +5934,9 @@
 
             if (tab === 'history') {
                 window.loadEntries();
+                if (window.invalidateHistoryMapLayout) {
+                    setTimeout(() => window.invalidateHistoryMapLayout(), 120);
+                }
             } else if (tab === 'reporting') {
                 window.loadAdminStats();
             } else if (tab === 'admin' && window.isAdmin) {
