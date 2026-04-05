@@ -20,6 +20,7 @@ Service Puppy Tracker is a single-page web app for trainers and administrators t
 - Clusters nearby map sessions for readability.
 - Color-codes map markers by behavior rating.
 - Supports optional sequence path overlay and heatmap mode.
+- Heatmap intensity is normalized relative to currently visible mapped sessions.
 - Adds map-only quick filters (behavior, dog, trainer, location type) and a fit-to-visible action.
 - Notes how many sessions are excluded from the map when GPS coordinates are missing.
 - Adds a Reporting tab (available to all users) with access-restricted analytics.
