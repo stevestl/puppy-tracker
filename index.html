@@ -1,12 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Puppy Tracker">
     <title>Service Puppy Tracker</title>
     <link rel="icon" type="image/png" href="assets/full_sized_lab.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -6061,7 +6055,9 @@
                     const sourceNote = attemptLabel === 'recent-fix'
                         ? 'using recent device fix'
                         : 'using fresh GPS fix';
-                    statusEl.innerHTML = `✅ Location captured (±${accuracyMeters}m accuracy, ${sourceNote})`;
+                    const lat = Number(window.currentLocation.latitude).toFixed(6);
+                    const lng = Number(window.currentLocation.longitude).toFixed(6);
+                    statusEl.innerHTML = `✅ Location captured (±${accuracyMeters}m accuracy, ${sourceNote})<br><span style="font-size: 12px;">GPS: ${lat}, ${lng}</span>`;
 
                     // Fetch nearby places
                     await fetchNearbyPlaces(position.coords.latitude, position.coords.longitude);
@@ -6089,7 +6085,7 @@
 
         function buildOverpassQuery(radius, lat, lng) {
             return `
-                [out:json][timeout:12];
+                [out:json][timeout:6];
                 (
                     nwr["name"]["amenity"](around:${radius},${lat},${lng});
                     nwr["name"]["shop"](around:${radius},${lat},${lng});
@@ -6099,10 +6095,40 @@
                     nwr["name"]["healthcare"](around:${radius},${lat},${lng});
                     nwr["name"]["public_transport"](around:${radius},${lat},${lng});
                     nwr["name"]["railway"](around:${radius},${lat},${lng});
-                    nwr["name"]["building"](around:${radius},${lat},${lng});
                 );
-                out center 30;
+                out center 20;
             `;
+        }
+
+        async function fetchWithTimeout(url, options = {}, timeoutMs = 4500) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+            try {
+                return await fetch(url, { ...options, signal: controller.signal });
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        }
+
+        function resolveFirstFulfilled(promises) {
+            return new Promise((resolve, reject) => {
+                if (!Array.isArray(promises) || promises.length === 0) {
+                    reject(new Error('No promises supplied'));
+                    return;
+                }
+
+                let rejectedCount = 0;
+                promises.forEach((p) => {
+                    Promise.resolve(p)
+                        .then(resolve)
+                        .catch(() => {
+                            rejectedCount += 1;
+                            if (rejectedCount >= promises.length) {
+                                reject(new Error('All requests failed'));
+                            }
+                        });
+                });
+            });
         }
 
         async function fetchOverpassPlacesWithFallback(lat, lng, radius) {
@@ -6112,13 +6138,17 @@
                 'https://lz4.overpass-api.de/api/interpreter'
             ];
             const query = buildOverpassQuery(radius, lat, lng);
-
-            for (const overpassUrl of overpassEndpoints) {
+            const maxEndpointsPerRadius = 2;
+            const endpointsToTry = overpassEndpoints.slice(0, maxEndpointsPerRadius);
+            const requests = endpointsToTry.map(async (overpassUrl) => {
                 try {
-                    const response = await fetch(overpassUrl, {
+                    const response = await fetchWithTimeout(overpassUrl, {
                         method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                        },
                         body: `data=${encodeURIComponent(query)}`
-                    });
+                    }, 4500);
 
                     if (!response.ok) {
                         throw new Error(`HTTP ${response.status}`);
@@ -6126,7 +6156,7 @@
 
                     const data = await response.json();
                     if (!Array.isArray(data.elements)) {
-                        continue;
+                        throw new Error('Invalid Overpass response');
                     }
 
                     const places = data.elements
@@ -6153,21 +6183,30 @@
                         })
                         .filter(Boolean);
 
-                    if (places.length > 0) {
-                        return places;
+                    if (places.length === 0) {
+                        throw new Error('No places from endpoint');
                     }
+
+                    return places;
                 } catch (error) {
                     console.warn('Overpass request failed:', overpassUrl, error);
+                    throw error;
                 }
-            }
+            });
 
-            return [];
+            try {
+                return await resolveFirstFulfilled(requests);
+            } catch (error) {
+                return [];
+            }
         }
 
         async function fetchReverseGeocodeSuggestion(lat, lng) {
             try {
-                const response = await fetch(
-                    `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&zoom=18&addressdetails=1`
+                const response = await fetchWithTimeout(
+                    `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&zoom=18&addressdetails=1`,
+                    {},
+                    3500
                 );
                 if (!response.ok) {
                     return null;
@@ -6211,9 +6250,24 @@
                 .slice(0, limit);
         }
 
+        function buildNearbyPlacesCacheKey(lat, lng) {
+            return `${Number(lat).toFixed(4)},${Number(lng).toFixed(4)}`;
+        }
+
         async function fetchNearbyPlaces(lat, lng) {
             const nearbyPlacesDiv = document.getElementById('nearbyPlaces');
             const placesListDiv = document.getElementById('placesList');
+            const cacheKey = buildNearbyPlacesCacheKey(lat, lng);
+            const cache = window.nearbyPlacesCache || {};
+            window.nearbyPlacesCache = cache;
+            const cached = cache[cacheKey];
+            const CACHE_TTL_MS = 300000;
+
+            if (cached && (Date.now() - cached.timestamp) <= CACHE_TTL_MS && Array.isArray(cached.places) && cached.places.length > 0) {
+                nearbyPlacesDiv.classList.remove('hidden');
+                displayNearbyPlacesOSM(cached.places);
+                return;
+            }
 
             nearbyPlacesDiv.classList.remove('hidden');
             placesListDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: #666;">Loading nearby places...</div>';
@@ -6221,13 +6275,13 @@
             console.log('Searching near:', lat, lng);
 
             try {
-                const radiusSteps = [150, 350, 750];
+                const radiusSteps = [180, 500];
                 let discoveredPlaces = [];
 
                 for (const radius of radiusSteps) {
                     const results = await fetchOverpassPlacesWithFallback(lat, lng, radius);
                     discoveredPlaces = dedupeAndRankPlaces(discoveredPlaces.concat(results));
-                    if (discoveredPlaces.length >= 5) break;
+                    if (discoveredPlaces.length >= 3) break;
                 }
 
                 if (discoveredPlaces.length === 0) {
@@ -6240,6 +6294,10 @@
                 if (discoveredPlaces.length > 0) {
                     console.log('Found', discoveredPlaces.length, 'places');
                     displayNearbyPlacesOSM(discoveredPlaces);
+                    cache[cacheKey] = {
+                        timestamp: Date.now(),
+                        places: discoveredPlaces
+                    };
                     return;
                 }
 

@@ -8,7 +8,9 @@ Service Puppy Tracker is a single-page web app for trainers and administrators t
 - Restricts account access to users with an assigned dog.
 - Lets trainers log field training sessions with:
   - Location capture with multi-attempt geolocation fallback (validated recent fix, then fresh GPS fix)
+  - Shows captured GPS coordinates directly in the location status after capture
   - Nearby place suggestions from free OpenStreetMap services with endpoint/radius fallback
+  - Nearby place lookup uses short request timeouts and a short-lived per-location cache for faster repeat captures
   - Reverse geocoding fallback when nearby place search returns no named places
   - Location type
   - Duration
