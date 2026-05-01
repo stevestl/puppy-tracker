@@ -2299,6 +2299,14 @@
                         aria-label="Close entry editor">×</button>
                 </div>
                 <div class="form-group">
+                    <label>Date &amp; Time</label>
+                    <input type="datetime-local" id="editTimestamp">
+                </div>
+                <div class="form-group">
+                    <label>Dog</label>
+                    <select id="editDogName"></select>
+                </div>
+                <div class="form-group">
                     <label>Location Name</label>
                     <input type="text" id="editLocationName" placeholder="Location name">
                 </div>
@@ -5269,6 +5277,23 @@
             }
 
             window.editingEntryId = entryId;
+
+            // Populate date/time (convert ISO string to local datetime-local value)
+            const tsDate = entry.timestamp ? new Date(entry.timestamp) : new Date();
+            const localISO = new Date(tsDate.getTime() - tsDate.getTimezoneOffset() * 60000)
+                .toISOString().slice(0, 16);
+            document.getElementById('editTimestamp').value = localISO;
+
+            // Populate dog selector with accessible dogs
+            const dogSelect = document.getElementById('editDogName');
+            const accessibleDogs = window.isAdmin
+                ? (window.availableDogs || []).map(d => d.dogName).filter(Boolean)
+                : (window.userDogs || []);
+            dogSelect.innerHTML = accessibleDogs
+                .map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`)
+                .join('');
+            dogSelect.value = entry.dogName || '';
+
             document.getElementById('editLocationName').value = entry.locationName || '';
             document.getElementById('editLocationType').value = entry.locationType || '';
             document.getElementById('editDuration').value = entry.duration ?? '';
@@ -5310,8 +5335,18 @@
                 return;
             }
 
+            const timestampRaw = document.getElementById('editTimestamp').value;
+            const dogName = document.getElementById('editDogName').value.trim();
             const locationType = document.getElementById('editLocationType').value;
             const behavior = document.getElementById('editBehavior').value;
+            if (!timestampRaw) {
+                alert('Date & Time is required.');
+                return;
+            }
+            if (!dogName) {
+                alert('Dog is required.');
+                return;
+            }
             if (!locationType || !behavior) {
                 alert('Location Type and Overall Behavior are required.');
                 return;
@@ -5324,6 +5359,8 @@
             }
 
             const updatedEntry = {
+                timestamp: new Date(timestampRaw).toISOString(),
+                dogName: dogName,
                 locationName: normalizeName(document.getElementById('editLocationName').value),
                 locationType: locationType,
                 duration: (() => {
