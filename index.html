@@ -5523,7 +5523,7 @@
             alert('Entry copied into the New Entry form. Review and save it as a new session.');
         };
 
-        window.openEditEntryModal = function (entryId) {
+        window.openEditEntryModal = async function (entryId) {
             const entry = window.entryCacheById?.get(entryId);
             if (!entry) {
                 alert('Entry not found. Refresh and try again.');
@@ -5573,6 +5573,9 @@
             document.getElementById('editEntryModal').classList.remove('hidden');
             setModalBodyLock(true);
 
+            // Reset any previous edit markers before reusing the map.
+            window.clearEditLocation();
+
             // Initialize edit-location map and marker
             // Prefer the entry's recorded GPS coordinates when present; fall back to the user's current location.
             const entryLat = entry.location ? Number(entry.location.latitude) : NaN;
@@ -5593,6 +5596,26 @@
                     timestamp: window.currentLocation.timestamp || new Date().toISOString()
                 };
                 window.editingEntryLocationIsRecorded = false;
+            } else if (navigator.geolocation && typeof resolveCurrentPosition === 'function') {
+                try {
+                    const { position } = await resolveCurrentPosition();
+                    window.currentLocation = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        accuracy: position.coords.accuracy,
+                        timestamp: new Date().toISOString()
+                    };
+                    window.editingEntryLocation = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        accuracy: position.coords.accuracy,
+                        timestamp: window.currentLocation.timestamp
+                    };
+                    window.editingEntryLocationIsRecorded = false;
+                } catch (error) {
+                    window.editingEntryLocation = null;
+                    window.editingEntryLocationIsRecorded = false;
+                }
             } else {
                 window.editingEntryLocation = null;
                 window.editingEntryLocationIsRecorded = false;
