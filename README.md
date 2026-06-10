@@ -138,3 +138,10 @@ The app now includes built-in guides:
 
 - This app is intentionally implemented in one file for easy deployment.
 - If you split code later, move Firebase config and business logic into separate modules.
+
+## Recent additions (2026-06-10)
+
+- Added a quick "Copy" action on each history entry to prefill the `New Entry` form from an existing session (`copyEntryToLog`). Hover the button to see a tooltip explaining the action.
+- Edit-entry map selector: when editing an entry you can now manually set or adjust the session GPS coordinates by clicking the map or dragging the marker. The edit modal exposes latitude/longitude fields and a `Clear` action.
+- The `saveEditedEntry` flow now persists the updated location coordinates to the `entries` document in Firestore when set in the editor.
+

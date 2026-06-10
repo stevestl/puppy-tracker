@@ -329,6 +329,38 @@
             flex-wrap: wrap;
         }
 
+        .copy-btn {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .edit-map {
+            width: 100%;
+            height: 260px;
+            border-radius: 8px;
+        }
+
+        .map-help-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            margin-left: 8px;
+            background: #e6eefc;
+            color: #0e5a9f;
+            border-radius: 50%;
+            border: 1px solid #c7ddff;
+            font-size: 12px;
+            line-height: 1;
+            cursor: help;
+        }
+
         .tabs {
             display: flex;
             gap: 10px;
@@ -2397,6 +2429,16 @@
                     <label>General Notes</label>
                     <textarea id="editNotes" maxlength="128"
                         placeholder="Update general context/progress notes"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Location (select on map) <button type="button" class="map-help-btn" title="Tip: Click map to set marker; drag the marker to fine-tune coordinates.">?</button></label>
+                    <div id="editLocationCoords" style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+                        <input type="text" id="editLocationLat" placeholder="Latitude" readonly style="flex:1;padding:8px;border:1px solid #e0e0e0;border-radius:8px;">
+                        <input type="text" id="editLocationLng" placeholder="Longitude" readonly style="flex:1;padding:8px;border:1px solid #e0e0e0;border-radius:8px;">
+                        <button class="btn btn-secondary history-reset-btn" type="button" onclick="clearEditLocation()">Clear</button>
+                    </div>
+                    <div id="editLocationMap" class="edit-map" style="height:260px;border:1px solid #e5e7eb;border-radius:8px;"></div>
+                    <small style="display:block;margin-top:6px;color:#666;font-size:12px;">Click on the map to set location, drag the marker to adjust.</small>
                 </div>
                 <div class="docs-close-row">
                     <button class="btn btn-primary" type="button" onclick="saveEditedEntry()">Save Changes</button>
@@ -4709,6 +4751,89 @@
             });
         }
 
+        // Edit-entry map helpers (allow selecting location on map when editing an entry)
+        window.editLocationMap = null;
+        window.editLocationMarker = null;
+        window.editingEntryLocation = null;
+
+        function setEditLocationInputs(lat, lng) {
+            const latEl = document.getElementById('editLocationLat');
+            const lngEl = document.getElementById('editLocationLng');
+            if (latEl) latEl.value = typeof lat === 'number' ? lat.toFixed(6) : '';
+            if (lngEl) lngEl.value = typeof lng === 'number' ? lng.toFixed(6) : '';
+        }
+
+        window.ensureEditLocationMapInstance = function (center) {
+            const mapEl = document.getElementById('editLocationMap');
+            if (!mapEl || typeof window.L === 'undefined') return;
+
+            if (!window.editLocationMap) {
+                mapEl.innerHTML = '';
+                const initialCenter = (center && typeof center.latitude === 'number' && typeof center.longitude === 'number')
+                    ? [center.latitude, center.longitude]
+                    : (window.currentLocation ? [window.currentLocation.latitude, window.currentLocation.longitude] : [0, 0]);
+
+                const zoom = (initialCenter[0] === 0 && initialCenter[1] === 0) ? 2 : 14;
+
+                window.editLocationMap = window.L.map(mapEl, { zoomControl: true }).setView(initialCenter, zoom);
+                window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(window.editLocationMap);
+
+                window.editLocationMap.on('click', function (e) {
+                    const lat = e.latlng.lat;
+                    const lng = e.latlng.lng;
+                    window.setEditLocationMarker(lat, lng);
+                });
+            }
+
+            if (center && center.latitude && center.longitude) {
+                window.setEditLocationMarker(center.latitude, center.longitude);
+            } else if (window.editLocationMarker) {
+                // keep existing marker
+            } else if (window.currentLocation) {
+                window.setEditLocationMarker(window.currentLocation.latitude, window.currentLocation.longitude);
+            }
+        };
+
+        window.setEditLocationMarker = function (lat, lng) {
+            if (!window.editLocationMap) {
+                window.ensureEditLocationMapInstance({ latitude: lat, longitude: lng });
+            }
+
+            if (!window.editLocationMap) return;
+
+            if (!window.editLocationMarker) {
+                window.editLocationMarker = window.L.marker([lat, lng], { draggable: true }).addTo(window.editLocationMap);
+                window.editLocationMarker.on('dragend', function () {
+                    const pos = window.editLocationMarker.getLatLng();
+                    window.editingEntryLocation = {
+                        latitude: pos.lat,
+                        longitude: pos.lng,
+                        accuracy: null,
+                        timestamp: new Date().toISOString()
+                    };
+                    setEditLocationInputs(pos.lat, pos.lng);
+                });
+            } else {
+                window.editLocationMarker.setLatLng([lat, lng]);
+            }
+
+            window.editLocationMap.setView([lat, lng], 14);
+            window.editingEntryLocation = { latitude: lat, longitude: lng, accuracy: null, timestamp: new Date().toISOString() };
+            setEditLocationInputs(lat, lng);
+        };
+
+        window.clearEditLocation = function () {
+            if (window.editLocationMarker && window.editLocationMap) {
+                window.editLocationMap.removeLayer(window.editLocationMarker);
+            }
+            window.editLocationMarker = null;
+            window.editingEntryLocation = null;
+            setEditLocationInputs('', '');
+        };
+
         function fitHistoryMapToRecords(records) {
             if (!window.historyMap || !records || records.length === 0) return;
 
@@ -5242,14 +5367,15 @@
                                 ${locationName}
                                 <div class="entry-location" style="font-size: 11px; color: #999;">${locationStr}</div>
                             </div>
-                            ${canManageEntry ? `
-                                <div class="entry-actions">
-                                    <button class="edit-btn" onclick="openEditEntryModal('${entry.id}')">Edit</button>
-                                    <button class="delete-btn" onclick="deleteEntry('${entry.id}')">Delete</button>
-                                </div>
-                            ` : ''}
-                        </div>
-                        <div class="entry-content">
+                            <div class="entry-actions">
+                    <button class="copy-btn" title="Copy this history entry into the New Entry form" onclick="copyEntryToLog('${entry.id}')">Copy</button>
+                    ${canManageEntry ? `
+                        <button class="edit-btn" onclick="openEditEntryModal('${entry.id}')">Edit</button>
+                        <button class="delete-btn" onclick="deleteEntry('${entry.id}')">Delete</button>
+                    ` : ''}
+                </div>
+            </div>
+            <div class="entry-content">
                             ${dogDisplay}
                             ${userDisplay}
                             <div><strong>Type:</strong> ${entry.locationType}</div>
@@ -5263,6 +5389,75 @@
                     </div>
                 `;
             }).join('');
+        };
+
+        window.copyEntryToLog = function (entryId) {
+            const entry = window.entryCacheById?.get(entryId);
+            if (!entry) {
+                alert('Entry not found. Refresh and try again.');
+                return;
+            }
+
+            if (window.userDogs && window.userDogs.includes(entry.dogName)) {
+                window.selectDog(entry.dogName);
+            }
+
+            if (!window.selectedDog) {
+                if (Array.isArray(window.userDogs) && window.userDogs.length === 1) {
+                    window.selectDog(window.userDogs[0]);
+                }
+            }
+
+            if (!window.selectedDog) {
+                alert('Please select a dog before copying an entry.');
+                switchTab('log');
+                return;
+            }
+
+            document.getElementById('locationName').value = entry.locationName || '';
+            document.getElementById('locationType').value = entry.locationType || '';
+            document.getElementById('duration').value = entry.duration ?? '0';
+            document.getElementById('durationDisplay').textContent = String(entry.duration ?? '0');
+            document.getElementById('behavior').value = entry.behavior || '';
+            handleBehaviorChange(entry.behavior || '');
+            document.getElementById('behaviorComments').value = entry.behaviorComments || '';
+            updateBehaviorCommentsCounter();
+            document.getElementById('notes').value = entry.notes || '';
+            updateNotesCounter();
+
+            document.querySelectorAll('#logFormContainer input[name="distraction"]').forEach((cb) => {
+                cb.checked = Array.isArray(entry.distractions) && entry.distractions.includes(cb.value);
+            });
+            document.querySelectorAll('#logFormContainer input[name="command"]').forEach((cb) => {
+                cb.checked = Array.isArray(entry.commands) && entry.commands.includes(cb.value);
+            });
+
+            if (entry.location && typeof entry.location.latitude === 'number' && typeof entry.location.longitude === 'number') {
+                window.currentLocation = {
+                    latitude: entry.location.latitude,
+                    longitude: entry.location.longitude,
+                    accuracy: entry.location.accuracy || null,
+                    timestamp: entry.location.timestamp || new Date().toISOString()
+                };
+                const statusEl = document.getElementById('locationStatus');
+                if (statusEl) {
+                    statusEl.classList.remove('hidden', 'error');
+                    statusEl.classList.add('success');
+                    const lat = Number(window.currentLocation.latitude).toFixed(6);
+                    const lng = Number(window.currentLocation.longitude).toFixed(6);
+                    statusEl.innerHTML = `✅ Copied location from history<br><span style="font-size: 12px;">GPS: ${lat}, ${lng}</span>`;
+                }
+            } else {
+                window.currentLocation = null;
+                const statusEl = document.getElementById('locationStatus');
+                if (statusEl) {
+                    statusEl.classList.add('hidden');
+                }
+            }
+
+            document.getElementById('nearbyPlaces').classList.add('hidden');
+            switchTab('log');
+            alert('Entry copied into the New Entry form. Review and save it as a new session.');
         };
 
         window.openEditEntryModal = function (entryId) {
@@ -5314,6 +5509,19 @@
 
             document.getElementById('editEntryModal').classList.remove('hidden');
             setModalBodyLock(true);
+
+            // Initialize edit-location map and marker
+            if (entry.location && typeof entry.location.latitude === 'number' && typeof entry.location.longitude === 'number') {
+                window.editingEntryLocation = {
+                    latitude: entry.location.latitude,
+                    longitude: entry.location.longitude,
+                    accuracy: entry.location.accuracy || null,
+                    timestamp: entry.location.timestamp || new Date().toISOString()
+                };
+            } else {
+                window.editingEntryLocation = null;
+            }
+            window.ensureEditLocationMapInstance(window.editingEntryLocation || window.currentLocation || null);
         };
 
         window.closeEditEntryModal = function () {
@@ -5363,6 +5571,7 @@
                 dogName: dogName,
                 locationName: normalizeName(document.getElementById('editLocationName').value),
                 locationType: locationType,
+                location: (window.editingEntryLocation && typeof window.editingEntryLocation.latitude === 'number') ? window.editingEntryLocation : (originalEntry.location || null),
                 duration: (() => {
                     const value = document.getElementById('editDuration').value;
                     return value === '' ? null : (parseFloat(value) || null);
