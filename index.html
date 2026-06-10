@@ -4754,7 +4754,9 @@
         // Edit-entry map helpers (allow selecting location on map when editing an entry)
         window.editLocationMap = null;
         window.editLocationMarker = null;
+        window.editLocationBlueDot = null;
         window.editingEntryLocation = null;
+        window.editingEntryLocationIsRecorded = false;
 
         function setEditLocationInputs(lat, lng) {
             const latEl = document.getElementById('editLocationLat');
@@ -4769,9 +4771,15 @@
 
             if (!window.editLocationMap) {
                 mapEl.innerHTML = '';
-                const initialCenter = (center && typeof center.latitude === 'number' && typeof center.longitude === 'number')
-                    ? [center.latitude, center.longitude]
-                    : (window.currentLocation ? [window.currentLocation.latitude, window.currentLocation.longitude] : [0, 0]);
+                const cLat = center ? Number(center.latitude) : NaN;
+                const cLng = center ? Number(center.longitude) : NaN;
+                const hasCenter = Number.isFinite(cLat) && Number.isFinite(cLng);
+
+                const curLat = window.currentLocation ? Number(window.currentLocation.latitude) : NaN;
+                const curLng = window.currentLocation ? Number(window.currentLocation.longitude) : NaN;
+                const hasCurrent = Number.isFinite(curLat) && Number.isFinite(curLng);
+
+                const initialCenter = hasCenter ? [cLat, cLng] : (hasCurrent ? [curLat, curLng] : [0, 0]);
 
                 const zoom = (initialCenter[0] === 0 && initialCenter[1] === 0) ? 2 : 14;
 
@@ -4788,51 +4796,141 @@
                 });
             }
 
-            if (center && center.latitude && center.longitude) {
-                window.setEditLocationMarker(center.latitude, center.longitude);
-            } else if (window.editLocationMarker) {
-                // keep existing marker
-            } else if (window.currentLocation) {
-                window.setEditLocationMarker(window.currentLocation.latitude, window.currentLocation.longitude);
-            }
+if (center && center.latitude && center.longitude) {
+window.setEditLocationMarker(center.latitude, center.longitude);
+} else if (window.editLocationMarker) {
+// keep existing marker
+} else if (window.currentLocation) {
+window.setEditLocationMarker(window.currentLocation.latitude, window.currentLocation.longitude);
+}
+// If the center represents a recorded entry location, show a draggable pin.
+const cLat = center ? Number(center.latitude) : NaN;
+const cLng = center ? Number(center.longitude) : NaN;
+const hasCenter = Number.isFinite(cLat) && Number.isFinite(cLng);
+
+if (hasCenter && window.editingEntryLocationIsRecorded) {
+window.setEditLocationMarker(cLat, cLng);
+return;
+}
+
+// If we already have a marker, keep it as-is.
+if (window.editLocationMarker) return;
+
+// Otherwise, if we have a current device location, show blue dot.
+const curLat = window.currentLocation ? Number(window.currentLocation.latitude) : NaN;
+const curLng = window.currentLocation ? Number(window.currentLocation.longitude) : NaN;
+const hasCurrent = Number.isFinite(curLat) && Number.isFinite(curLng);
+if (hasCenter && !window.editingEntryLocationIsRecorded) {
+// center provided but marked as not recorded (treat as blue dot)
+window.setEditLocationBlueDot(cLat, cLng);
+return;
+}
+
+if (hasCurrent) {
+window.setEditLocationBlueDot(curLat, curLng);
+return;
+}
         };
 
-        window.setEditLocationMarker = function (lat, lng) {
-            if (!window.editLocationMap) {
-                window.ensureEditLocationMapInstance({ latitude: lat, longitude: lng });
-            }
+window.setEditLocationBlueDot = function (lat, lng) {
+if (!window.editLocationMap) return;
+// remove pin if present
+if (window.editLocationMarker && window.editLocationMap) {
+window.editLocationMap.removeLayer(window.editLocationMarker);
+window.editLocationMarker = null;
+}
+if (window.editLocationBlueDot) {
+window.editLocationBlueDot.setLatLng([lat, lng]);
+} else {
+window.editLocationBlueDot = window.L.circleMarker([lat, lng], {
+radius: 8,
+color: '#ffffff',
+weight: 2,
+fillColor: '#2b82ff',
+fillOpacity: 0.9
+}).addTo(window.editLocationMap);
+}
+window.editLocationMap.setView([lat, lng], 14);
+// mark as not a recorded pin
+window.editingEntryLocation = { latitude: lat, longitude: lng, accuracy: null, timestamp: new Date().toISOString() };
+window.editingEntryLocationIsRecorded = false;
+setEditLocationInputs(lat, lng);
+};
 
-            if (!window.editLocationMap) return;
+         window.setEditLocationMarker = function (lat, lng) {
+             if (!window.editLocationMap) {
+                 window.ensureEditLocationMapInstance({ latitude: lat, longitude: lng });
+             }
 
-            if (!window.editLocationMarker) {
-                window.editLocationMarker = window.L.marker([lat, lng], { draggable: true }).addTo(window.editLocationMap);
-                window.editLocationMarker.on('dragend', function () {
-                    const pos = window.editLocationMarker.getLatLng();
-                    window.editingEntryLocation = {
-                        latitude: pos.lat,
-                        longitude: pos.lng,
-                        accuracy: null,
-                        timestamp: new Date().toISOString()
-                    };
-                    setEditLocationInputs(pos.lat, pos.lng);
-                });
-            } else {
-                window.editLocationMarker.setLatLng([lat, lng]);
-            }
+             if (!window.editLocationMap) return;
 
-            window.editLocationMap.setView([lat, lng], 14);
-            window.editingEntryLocation = { latitude: lat, longitude: lng, accuracy: null, timestamp: new Date().toISOString() };
-            setEditLocationInputs(lat, lng);
-        };
+if (!window.editLocationMarker) {
+window.editLocationMarker = window.L.marker([lat, lng], { draggable: true }).addTo(window.editLocationMap);
+window.editLocationMarker.on('dragend', function () {
+const pos = window.editLocationMarker.getLatLng();
+window.editingEntryLocation = {
+latitude: pos.lat,
+longitude: pos.lng,
+accuracy: null,
+timestamp: new Date().toISOString()
+};
+setEditLocationInputs(pos.lat, pos.lng);
+});
+} else {
+window.editLocationMarker.setLatLng([lat, lng]);
+}
 
-        window.clearEditLocation = function () {
-            if (window.editLocationMarker && window.editLocationMap) {
-                window.editLocationMap.removeLayer(window.editLocationMarker);
-            }
-            window.editLocationMarker = null;
-            window.editingEntryLocation = null;
-            setEditLocationInputs('', '');
-        };
+window.editLocationMap.setView([lat, lng], 14);
+window.editingEntryLocation = { latitude: lat, longitude: lng, accuracy: null, timestamp: new Date().toISOString() };
+setEditLocationInputs(lat, lng);
+// remove blue dot if present
+if (window.editLocationBlueDot && window.editLocationMap) {
+window.editLocationMap.removeLayer(window.editLocationBlueDot);
+window.editLocationBlueDot = null;
+}
+
+if (!window.editLocationMarker) {
+window.editLocationMarker = window.L.marker([lat, lng], { draggable: true }).addTo(window.editLocationMap);
+window.editLocationMarker.on('dragend', function () {
+const pos = window.editLocationMarker.getLatLng();
+window.editingEntryLocation = {
+latitude: pos.lat,
+longitude: pos.lng,
+accuracy: null,
+timestamp: new Date().toISOString()
+};
+window.editingEntryLocationIsRecorded = true;
+setEditLocationInputs(pos.lat, pos.lng);
+});
+} else {
+window.editLocationMarker.setLatLng([lat, lng]);
+}
+
+window.editLocationMap.setView([lat, lng], 14);
+window.editingEntryLocation = { latitude: lat, longitude: lng, accuracy: null, timestamp: new Date().toISOString() };
+window.editingEntryLocationIsRecorded = true;
+setEditLocationInputs(lat, lng);
+         };
+
+         window.clearEditLocation = function () {
+if (window.editLocationMarker && window.editLocationMap) {
+window.editLocationMap.removeLayer(window.editLocationMarker);
+}
+window.editLocationMarker = null;
+window.editingEntryLocation = null;
+setEditLocationInputs('', '');
+if (window.editLocationMarker && window.editLocationMap) {
+window.editLocationMap.removeLayer(window.editLocationMarker);
+}
+if (window.editLocationBlueDot && window.editLocationMap) {
+window.editLocationMap.removeLayer(window.editLocationBlueDot);
+}
+window.editLocationMarker = null;
+window.editLocationBlueDot = null;
+window.editingEntryLocation = null;
+window.editingEntryLocationIsRecorded = false;
+setEditLocationInputs('', '');
+         };
 
         function fitHistoryMapToRecords(records) {
             if (!window.historyMap || !records || records.length === 0) return;
@@ -5511,17 +5609,31 @@
             setModalBodyLock(true);
 
             // Initialize edit-location map and marker
-            if (entry.location && typeof entry.location.latitude === 'number' && typeof entry.location.longitude === 'number') {
+            // Prefer the entry's recorded GPS coordinates when present; fall back to the user's current location.
+            const entryLat = entry.location ? Number(entry.location.latitude) : NaN;
+            const entryLng = entry.location ? Number(entry.location.longitude) : NaN;
+            if (Number.isFinite(entryLat) && Number.isFinite(entryLng)) {
                 window.editingEntryLocation = {
-                    latitude: entry.location.latitude,
-                    longitude: entry.location.longitude,
-                    accuracy: entry.location.accuracy || null,
-                    timestamp: entry.location.timestamp || new Date().toISOString()
+                    latitude: entryLat,
+                    longitude: entryLng,
+                    accuracy: entry.location && entry.location.accuracy ? entry.location.accuracy : null,
+                    timestamp: entry.location && entry.location.timestamp ? entry.location.timestamp : new Date().toISOString()
                 };
+                window.editingEntryLocationIsRecorded = true;
+            } else if (window.currentLocation && Number.isFinite(Number(window.currentLocation.latitude)) && Number.isFinite(Number(window.currentLocation.longitude))) {
+                window.editingEntryLocation = {
+                    latitude: Number(window.currentLocation.latitude),
+                    longitude: Number(window.currentLocation.longitude),
+                    accuracy: window.currentLocation.accuracy || null,
+                    timestamp: window.currentLocation.timestamp || new Date().toISOString()
+                };
+                window.editingEntryLocationIsRecorded = false;
             } else {
                 window.editingEntryLocation = null;
+                window.editingEntryLocationIsRecorded = false;
             }
-            window.ensureEditLocationMapInstance(window.editingEntryLocation || window.currentLocation || null);
+
+            window.ensureEditLocationMapInstance(window.editingEntryLocation || null);
         };
 
         window.closeEditEntryModal = function () {
