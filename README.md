@@ -71,10 +71,16 @@ Service Puppy Tracker is a single-page web app for trainers and administrators t
    - `firebase deploy --only firestore`
 5. Production hosting is GitHub Pages, not Firebase Hosting — pushing to `main` deploys the live site automatically. No manual hosting deploy step is needed.
 
+## Testing
+
+- `index.html` has no build step, so `test/support/app-source.js` pulls specific function definitions directly out of its inline `<script>` blocks by source-text markers, and `test/support/sandbox.js` runs them in a minimal `vm` sandbox (fake `window`/`document`) — tests exercise the actual shipped code, not a hand-copied reimplementation.
+- Covers the pure-logic surface: input normalization/validation, the near-duplicate entry signature, the behavior rating scale (and its Excellent/Good/Fair/Needs Improvement form wiring), date-range helpers, the Overpass/nearby-places helpers, and the shared distraction/command checkbox rendering.
+- Does **not** cover the larger Firestore-backed flows (`saveEntry`, `saveEditedEntry`, `loadEntries`, admin actions) — exercising those would need a full Firebase SDK mock, which isn't in place; those are covered by manual testing.
+- Run with `npm test` (Node's built-in test runner, no dependencies to install).
+
 ## CI
 
-- GitHub Actions (`.github/workflows/ci.yml`) runs `scripts/check-syntax.js` on every push/PR to `main`, which checks that `index.html`'s inline `<script>` blocks parse cleanly and that `firebase.json`/`.firebaserc`/`firestore.indexes.json` are valid JSON.
-- Run it locally with `node scripts/check-syntax.js`.
+- GitHub Actions (`.github/workflows/ci.yml`) runs on every push/PR to `main`: `scripts/check-syntax.js` (inline `<script>` blocks parse cleanly, `firebase.json`/`.firebaserc`/`firestore.indexes.json` are valid JSON) and `npm test` (the unit test suite above).
 
 ## License
 

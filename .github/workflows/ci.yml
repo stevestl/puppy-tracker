@@ -18,3 +18,6 @@ jobs:
 
       - name: Check inline script syntax and Firebase config JSON
         run: node scripts/check-syntax.js
+
+      - name: Run unit tests
+        run: npm test

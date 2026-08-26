@@ -1,0 +1,12 @@
+{
+  "name": "puppy-tracker",
+  "private": true,
+  "description": "Service Puppy Tracker — single-file web app. No build step; this file exists only to declare test/check scripts.",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "check-syntax": "node scripts/check-syntax.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
