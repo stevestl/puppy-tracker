@@ -3354,6 +3354,24 @@
                 .replace(/'/g, '&#39;');
         }
 
+        // Single source of truth for the behavior rating scale, shared by both
+        // <script> blocks (via window) so the "requires comments" rule and the
+        // trend-chart scoring can't drift out of sync with each other.
+        window.BEHAVIOR_LEVELS = {
+            'Excellent': { score: 4, requiresComments: false },
+            'Good': { score: 3, requiresComments: false },
+            'Fair': { score: 2, requiresComments: true },
+            'Needs Improvement': { score: 1, requiresComments: true }
+        };
+        window.behaviorRequiresComments = function (value) {
+            const level = value && window.BEHAVIOR_LEVELS[value];
+            return !!(level && level.requiresComments);
+        };
+        window.behaviorToScore = function (value) {
+            const level = value && window.BEHAVIOR_LEVELS[value];
+            return level ? level.score : null;
+        };
+
         function getDogOptionLabel(dog) {
             const litterName = normalizeName(dog?.litterName) || 'Unknown litter';
             const dogName = normalizeName(dog?.dogName);
@@ -4368,7 +4386,7 @@
                 return;
             }
 
-            const behaviorNeedsComments = behavior && !['Excellent', 'Good'].includes(behavior);
+            const behaviorNeedsComments = window.behaviorRequiresComments(behavior);
             if (behaviorNeedsComments && !normalizeName(behaviorComments)) {
                 alert('Behavior Comments are required when behavior is Fair or Needs Improvement.');
                 return;
@@ -5721,7 +5739,7 @@
                 return;
             }
             const behaviorComments = document.getElementById('editBehaviorComments').value.slice(0, 128);
-            const behaviorNeedsComments = behavior && !['Excellent', 'Good'].includes(behavior);
+            const behaviorNeedsComments = window.behaviorRequiresComments(behavior);
             if (behaviorNeedsComments && !normalizeName(behaviorComments)) {
                 alert('Behavior Comments are required when behavior is Fair or Needs Improvement.');
                 return;
@@ -5986,16 +6004,6 @@
             renderAdminTrendCharts(filtered);
             renderAdminDetailTableForCurrentRange();
         };
-
-        function behaviorToScore(value) {
-            const map = {
-                'Excellent': 4,
-                'Good': 3,
-                'Fair': 2,
-                'Needs Improvement': 1
-            };
-            return map[value] || null;
-        }
 
         function renderAdminTrendCharts(entries) {
             const container = document.getElementById('adminTrendCharts');
@@ -6804,58 +6812,54 @@
             document.getElementById('durationDisplay').textContent = value;
         }
 
-        function handleBehaviorChange(value) {
-            const groupEl = document.getElementById('behaviorCommentsGroup');
-            const commentsEl = document.getElementById('behaviorComments');
+        const BEHAVIOR_FORM_FIELD_IDS = {
+            new: { group: 'behaviorCommentsGroup', comments: 'behaviorComments', counter: 'behaviorCommentsCounter' },
+            edit: { group: 'editBehaviorCommentsGroup', comments: 'editBehaviorComments', counter: 'editBehaviorCommentsCounter' }
+        };
+
+        function applyBehaviorChange(formKey, value) {
+            const ids = BEHAVIOR_FORM_FIELD_IDS[formKey];
+            const groupEl = document.getElementById(ids.group);
+            const commentsEl = document.getElementById(ids.comments);
             if (!groupEl || !commentsEl) return;
-            const requiresComments = value && !['Excellent', 'Good'].includes(value);
+            const requiresComments = window.behaviorRequiresComments(value);
             groupEl.classList.toggle('hidden', !requiresComments);
             commentsEl.required = !!requiresComments;
             if (!requiresComments) {
                 commentsEl.value = '';
-                updateBehaviorCommentsCounter();
+                updateBehaviorCharCounter(formKey);
             }
+        }
+
+        function updateBehaviorCharCounter(formKey) {
+            const ids = BEHAVIOR_FORM_FIELD_IDS[formKey];
+            const commentsEl = document.getElementById(ids.comments);
+            const counterEl = document.getElementById(ids.counter);
+            if (!commentsEl || !counterEl) return;
+
+            const maxLength = 128;
+            if (commentsEl.value.length > maxLength) {
+                commentsEl.value = commentsEl.value.slice(0, maxLength);
+            }
+
+            const remaining = maxLength - commentsEl.value.length;
+            counterEl.textContent = `${remaining} characters remaining`;
+        }
+
+        function handleBehaviorChange(value) {
+            applyBehaviorChange('new', value);
         }
 
         function handleEditBehaviorChange(value) {
-            const groupEl = document.getElementById('editBehaviorCommentsGroup');
-            const commentsEl = document.getElementById('editBehaviorComments');
-            if (!groupEl || !commentsEl) return;
-            const requiresComments = value && !['Excellent', 'Good'].includes(value);
-            groupEl.classList.toggle('hidden', !requiresComments);
-            commentsEl.required = !!requiresComments;
-            if (!requiresComments) {
-                commentsEl.value = '';
-                updateEditBehaviorCommentsCounter();
-            }
+            applyBehaviorChange('edit', value);
         }
 
         function updateBehaviorCommentsCounter() {
-            const commentsEl = document.getElementById('behaviorComments');
-            const counterEl = document.getElementById('behaviorCommentsCounter');
-            if (!commentsEl || !counterEl) return;
-
-            const maxLength = 128;
-            if (commentsEl.value.length > maxLength) {
-                commentsEl.value = commentsEl.value.slice(0, maxLength);
-            }
-
-            const remaining = maxLength - commentsEl.value.length;
-            counterEl.textContent = `${remaining} characters remaining`;
+            updateBehaviorCharCounter('new');
         }
 
         function updateEditBehaviorCommentsCounter() {
-            const commentsEl = document.getElementById('editBehaviorComments');
-            const counterEl = document.getElementById('editBehaviorCommentsCounter');
-            if (!commentsEl || !counterEl) return;
-
-            const maxLength = 128;
-            if (commentsEl.value.length > maxLength) {
-                commentsEl.value = commentsEl.value.slice(0, maxLength);
-            }
-
-            const remaining = maxLength - commentsEl.value.length;
-            counterEl.textContent = `${remaining} characters remaining`;
+            updateBehaviorCharCounter('edit');
         }
 
         window.updateDurationDisplay = updateDurationDisplay;
