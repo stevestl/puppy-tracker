@@ -4864,6 +4864,7 @@
             window.editLocationMap.setView([lat, lng], 14);
             window.editingEntryLocation = { latitude: lat, longitude: lng, accuracy: null, timestamp: new Date().toISOString() };
             window.editingEntryLocationIsRecorded = false;
+            window.editingEntryLocationCleared = false;
             setEditLocationInputs(lat, lng);
         };
 
@@ -4890,6 +4891,7 @@
                         timestamp: new Date().toISOString()
                     };
                     window.editingEntryLocationIsRecorded = true;
+                    window.editingEntryLocationCleared = false;
                     setEditLocationInputs(pos.lat, pos.lng);
                 });
             } else {
@@ -4899,6 +4901,7 @@
             window.editLocationMap.setView([lat, lng], 14);
             window.editingEntryLocation = { latitude: lat, longitude: lng, accuracy: null, timestamp: new Date().toISOString() };
             window.editingEntryLocationIsRecorded = true;
+            window.editingEntryLocationCleared = false;
             setEditLocationInputs(lat, lng);
         };
 
@@ -4913,6 +4916,7 @@
             window.editLocationBlueDot = null;
             window.editingEntryLocation = null;
             window.editingEntryLocationIsRecorded = false;
+            window.editingEntryLocationCleared = true;
             setEditLocationInputs('', '');
         };
 
@@ -5433,10 +5437,10 @@
                     ? `${entry.location.latitude.toFixed(6)}, ${entry.location.longitude.toFixed(6)}`
                     : 'No location';
 
-                const locationName = entry.locationName ? `<div class="entry-location">📍 ${entry.locationName}</div>` : '';
+                const locationName = entry.locationName ? `<div class="entry-location">📍 ${escapeHtml(entry.locationName)}</div>` : '';
                 const userDisplay = ((window.isAdmin || entry.userId !== window.currentUser.uid) && entry.userEmail) ?
-                    `<div><strong>Trainer:</strong> ${entry.userEmail}</div>` : '';
-                const dogDisplay = `<div><strong>Dog:</strong> ${entry.dogName}</div>`;
+                    `<div><strong>Trainer:</strong> ${escapeHtml(entry.userEmail)}</div>` : '';
+                const dogDisplay = `<div><strong>Dog:</strong> ${escapeHtml(entry.dogName)}</div>`;
                 const canManageEntry = entry.userId === window.currentUser.uid || window.isAdmin;
                 const distractions = Array.isArray(entry.distractions) ? entry.distractions : [];
                 const commands = Array.isArray(entry.commands) ? entry.commands : [];
@@ -5460,13 +5464,13 @@
             <div class="entry-content">
                             ${dogDisplay}
                             ${userDisplay}
-                            <div><strong>Type:</strong> ${entry.locationType}</div>
+                            <div><strong>Type:</strong> ${escapeHtml(entry.locationType)}</div>
                             ${entry.duration ? `<div><strong>Duration:</strong> ${entry.duration} hours</div>` : ''}
-                            <div><strong>Behavior:</strong> ${entry.behavior}</div>
-                            ${entry.behaviorComments ? `<div><strong>Behavior Comments:</strong> ${entry.behaviorComments}</div>` : ''}
-                            ${distractions.length > 0 ? `<div><strong>Distractions:</strong> ${distractions.join(', ')}</div>` : ''}
-                            ${commands.length > 0 ? `<div><strong>Commands:</strong> ${commands.join(', ')}</div>` : ''}
-                            ${entry.notes ? `<div><strong>General Notes:</strong> ${entry.notes}</div>` : ''}
+                            <div><strong>Behavior:</strong> ${escapeHtml(entry.behavior)}</div>
+                            ${entry.behaviorComments ? `<div><strong>Behavior Comments:</strong> ${escapeHtml(entry.behaviorComments)}</div>` : ''}
+                            ${distractions.length > 0 ? `<div><strong>Distractions:</strong> ${distractions.map(escapeHtml).join(', ')}</div>` : ''}
+                            ${commands.length > 0 ? `<div><strong>Commands:</strong> ${commands.map(escapeHtml).join(', ')}</div>` : ''}
+                            ${entry.notes ? `<div><strong>General Notes:</strong> ${escapeHtml(entry.notes)}</div>` : ''}
                         </div>
                     </div>
                 `;
@@ -5640,6 +5644,7 @@
                 window.editingEntryLocationIsRecorded = false;
             }
 
+            window.editingEntryLocationCleared = false;
             window.ensureEditLocationMapInstance(window.editingEntryLocation || null);
         };
 
@@ -5690,7 +5695,9 @@
                 dogName: dogName,
                 locationName: normalizeName(document.getElementById('editLocationName').value),
                 locationType: locationType,
-                location: (window.editingEntryLocation && typeof window.editingEntryLocation.latitude === 'number') ? window.editingEntryLocation : (originalEntry.location || null),
+                location: window.editingEntryLocationCleared
+                    ? null
+                    : ((window.editingEntryLocation && typeof window.editingEntryLocation.latitude === 'number') ? window.editingEntryLocation : (originalEntry.location || null)),
                 duration: (() => {
                     const value = document.getElementById('editDuration').value;
                     return value === '' ? null : (parseFloat(value) || null);
@@ -6139,15 +6146,15 @@
                 return `
                                     <tr>
                                         <td>${Number.isNaN(date.getTime()) ? '' : date.toLocaleString()}</td>
-                                        <td>${entry.dogName || ''}</td>
-                                        <td>${entry.handlerName ? `${entry.handlerName} (${entry.userEmail || ''})` : (entry.userEmail || '')}</td>
-                                        <td>${entry.locationName || ''}</td>
-                                        <td>${entry.locationType || ''}</td>
+                                        <td>${escapeHtml(entry.dogName || '')}</td>
+                                        <td>${entry.handlerName ? `${escapeHtml(entry.handlerName)} (${escapeHtml(entry.userEmail || '')})` : escapeHtml(entry.userEmail || '')}</td>
+                                        <td>${escapeHtml(entry.locationName || '')}</td>
+                                        <td>${escapeHtml(entry.locationType || '')}</td>
                                         <td>${entry.duration ? `${entry.duration}h` : ''}</td>
-                                        <td>${entry.behavior || ''}</td>
-                                        <td>${entry.behaviorComments || ''}</td>
-                                        <td>${Array.isArray(entry.commands) ? entry.commands.join(', ') : ''}</td>
-                                        <td>${entry.notes || ''}</td>
+                                        <td>${escapeHtml(entry.behavior || '')}</td>
+                                        <td>${escapeHtml(entry.behaviorComments || '')}</td>
+                                        <td>${Array.isArray(entry.commands) ? entry.commands.map(escapeHtml).join(', ') : ''}</td>
+                                        <td>${escapeHtml(entry.notes || '')}</td>
                                     </tr>
                                 `;
             }).join('')}
