@@ -3546,7 +3546,7 @@
             const datalist = document.getElementById('registeredDogOptions');
             if (datalist) {
                 datalist.innerHTML = dogs
-                    .map(dog => `<option value="${getDogOptionLabel(dog)}"></option>`)
+                    .map(dog => `<option value="${escapeHtml(getDogOptionLabel(dog))}"></option>`)
                     .join('');
             }
 
@@ -4265,11 +4265,14 @@
 
             dogSelectorCard.classList.toggle('hidden', window.userDogs.length === 1);
             dogSelector.innerHTML = window.userDogs.map(dog => `
-                <button class="dog-chip ${window.selectedDog === dog ? 'active' : ''}" 
-                        onclick="selectDog('${dog}')">
-                    ${dog}
+                <button class="dog-chip ${window.selectedDog === dog ? 'active' : ''}"
+                        data-dog="${escapeHtml(dog)}">
+                    ${escapeHtml(dog)}
                 </button>
             `).join('');
+            dogSelector.querySelectorAll('.dog-chip').forEach((btn) => {
+                btn.addEventListener('click', () => window.selectDog(btn.getAttribute('data-dog')));
+            });
         };
 
         window.selectDog = function (dogName) {
@@ -4307,7 +4310,9 @@
         };
 
         async function findNearDuplicateEntry(candidateEntry, excludeEntryId = null) {
-            const entriesSnapshot = await getDocs(collection(window.db, 'entries'));
+            const entriesSnapshot = await getDocs(
+                query(collection(window.db, 'entries'), where('dogName', '==', candidateEntry.dogName))
+            );
             const candidateSignature = getEntryDuplicateSignature(candidateEntry);
             const candidateTime = new Date(candidateEntry.timestamp || new Date().toISOString());
             if (Number.isNaN(candidateTime.getTime())) return null;
@@ -4461,24 +4466,30 @@
                 filterContainer.classList.remove('hidden');
 
                 const userFilters = `
-                    <button class="filter-btn ${window.selectedUserFilter === 'all' ? 'active' : ''}" 
-                            onclick="filterByUser('all')">All Users</button>
+                    <button class="filter-btn ${window.selectedUserFilter === 'all' ? 'active' : ''}"
+                            data-user="all">All Users</button>
                     ${Array.from(userMap.entries()).map(([uid, email]) => `
-                        <button class="filter-btn ${window.selectedUserFilter === uid ? 'active' : ''}" 
-                                onclick="filterByUser('${uid}')">${email}</button>
+                        <button class="filter-btn ${window.selectedUserFilter === uid ? 'active' : ''}"
+                                data-user="${escapeHtml(uid)}">${escapeHtml(email)}</button>
                     `).join('')}
                 `;
 
                 const dogFilters = `
-                    <button class="filter-btn ${window.selectedDogFilter === 'all' ? 'active' : ''}" 
-                            onclick="filterByDog('all')">All Dogs</button>
+                    <button class="filter-btn ${window.selectedDogFilter === 'all' ? 'active' : ''}"
+                            data-dog="all">All Dogs</button>
                     ${Array.from(dogSet).map(dog => `
-                        <button class="filter-btn ${window.selectedDogFilter === dog ? 'active' : ''}" 
-                                onclick="filterByDog('${dog}')">${dog}</button>
+                        <button class="filter-btn ${window.selectedDogFilter === dog ? 'active' : ''}"
+                                data-dog="${escapeHtml(dog)}">${escapeHtml(dog)}</button>
                     `).join('')}
                 `;
 
                 filterContainer.innerHTML = userFilters + dogFilters;
+                filterContainer.querySelectorAll('[data-user]').forEach((btn) => {
+                    btn.addEventListener('click', () => window.filterByUser(btn.getAttribute('data-user')));
+                });
+                filterContainer.querySelectorAll('[data-dog]').forEach((btn) => {
+                    btn.addEventListener('click', () => window.filterByDog(btn.getAttribute('data-dog')));
+                });
             } else {
                 const accessibleDogs = new Set(window.userDogs || []);
                 if (window.selectedDog) {
