@@ -71,6 +71,15 @@ Service Puppy Tracker is a single-page web app for trainers and administrators t
    - `firebase deploy --only firestore:rules`
    - `firebase deploy --only hosting`
 
+## CI
+
+- GitHub Actions (`.github/workflows/ci.yml`) runs `scripts/check-syntax.js` on every push/PR to `main`, which checks that `index.html`'s inline `<script>` blocks parse cleanly and that `firebase.json`/`.firebaserc`/`firestore.indexes.json` are valid JSON.
+- Run it locally with `node scripts/check-syntax.js`.
+
+## License
+
+MIT — see `LICENSE.md`.
+
 ## Data model (Firestore)
 
 - `users/{uid}`
