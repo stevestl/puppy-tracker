@@ -3715,6 +3715,8 @@
                 });
             });
 
+            window.userManagementAllUsers = allUsers;
+
             const adminsCount = allUsers.filter((user) => user.role === 'admin').length;
             const usersCount = allUsers.filter((user) => user.role === 'user').length;
             const activeCount = allUsers.filter((user) => !user.disabled).length;
@@ -3780,6 +3782,21 @@
         window.setUserRoleById = async function (userId, nextRole) {
             if (!window.isAdmin) return;
             const role = nextRole === 'admin' ? 'admin' : 'user';
+
+            if (role === 'user') {
+                if (userId === window.currentUser?.uid) {
+                    alert('You cannot demote your own account. Ask another admin to change your role.');
+                    return;
+                }
+                const allUsers = window.userManagementAllUsers || [];
+                const adminsCount = allUsers.filter((user) => user.role === 'admin').length;
+                const targetIsAdmin = allUsers.some((user) => user.id === userId && user.role === 'admin');
+                if (targetIsAdmin && adminsCount <= 1) {
+                    alert('Cannot demote the last remaining admin.');
+                    return;
+                }
+            }
+
             if (!confirm(`Set this user role to ${role}?`)) return;
 
             try {
@@ -4322,7 +4339,8 @@
 
             const locationName = document.getElementById('locationName').value.trim();
             const locationType = document.getElementById('locationType').value;
-            const duration = parseFloat(document.getElementById('duration').value) || 0;
+            const durationRaw = document.getElementById('duration').value;
+            const duration = durationRaw === '' ? null : parseFloat(durationRaw);
             const behavior = document.getElementById('behavior').value;
             const behaviorComments = document.getElementById('behaviorComments').value.slice(0, 128);
             const notes = document.getElementById('notes').value.slice(0, 128);
@@ -4352,7 +4370,7 @@
                 location: window.currentLocation,
                 locationName: locationName || '',
                 locationType,
-                duration: duration || null,
+                duration: Number.isFinite(duration) ? duration : null,
                 behavior,
                 behaviorComments: behaviorNeedsComments ? behaviorComments : '',
                 distractions,
@@ -5465,7 +5483,7 @@
                             ${dogDisplay}
                             ${userDisplay}
                             <div><strong>Type:</strong> ${escapeHtml(entry.locationType)}</div>
-                            ${entry.duration ? `<div><strong>Duration:</strong> ${entry.duration} hours</div>` : ''}
+                            ${typeof entry.duration === 'number' ? `<div><strong>Duration:</strong> ${entry.duration} hours</div>` : ''}
                             <div><strong>Behavior:</strong> ${escapeHtml(entry.behavior)}</div>
                             ${entry.behaviorComments ? `<div><strong>Behavior Comments:</strong> ${escapeHtml(entry.behaviorComments)}</div>` : ''}
                             ${distractions.length > 0 ? `<div><strong>Distractions:</strong> ${distractions.map(escapeHtml).join(', ')}</div>` : ''}
@@ -5700,7 +5718,9 @@
                     : ((window.editingEntryLocation && typeof window.editingEntryLocation.latitude === 'number') ? window.editingEntryLocation : (originalEntry.location || null)),
                 duration: (() => {
                     const value = document.getElementById('editDuration').value;
-                    return value === '' ? null : (parseFloat(value) || null);
+                    if (value === '') return null;
+                    const parsed = parseFloat(value);
+                    return Number.isFinite(parsed) ? parsed : null;
                 })(),
                 behavior: behavior,
                 behaviorComments: behaviorNeedsComments ? behaviorComments : '',
@@ -6150,7 +6170,7 @@
                                         <td>${entry.handlerName ? `${escapeHtml(entry.handlerName)} (${escapeHtml(entry.userEmail || '')})` : escapeHtml(entry.userEmail || '')}</td>
                                         <td>${escapeHtml(entry.locationName || '')}</td>
                                         <td>${escapeHtml(entry.locationType || '')}</td>
-                                        <td>${entry.duration ? `${entry.duration}h` : ''}</td>
+                                        <td>${typeof entry.duration === 'number' ? `${entry.duration}h` : ''}</td>
                                         <td>${escapeHtml(entry.behavior || '')}</td>
                                         <td>${escapeHtml(entry.behaviorComments || '')}</td>
                                         <td>${Array.isArray(entry.commands) ? entry.commands.map(escapeHtml).join(', ') : ''}</td>
@@ -6242,7 +6262,7 @@
                     userSettings.organization || '',
                     entry.locationName || '',
                     entry.locationType,
-                    entry.duration || '',
+                    typeof entry.duration === 'number' ? entry.duration : '',
                     entry.behavior,
                     Array.isArray(entry.distractions) ? entry.distractions.join('; ') : '',
                     entry.behaviorComments || '',
