@@ -5751,7 +5751,15 @@
             };
 
             try {
-                await setDoc(doc(window.db, 'entries', entryId), updatedEntry, { merge: true });
+                const entryRef = doc(window.db, 'entries', entryId);
+                const currentSnap = await getDoc(entryRef);
+                if (!currentSnap.exists()) {
+                    alert('This entry was deleted elsewhere and no longer exists. Refresh and try again.');
+                    window.closeEditEntryModal();
+                    await loadEntries();
+                    return;
+                }
+                await setDoc(entryRef, updatedEntry, { merge: true });
                 window.closeEditEntryModal();
                 await loadEntries();
                 if (window.isAdmin) {
