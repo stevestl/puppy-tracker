@@ -3524,7 +3524,9 @@
         };
 
         window.loadRegisteredDogs = async function () {
+            const requestId = (window.loadRegisteredDogsRequestId = (window.loadRegisteredDogsRequestId || 0) + 1);
             const dogsSnapshot = await getDocs(collection(db, 'dogs'));
+            if (requestId !== window.loadRegisteredDogsRequestId) return;
             const dogs = [];
 
             dogsSnapshot.forEach((dogDoc) => {
@@ -3603,8 +3605,10 @@
         };
 
         window.loadAssignments = async function () {
+            const requestId = (window.loadAssignmentsRequestId = (window.loadAssignmentsRequestId || 0) + 1);
             const querySnapshot = await getDocs(collection(db, 'dog_assignments'));
             const usersSnapshot = await getDocs(collection(db, 'users'));
+            if (requestId !== window.loadAssignmentsRequestId) return;
             const assignments = [];
             const userMetaByEmail = new Map();
 
@@ -3685,10 +3689,12 @@
 
             window.trainerAccessFilter = filterEl.value === 'all' ? 'all' : 'active';
 
+            const requestId = (window.loadUserManagementListRequestId = (window.loadUserManagementListRequestId || 0) + 1);
             const [usersSnapshot, assignmentsSnapshot] = await Promise.all([
                 getDocs(collection(db, 'users')),
                 getDocs(collection(db, 'dog_assignments'))
             ]);
+            if (requestId !== window.loadUserManagementListRequestId) return;
 
             const assignmentCountByEmail = new Map();
             assignmentsSnapshot.forEach((assignmentDoc) => {
@@ -4432,9 +4438,11 @@
         window.loadEntries = async function () {
             ensureHistoryDateFilterInitialized();
 
+            const requestId = (window.loadEntriesRequestId = (window.loadEntriesRequestId || 0) + 1);
             const entriesRef = collection(window.db, 'entries');
             const q = query(entriesRef, orderBy('timestamp', 'desc'));
             const querySnapshot = await getDocs(q);
+            if (requestId !== window.loadEntriesRequestId) return;
 
             const allEntries = [];
             const userMap = new Map();
@@ -5832,9 +5840,11 @@
         };
 
         window.loadAdminStats = async function () {
+            const requestId = (window.loadAdminStatsRequestId = (window.loadAdminStatsRequestId || 0) + 1);
             const entriesRef = collection(window.db, 'entries');
             const querySnapshot = await getDocs(entriesRef);
             const settingsSnapshot = await getDocs(collection(window.db, 'settings'));
+            if (requestId !== window.loadAdminStatsRequestId) return;
             const handlerNameByUserId = new Map();
             settingsSnapshot.forEach((docSnap) => {
                 const settings = docSnap.data() || {};
