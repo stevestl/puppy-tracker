@@ -52,14 +52,14 @@ Service Puppy Tracker is a single-page web app for trainers and administrators t
   - Authentication
   - Firestore
   - App Check (reCAPTCHA v3)
-- Hosting-ready for Firebase Hosting
+- Hosting: GitHub Pages (production), deploying automatically from `main`
 
 ## Repository layout
 
 - `/Users/Steve2/GitHub/puppy-tracker/index.html`: App UI and logic.
 - `/Users/Steve2/GitHub/puppy-tracker/firestore.rules`: Firestore security rules.
-- `/Users/Steve2/GitHub/puppy-tracker/firebase.json`: Firebase hosting config.
-- `/Users/Steve2/GitHub/puppy-tracker/assets/`: App images and icons.
+- `/Users/Steve2/GitHub/puppy-tracker/firebase.json`: Firebase config (Firestore rules/indexes; also usable for local preview via `firebase serve`).
+- `/Users/Steve2/GitHub/puppy-tracker/assets`: App images and icons.
 
 ## Setup
 
@@ -67,9 +67,9 @@ Service Puppy Tracker is a single-page web app for trainers and administrators t
 2. Authenticate with your Firebase account:
    - `firebase login`
 3. Confirm project config in `index.html` (`firebaseConfig` block).
-4. Deploy/firewall rules as needed:
-   - `firebase deploy --only firestore:rules`
-   - `firebase deploy --only hosting`
+4. Deploy Firestore rules/indexes as needed:
+   - `firebase deploy --only firestore`
+5. Production hosting is GitHub Pages, not Firebase Hosting — pushing to `main` deploys the live site automatically. No manual hosting deploy step is needed.
 
 ## CI
 
