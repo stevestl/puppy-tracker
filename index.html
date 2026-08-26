@@ -3408,17 +3408,21 @@
             }
 
             try {
+                const existingSnaps = await Promise.all(
+                    dogNames.map((dogName) => getDoc(doc(db, 'dogs', getDogDocId(dogName))))
+                );
+
                 const existingConflicts = [];
-                for (const dogName of dogNames) {
-                    const existingSnap = await getDoc(doc(db, 'dogs', getDogDocId(dogName)));
-                    if (!existingSnap.exists()) continue;
+                dogNames.forEach((dogName, index) => {
+                    const existingSnap = existingSnaps[index];
+                    if (!existingSnap.exists()) return;
                     const existing = existingSnap.data() || {};
                     const existingLitter = normalizeName(existing.litterName);
                     const existingMother = normalizeName(existing.motherName);
                     if ((existingLitter && existingLitter !== litterName) || (existingMother && existingMother !== motherName)) {
                         existingConflicts.push(`${dogName} (currently ${existingLitter || 'Unknown litter'} / ${existingMother || 'Unknown mother'})`);
                     }
-                }
+                });
 
                 if (existingConflicts.length > 0) {
                     const proceed = confirm(
@@ -4318,15 +4322,15 @@
         };
 
         window.loadUserData = async function () {
-            await loadSettings();
-            await loadUserDogs();
-
+            // These loaders are mutually independent (loadAdminStats' admin
+            // branch doesn't read window.userDogs), so they can run
+            // concurrently. loadEntries needs window.selectedDog/userDogs
+            // from loadUserDogs, so it stays sequential after.
+            const parallelLoads = [loadSettings(), loadUserDogs()];
             if (window.isAdmin) {
-                await loadRegisteredDogs();
-                await loadAssignments();
-                await loadAdminStats();
-                await loadUserManagementList();
+                parallelLoads.push(loadRegisteredDogs(), loadAssignments(), loadAdminStats(), loadUserManagementList());
             }
+            await Promise.all(parallelLoads);
 
             if (window.selectedDog) {
                 await loadEntries();
