@@ -1806,18 +1806,18 @@
                                 <input type="checkbox" name="command" value="Back"> Back
                             </label>
                             <label class="checkbox-label">
-                                <input type="checkbox" name="command" value="Climb"> Side
+                                <input type="checkbox" name="command" value="Climb"> Climb
                             </label>
+                             <label class="checkbox-label">
+                                <input type="checkbox" name="command" value="Off"> Off
+                            </label>                            
                             <label class="checkbox-label">
-                                <input type="checkbox" name="command" value="Climb"> Back
+                                <input type="checkbox" name="command" value="Look"> Look
                             </label>
                             <label class="checkbox-label">
                                 <input type="checkbox" name="command" value="Leave it"> Leave it
                             </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="command" value="Climb"> Climb
-                            </label>                            
-                            <label class="checkbox-label">
+                           <label class="checkbox-label">
                                 <input type="checkbox" name="command" value="Touch"> Touch
                             </label>
                             <label class="checkbox-label">
@@ -2426,6 +2426,8 @@
                             Back</label>
                         <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Leave it"> Leave
                             it</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Look">
+                            Look</label>
                         <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Let's Go"> Let's
                             Go</label>
                         <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Kennel">
@@ -2439,6 +2441,7 @@
                         <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Touch">
                             Touch</label>
                         <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Climb"> Climb</label>
+                        <label class="checkbox-label"><input type="checkbox" name="editCommand" value="Off"> Off</label>
                     </div>
                 </div>
                 <div class="form-group">
@@ -6501,14 +6504,12 @@
 
         async function fetchOverpassPlacesWithFallback(lat, lng, radius) {
             const overpassEndpoints = [
+                'https://lz4.overpass-api.de/api/interpreter',
                 'https://overpass-api.de/api/interpreter',
-                'https://overpass.kumi.systems/api/interpreter',
-                'https://lz4.overpass-api.de/api/interpreter'
+                'https://overpass.kumi.systems/api/interpreter'
             ];
             const query = buildOverpassQuery(radius, lat, lng);
-            const maxEndpointsPerRadius = 2;
-            const endpointsToTry = overpassEndpoints.slice(0, maxEndpointsPerRadius);
-            const requests = endpointsToTry.map(async (overpassUrl) => {
+            const requests = overpassEndpoints.map(async (overpassUrl) => {
                 try {
                     const response = await fetchWithTimeout(overpassUrl, {
                         method: 'POST',
